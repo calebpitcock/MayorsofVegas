@@ -1,0 +1,469 @@
+<div id="app"></div>
+<script id="tpl" type="text/plain">__TEMPLATE_B64__</script>
+<script id="league-state" type="application/json">__STATE_JSON__</script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- the page may be served body-first; make sure head is sane ---------- */
+(function(){
+  var vp = document.head && document.head.querySelector('meta[name="viewport"]');
+  if(!vp){
+    var stray = document.querySelector('meta[name="viewport"]');
+    if(stray){ document.head.appendChild(stray); }
+    else{
+      vp = document.createElement('meta');
+      vp.setAttribute('name','viewport');
+      vp.setAttribute('content','width=device-width,initial-scale=1,viewport-fit=cover');
+      document.head.appendChild(vp);
+    }
+  }
+  var t = document.querySelector('title');
+  if(t && t.parentNode !== document.head){ document.head.appendChild(t); }
+})();
+
+/* ---------- league constants ---------- */
+var NAMES = ["Tyler","Ryan","Gabe","Donald","Austin","Andrew","Caleb","John"];
+var INI = {Tyler:"TY",Ryan:"RY",Gabe:"GA",Donald:"DO",Austin:"AU",Andrew:"AN",Caleb:"CA",John:"JO"};
+var K_ME="blb.me", K_RUNS="blb.runs", K_PEND="blb.pending", K_MUTE="blb.mute", K_RES="blb.result";
+/* the combine closes at midnight ET as Aug 29 begins -- one shared instant for all eight */
+var DEADLINE = 1787976000000;
+var deadlineFired = false;
+
+/* ---------- storage that never throws ---------- */
+function lget(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lset(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function ldel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+function sget(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } }
+function sset(k,v){ try{ sessionStorage.setItem(k,v); }catch(e){} }
+function sdel(k){ try{ sessionStorage.removeItem(k); }catch(e){} }
+
+/* ---------- state ---------- */
+function blankState(){ return {v:1, phase:"combine", scores:{}, claims:{}, updated:0}; }
+function readState(){
+  try{
+    var s = JSON.parse(document.getElementById("league-state").textContent);
+    if(!s || typeof s !== "object") return blankState();
+    s.scores = s.scores || {}; s.claims = s.claims || {};
+    s.phase = (s.phase === "claim") ? "claim" : "combine";
+    return s;
+  }catch(e){ return blankState(); }
+}
+
+var state = readState();
+
+/* identity rides in the URL hash so it survives the reload that follows a publish,
+   even where sandboxed storage is unavailable */
+function hashName(){
+  try{
+    var m = /(?:^|[#&])p=([A-Za-z]+)/.exec(location.hash || "");
+    if(m && NAMES.indexOf(m[1]) > -1) return m[1];
+  }catch(e){}
+  return null;
+}
+function setHashName(n){
+  try{
+    if(window.history && history.replaceState){ history.replaceState(null, "", "#p=" + n); return; }
+  }catch(e){}
+  try{ location.hash = "p=" + n; }catch(e2){}
+}
+var me = hashName();
+if(!me){ var stored = lget(K_ME); me = (NAMES.indexOf(stored) > -1) ? stored : null; }
+var runsMem = 0;
+function loadRuns(){ runsMem = me ? (parseInt(lget(K_RUNS + "." + me) || "0", 10) || 0) : 0; }
+function bumpRuns(){ runsMem += 1; if(me) lset(K_RUNS + "." + me, String(runsMem)); }
+loadRuns();
+var screen = me ? "main" : "select";
+var pendingName = null;
+var artifactApi = null, capSettled = false, readOnly = false, offline = false, publishing = false, healed = false;
+
+/* ---------- publishing: rebuild the page from its own canonical source ---------- */
+function tplSource(){
+  var b64 = document.getElementById("tpl").textContent.trim();
+  var bin = atob(b64);
+  var bytes = new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++){ bytes[i] = bin.charCodeAt(i); }
+  return { b64:b64, html:new TextDecoder("utf-8").decode(bytes) };
+}
+var PH_STATE = "__STATE" + "_JSON__";
+var PH_TPL = "__TEMPLATE" + "_B64__";
+function buildDoc(st){
+  var t = tplSource();
+  var json = JSON.stringify(st).replace(/</g,"\\u003c");
+  return t.html
+    .replace(PH_STATE, function(){ return json; })
+    .replace(PH_TPL, function(){ return t.b64; });
+}
+var DEAD_CODES = {not_writer:1, not_granted:1, not_declared:1, consent_required:1, capability_disabled:1, capability_removed:1};
+function publishState(){
+  if(!artifactApi){ if(!offline) readOnly = true; return Promise.resolve({ok:false, code:"offline"}); }
+  if(publishing){ return Promise.resolve({ok:false, code:"busy"}); }
+  publishing = true;
+  return artifactApi.publish(buildDoc(state)).then(function(){
+    publishing = false; return {ok:true};
+  }, function(err){
+    publishing = false;
+    var code = (err && err.code) || "upstream_error";
+    if(DEAD_CODES[code]){ readOnly = true; }
+    return {ok:false, code:code};
+  });
+}
+
+/* ---------- ranking + draft ---------- */
+function bestOf(n){ var r = state.scores[n]; return (r && r.best) ? r.best : 0; }
+function stampOf(n){ var r = state.scores[n]; return (r && r.at) ? r.at : Infinity; }
+function ranked(){
+  return NAMES.slice().sort(function(a,b){
+    var d = bestOf(b) - bestOf(a); if(d) return d;
+    var t = stampOf(a) - stampOf(b); if(t !== 0 && isFinite(t)) return t;
+    return NAMES.indexOf(a) - NAMES.indexOf(b);
+  });
+}
+function onClock(){
+  if(state.phase !== "claim") return null;
+  var r = ranked();
+  for(var i=0;i<r.length;i++){ if(!state.claims[r[i]]) return r[i]; }
+  return null;
+}
+function takenSlots(){
+  var t = {};
+  for(var k in state.claims){ if(state.claims.hasOwnProperty(k)) t[state.claims[k]] = k; }
+  return t;
+}
+
+/* ---------- markup helpers ---------- */
+function av(n, cls){ return '<span class="av '+(cls||"")+'">'+INI[n]+'</span>'; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function marquee(){
+  var tail = state.phase === "claim" ? 'Draft <b>claims</b> are open' : 'The draft-order <b>combine</b>';
+  return '<header class="card marquee">'
+    + '<div class="eyebrow">Mayors of Vegas</div>'
+    + '<h1 class="wordmark">Beer League<span class="b">Flappy Buck</span></h1>'
+    + '<div class="subline">'+tail+'</div>'
+    + '<div class="stripe"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+    + '</header>';
+}
+
+/* ---------- countdown to the close of the combine ---------- */
+function msLeft(){ return DEADLINE - Date.now(); }
+function pad2(n){ return (n < 10 ? "0" : "") + n; }
+function deadlineText(){
+  var d = new Date(DEADLINE), local = "";
+  try{
+    local = d.toLocaleString(undefined, {weekday:"short", month:"short", day:"numeric",
+                                         hour:"numeric", minute:"2-digit"});
+  }catch(e){ local = d.toString().slice(0,21); }
+  return local;
+}
+function countdownInner(){
+  var ms = msLeft();
+  if(state.phase === "claim" || ms <= 0){
+    return '<div class="cd-k">The combine is closed</div>'
+      + '<div class="cd-big">' + (state.phase === "claim" ? "Claim your slot" : "Scores are final") + '</div>'
+      + '<div class="cd-when">Draft day &middot; <b>Saturday, August 29</b></div>';
+  }
+  var t = Math.floor(ms/1000);
+  var dd = Math.floor(t/86400), hh = Math.floor((t%86400)/3600),
+      mm = Math.floor((t%3600)/60), ss = t%60;
+  function unit(n, l){ return '<div class="cd-unit"><div class="cd-n">'+pad2(n)+'</div><div class="cd-l">'+l+'</div></div>'; }
+  return '<div class="cd-k">Combine closes in</div>'
+    + '<div class="cd-clock">' + unit(dd,"days") + unit(hh,"hrs") + unit(mm,"min") + unit(ss,"sec") + '</div>'
+    + '<div class="cd-when">Midnight ET as Aug 29 starts &middot; your time <b>' + deadlineText() + '</b></div>';
+}
+function countdownCard(){
+  var ms = msLeft();
+  var cls = (state.phase === "claim" || ms <= 0) ? " done" : (ms < 86400000 ? " soon" : "");
+  return '<section class="card countdown' + cls + '" id="countdown">' + countdownInner() + '</section>';
+}
+function paintCountdown(){
+  var el = byId("countdown");
+  if(!el) return;
+  var ms = msLeft();
+  el.className = "card countdown" + ((state.phase === "claim" || ms <= 0) ? " done" : (ms < 86400000 ? " soon" : ""));
+  el.innerHTML = countdownInner();
+}
+/* when the clock runs out the combine closes itself and the claims open */
+function checkDeadline(){
+  if(deadlineFired || state.ignoreDeadline) return;
+  if(state.phase !== "combine" || msLeft() > 0) return;
+  deadlineFired = true;
+  state.phase = "claim";
+  state.updated = Date.now();
+  paintBoard(); paintDraft(); paintCommish(); paintCountdown();
+  var hdr = document.querySelector(".marquee .subline");
+  if(hdr) hdr.innerHTML = 'Draft <b>claims</b> are open';
+  toast("The combine is closed");
+  publishState();
+}
+
+function rulesCard(){
+  return '<section class="card"><h2>How the order gets set</h2><ol class="rules">'
+    + '<li><span class="n">01</span><span>Tap to keep it airborne. Splitting the uprights is <b>+1</b>; a buckeye leaf or a cold one in the gap is <b>+5</b>.</span></li>'
+    + '<li><span class="n">02</span><span>Run it as many times as you want. Only your <b>best score</b> sticks to the board.</span></li>'
+    + '<li><span class="n">03</span><span>The combine closes at <b>midnight ET</b> as Saturday, Aug 29 starts. Whatever is on the board then is final.</span></li>'
+    + '<li><span class="n">04</span><span>Slots go in score order &mdash; <b>highest score picks first</b>, and takes <b>any open slot</b>. First overall, or the 8 spot for back-to-back turns.</span></li>'
+    + '</ol></section>';
+}
+
+function boardInner(){
+  var r = ranked(), clock = onClock(), out = "";
+  if(state.phase === "claim"){
+    out += clock
+      ? '<div class="clockbar"><div class="k">On the clock</div><div class="v">'+clock+'</div></div>'
+      : '<div class="clockbar" style="background:rgba(79,208,138,.11);border-color:rgba(79,208,138,.42)"><div class="k" style="color:#9FE0BC">Every slot is spoken for</div><div class="v">Draft order is set</div></div>';
+  }
+  out += '<div class="board">';
+  for(var i=0;i<r.length;i++){
+    var n = r[i], b = bestOf(n), cls = [];
+    if(i === 0 && b > 0) cls.push("top");
+    if(n === me) cls.push("mine");
+    if(n === clock) cls.push("clock");
+    var pick = state.claims[n];
+    var tag = pick ? ("Pick " + pick) : (b > 0 ? "" : "no run yet");
+    out += '<div class="row '+cls.join(" ")+'">'
+      + '<span class="rk">'+(i+1)+'</span>'
+      + av(n)
+      + '<span class="who">'+n+(tag ? '<span class="tag">'+tag+'</span>' : "")+'</span>'
+      + '<span class="sc'+(b ? "" : " zero")+'">'+(b ? b : "&mdash;")+'</span>'
+      + '</div>';
+  }
+  return out + '</div>';
+}
+
+function draftInner(){
+  var taken = takenSlots(), clock = onClock();
+  var myTurn = !!(clock && clock === me && !readOnly && !offline);
+  var out = "";
+  if(state.phase !== "claim"){
+    out += '<p>Slots unlock when the commissioner closes the combine. Then it runs in score order, top score first.</p>';
+  }else if(myTurn){
+    out += '<p style="color:var(--gold)"><b style="color:var(--gold)">You are on the clock.</b> Take whichever slot you want.</p>';
+  }else if(clock){
+    out += '<p>Waiting on <b style="color:var(--text)">'+clock+'</b> to choose.</p>';
+  }else{
+    out += '<p>All eight slots are claimed. This is the draft order for Beer League.</p>';
+  }
+  out += '<div class="slots">';
+  for(var i=1;i<=8;i++){
+    var who = taken[i];
+    if(who){
+      out += '<div class="slot filled"><span class="pk">'+i+'</span><span class="who">'+who+'</span></div>';
+    }else if(myTurn){
+      out += '<button class="slot" data-act="claim" data-slot="'+i+'"><span class="pk">'+i+'</span><span class="who">Claim it</span></button>';
+    }else{
+      out += '<div class="slot"><span class="pk">'+i+'</span><span class="who">Open</span></div>';
+    }
+  }
+  return out + '</div>';
+}
+
+function commishInner(){
+  if(state.phase === "combine"){
+    return '<div class="in">'
+      + '<p style="font-size:13px">The combine closes on its own at midnight ET on Aug 29. Close it early to freeze scores and start the pick-order claims now.</p>'
+      + '<button class="btn btn-ghost btn-sm" data-act="confirm" data-do="lock">Close the combine now</button>'
+      + '</div>';
+  }
+  return '<div class="in">'
+    + '<p style="font-size:13px">Reopening clears every claimed slot, lets everyone keep grinding, and overrides the Aug 29 clock.</p>'
+    + '<button class="btn btn-ghost btn-sm" data-act="confirm" data-do="reopen">Reopen the combine</button>'
+    + '<button class="btn btn-ghost btn-sm" data-act="confirm" data-do="wipe">Wipe all scores and picks</button>'
+    + '</div>';
+}
+
+function statusInner(){
+  if(!capSettled) return "";
+  if(offline){
+    return '<div class="banner warn"><span class="ic">!</span><span><b>Practice mode.</b> This page is open outside Claude, so scores stay on this phone. Open the league link Caleb sent to post to the board.</span></div>';
+  }
+  if(readOnly){
+    return '<div class="banner warn"><span class="ic">!</span><span><b>Read-only copy.</b> Play all you want, but scores will not reach the league board from here. Ask Caleb to re-share the link with edit access, then reopen it.</span></div>';
+  }
+  return '<div class="banner live"><span class="ic">&#9679;</span><span>Connected to the league board. Beat your best and it posts for all eight of you.</span></div>';
+}
+
+function youCard(){
+  var b = bestOf(me);
+  var runs = runsMem;
+  var sub = runs > 0 ? (runs + " run" + (runs === 1 ? "" : "s") + " logged") : "no runs yet";
+  return '<section class="card you">'
+    + av(me, "sel")
+    + '<div class="you-txt"><div class="you-nm">'+me+'</div><div class="you-sub" id="you-sub">'+sub+'</div></div>'
+    + '<div class="you-best"><div class="n" id="you-best">'+b+'</div><div class="l">Best</div></div>'
+    + '<button class="btn btn-ghost btn-sm" data-act="switch">Switch</button>'
+    + '</section>';
+}
+
+function viewSelect(){
+  var chips = "";
+  for(var i=0;i<NAMES.length;i++){
+    var n = NAMES[i], b = bestOf(n);
+    chips += '<button class="chip" data-act="pick" data-name="'+n+'" aria-pressed="'+(pendingName === n)+'">'
+      + av(n) + '<span class="nm">'+n+'</span>'
+      + '<span class="sr">best score '+b+'</span></button>';
+  }
+  return '<div class="wrap">'
+    + marquee()
+    + countdownCard()
+    + '<section class="card"><h2>Who is this?</h2>'
+    + '<div class="roster">'+chips+'</div>'
+    + '<div style="margin-top:14px"><button class="btn btn-go btn-wide" data-act="lockin" '+(pendingName ? "" : "disabled")+'>'+(pendingName ? "Take the field, "+pendingName : "Pick your name")+'</button></div>'
+    + '</section>'
+    + rulesCard()
+    + '<section class="card"><h2>The board</h2><div id="board">'+boardInner()+'</div></section>'
+    + '<div class="foot">Beer League &middot; 2026 draft order</div>'
+    + '</div>';
+}
+
+function viewMain(){
+  var muted = lget(K_MUTE) === "1";
+  return '<div class="wrap">'
+    + marquee()
+    + countdownCard()
+    + youCard()
+    + '<div class="stage" id="stage">'
+      + '<canvas id="cv" width="400" height="640" aria-label="Beer League Flappy Buck game"></canvas>'
+      + '<div class="hud" id="hud">0</div>'
+      + '<button data-mute="1" data-act="mute" aria-label="Toggle sound" style="position:absolute;top:11px;right:11px;width:33px;height:33px;border-radius:9px;background:rgba(7,10,20,.5);border:1px solid rgba(242,193,78,.28);color:#F2C14E;font-family:var(--f-cond);font-size:14px;cursor:pointer;line-height:1">'+(muted ? "✕" : "♪")+'</button>'
+      + '<div class="ov" id="ov"></div>'
+    + '</div>'
+    + '<div id="status">'+statusInner()+'</div>'
+    + '<section class="card"><h2>The board</h2><div id="board">'+boardInner()+'</div></section>'
+    + '<section class="card"><h2>Draft slots</h2><div id="draft">'+draftInner()+'</div></section>'
+    + rulesCard()
+    + '<details class="commish"><summary>Commissioner controls</summary><div id="commish">'+commishInner()+'</div></details>'
+    + '<div class="foot">Beer League &middot; Mayors of Vegas</div>'
+    + '</div>';
+}
+
+/* ---------- targeted repaints ---------- */
+function byId(id){ return document.getElementById(id); }
+function paint(id, html){ var el = byId(id); if(el) el.innerHTML = html; }
+function paintBoard(){ paint("board", boardInner()); }
+function paintDraft(){ paint("draft", draftInner()); }
+function paintCommish(){ paint("commish", commishInner()); }
+function paintStatus(){ paint("status", statusInner()); }
+function paintYou(){
+  var b = byId("you-best"); if(b) b.textContent = bestOf(me);
+  var s = byId("you-sub");
+  if(s) s.textContent = runsMem > 0 ? (runsMem + " run" + (runsMem === 1 ? "" : "s") + " logged") : "no runs yet";
+}
+
+function toast(msg){
+  var t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 2600);
+}
+
+/* ---------- game-over handling ---------- */
+function resultMarkup(sc, prev, mode){
+  var note = "", cls = "cool";
+  if(mode === "posting"){ note = "Posting to the board&hellip;"; cls = "hot"; }
+  else if(mode === "posted"){ note = "New personal best &mdash; posted"; cls = "hot"; }
+  else if(mode === "conflict"){ note = "Someone posted first &mdash; refreshing"; cls = "cool"; }
+  else if(mode === "readonly"){ note = "Best run &mdash; but this copy cannot post"; cls = "cool"; }
+  else if(mode === "solo"){ note = "New best, saved on this phone"; cls = "hot"; }
+  else if(mode === "failed"){ note = "Could not reach the board &mdash; saved, will retry"; cls = "cool"; }
+  else { note = prev > 0 ? ("Best still stands at " + prev) : "Get on the board"; cls = "cool"; }
+  return '<div class="ov-in">'
+    + '<div class="ov-k">Final</div>'
+    + '<div class="ov-score">'+sc+'</div>'
+    + '<div class="ov-note '+cls+'">'+note+'</div>'
+    + '<div class="btns">'
+      + '<button class="btn btn-go" data-act="again">Run it back</button>'
+      + '<button class="btn btn-ghost" data-act="scroll">The board</button>'
+    + '</div></div>';
+}
+function showResult(sc, prev, mode){
+  var ov = byId("ov"); if(!ov) return;
+  ov.hidden = false;
+  ov.innerHTML = resultMarkup(sc, prev, mode);
+}
+
+function onGameOver(sc){
+  bumpRuns();
+  var rec = state.scores[me] || {best:0, at:0};
+  var prev = rec.best || 0;
+  paintYou();
+
+  if(sc <= prev){ showResult(sc, prev, "nobest"); return; }
+
+  rec.best = sc; rec.at = Date.now();
+  state.scores[me] = rec; state.updated = Date.now();
+  lset(K_PEND, JSON.stringify({name:me, score:sc, at:rec.at}));
+  sset(K_RES, JSON.stringify({score:sc, prev:prev}));
+  paintYou(); paintBoard(); paintDraft();
+  showResult(sc, prev, "posting");
+
+  publishState().then(function(r){
+    if(r.ok){ showResult(sc, prev, "posted"); return; }
+    sdel(K_RES);
+    if(r.code === "conflict"){ showResult(sc, prev, "conflict"); }
+    else if(offline){ showResult(sc, prev, "solo"); }
+    else if(readOnly || r.code === "offline"){ showResult(sc, prev, "readonly"); }
+    else if(r.code === "rate_limited"){ showResult(sc, prev, "failed"); }
+    else { showResult(sc, prev, "failed"); }
+    paintStatus(); paintDraft();
+  });
+}
+
+/* after a successful publish the view reloads; bring the result back with it */
+function restoreResult(){
+  var raw = sget(K_RES); if(!raw) return;
+  sdel(K_RES);
+  try{
+    var r = JSON.parse(raw);
+    setTimeout(function(){ showResult(r.score, r.prev, "posted"); }, 60);
+  }catch(e){}
+}
+
+/* a score that never made it to the board gets one retry on the next load */
+function healPending(){
+  if(healed) return; healed = true;
+  var raw = lget(K_PEND); if(!raw) return;
+  var p; try{ p = JSON.parse(raw); }catch(e){ ldel(K_PEND); return; }
+  if(!p || NAMES.indexOf(p.name) < 0){ ldel(K_PEND); return; }
+  if(bestOf(p.name) >= p.score){ ldel(K_PEND); return; }
+  if(!artifactApi) return;
+  state.scores[p.name] = {best:p.score, at:p.at || Date.now()};
+  state.updated = Date.now();
+  paintBoard(); paintYou();
+  publishState();
+}
+
+/* ---------- actions ---------- */
+function claimSlot(slot){
+  if(state.phase !== "claim" || onClock() !== me) return;
+  if(takenSlots()[slot]) return;
+  state.claims[me] = slot; state.updated = Date.now();
+  paintDraft(); paintBoard();
+  toast("Pick " + slot + " locked in");
+  publishState().then(function(r){
+    if(!r.ok && r.code !== "conflict"){ toast("That pick did not save"); paintStatus(); paintDraft(); }
+  });
+}
+function commishDo(what){
+  if(what === "lock"){ state.phase = "claim"; }
+  else if(what === "reopen"){
+    state.phase = "combine"; state.claims = {};
+    state.ignoreDeadline = true; deadlineFired = false;   /* a manual reopen beats the clock */
+  }
+  else if(what === "wipe"){
+    state.phase = "combine"; state.claims = {}; state.scores = {}; ldel(K_PEND);
+    if(msLeft() <= 0){ state.ignoreDeadline = true; }
+    deadlineFired = false;
+  }
+  state.updated = Date.now();
+  paintBoard(); paintDraft(); paintCommish(); paintYou(); paintCountdown();
+  publishState().then(function(r){
+    if(!r.ok && r.code !== "conflict"){ toast("Change did not save"); paintStatus(); }
+  });
+}
+
+function render(){
+  byId("app").innerHTML = (screen === "select") ? viewSelect() : viewMain();
+  if(screen === "main"){ mountGame(); restoreResult(); }
+  window.scrollTo(0,0);
+}

@@ -1,0 +1,542 @@
+
+/* ---------- sound ---------- */
+var actx = null;
+function ping(kind){
+  if(lget(K_MUTE) === "1") return;
+  try{
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    if(!actx) actx = new AC();
+    if(actx.state === "suspended"){ actx.resume(); }
+    var t0 = actx.currentTime;
+    var o = actx.createOscillator(), g = actx.createGain();
+    var f = kind === "flap" ? 400 : kind === "score" ? 640 : kind === "can" ? 880 : 170;
+    o.type = kind === "dead" ? "sawtooth" : "square";
+    o.frequency.setValueAtTime(f, t0);
+    if(kind === "score" || kind === "can") o.frequency.exponentialRampToValueAtTime(f*1.55, t0+0.09);
+    if(kind === "dead") o.frequency.exponentialRampToValueAtTime(64, t0+0.34);
+    g.gain.setValueAtTime(kind === "flap" ? 0.035 : 0.06, t0);
+    g.gain.exponentialRampToValueAtTime(0.0008, t0 + (kind === "dead" ? 0.38 : 0.14));
+    o.connect(g); g.connect(actx.destination);
+    o.start(t0); o.stop(t0 + 0.45);
+  }catch(e){}
+}
+
+/* ---------- the game ---------- */
+var G = null;
+function mountGame(){
+  var cv = byId("cv"); if(!cv) return;
+  if(G && G.destroy){ G.destroy(); }
+  G = makeGame(cv);
+}
+
+function makeGame(cv){
+  var VW=400, VH=640, GROUND=84, FLOOR=VH-GROUND;
+  var BX=116, R=14, GRAV=0.42, FLAP=-7.1, MAXV=11.5;
+
+  var ctx = cv.getContext("2d");
+  var dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  cv.width = Math.round(VW*dpr); cv.height = Math.round(VH*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  var stage = byId("stage"), hudEl = byId("hud"), ov = byId("ov");
+  var reduce = false;
+  try{ reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+
+  var mode="ready", y=0, vy=0, rot=0, score=0;
+  var obs=[], parts=[], scroll=0, bob=0, flash=0, chant=null;
+  var raf=0, lastT=0, alive=true;
+
+  /* stable skyline */
+  function mulberry(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  var rnd = mulberry(20250825), sky = [], sx = 0;
+  while(sx < VW + 340){
+    var bw = 16 + rnd()*42, bh = 36 + rnd()*122;
+    sky.push({x:sx, w:bw, h:bh, lit:rnd() < 0.6, warm:rnd() < 0.55});
+    sx += bw + 3 + rnd()*14;
+  }
+  var SKYW = sx;
+
+  function difficulty(){
+    return {
+      speed: 2.55 + Math.min(score*0.022, 2.15),
+      gap:   178 - Math.min(score*1.0, 58),
+      space: 234 - Math.min(score*1.15, 54)
+    };
+  }
+  function addObs(){
+    var d = difficulty();
+    var lo = d.gap/2 + 54, hi = FLOOR - d.gap/2 - 58;
+    var prev = obs.length ? obs[obs.length-1].gy : FLOOR*0.44;
+    var a = Math.max(lo, prev - 155), b = Math.min(hi, prev + 155);
+    if(b < a){ a = lo; b = hi; }
+    obs.push({
+      x: obs.length ? obs[obs.length-1].x + d.space : VW + 130,
+      gy: a + Math.random()*(b-a),
+      gh: d.gap, w: 62, passed:false,
+      can: Math.random() < 0.46, kind: (Math.random() < 0.62 ? "leaf" : "can"), got:false
+    });
+  }
+  function ensureObs(){
+    var guard = 0;
+    while(guard++ < 12 && (!obs.length || obs[obs.length-1].x + difficulty().space <= VW + 14)){ addObs(); }
+  }
+  function reset(){
+    mode="ready"; y=FLOOR*0.42; vy=0; rot=0; score=0;
+    obs=[]; parts=[]; scroll=0; bob=0; flash=0; chant=null;
+    ensureObs(); hud();
+  }
+  function hud(){ if(hudEl) hudEl.textContent = score; }
+  function readyOverlay(){
+    ov.hidden = false;
+    ov.innerHTML = '<div class="ov-in"><h3>Tap to hike</h3>'
+      + '<p class="tip">Keep it off the turf. Split the uprights for <b style="color:var(--gold)">+1</b>, grab a buckeye leaf or a cold one for <b style="color:var(--gold)">+5</b>.</p>'
+      + '<button class="btn btn-go btn-wide">Hike it</button></div>';
+  }
+  function launch(){
+    reset(); mode="play"; ov.hidden = true;
+    stage.style.touchAction = "none";
+    vy = FLAP; rot = -0.42; lastT = performance.now(); ping("flap");
+  }
+  function flap(){ vy = FLAP; rot = -0.42; ping("flap"); }
+  function die(){
+    if(mode !== "play") return;
+    mode = "dead"; flash = 1; ping("dead");
+    burst(BX, y, "#E03A45", 20); burst(BX, y, "#F2C14E", 10);
+    stage.style.touchAction = "pan-y";
+    if(!reduce){
+      stage.classList.add("shake");
+      setTimeout(function(){ if(stage) stage.classList.remove("shake"); }, 340);
+    }
+    var final = score;
+    setTimeout(function(){ if(alive) onGameOver(final); }, 620);
+  }
+  function burst(x, yy, color, n){
+    for(var i=0;i<n;i++){
+      parts.push({x:x, y:yy, vx:(Math.random()-0.5)*7.5, vy:(Math.random()-0.7)*7.5,
+                  life:1, col:color, r:2 + Math.random()*3.2});
+    }
+  }
+  function hitRect(cx, cy, r, rx, ry, rw, rh){
+    if(rh <= 0) return false;
+    var nx = cx < rx ? rx : (cx > rx+rw ? rx+rw : cx);
+    var ny = cy < ry ? ry : (cy > ry+rh ? ry+rh : cy);
+    var dx = cx-nx, dy = cy-ny;
+    return dx*dx + dy*dy < r*r;
+  }
+
+  function step(dt){
+    if(mode === "ready"){
+      bob += 0.06*dt;
+      y = FLOOR*0.42 + Math.sin(bob)*9;
+      rot = Math.sin(bob)*0.12;
+      return;
+    }
+    if(mode !== "play"){
+      for(var q=0;q<parts.length;q++){ var pq=parts[q]; pq.vy+=0.34*dt; pq.x+=pq.vx*dt; pq.y+=pq.vy*dt; pq.life-=0.022*dt; }
+      parts = parts.filter(function(p){ return p.life > 0; });
+      if(flash > 0) flash -= 0.09*dt;
+      if(chant){ chant.t -= 0.016*dt; if(chant.t <= 0) chant = null; }
+      return;
+    }
+
+    var d = difficulty();
+    vy += GRAV*dt; if(vy > MAXV) vy = MAXV;
+    y += vy*dt;
+    rot = Math.max(-0.55, Math.min(1.2, vy*0.058));
+    scroll += d.speed*dt;
+
+    for(var i=0;i<obs.length;i++){ obs[i].x -= d.speed*dt; }
+    while(obs.length && obs[0].x + obs[0].w < -30){ obs.shift(); }
+    ensureObs();
+
+    for(var j=0;j<obs.length;j++){
+      var o = obs[j], top = o.gy - o.gh/2, bot = o.gy + o.gh/2;
+      if(!o.passed && o.x + o.w < BX){
+        o.passed = true; score += 1; hud(); ping("score");
+        if(score % 10 === 0){ chant = {text:(score % 20 === 0 ? "I-O!" : "O-H!"), t:1}; }
+      }
+      if(o.can && !o.got){
+        var cx = o.x + o.w/2, dx = cx - BX, dy = o.gy - y;
+        if(dx*dx + dy*dy < (R+15)*(R+15)){
+          o.got = true; score += 5; hud(); ping("can");
+          burst(cx, o.gy, o.kind === "leaf" ? "#6FC077" : "#F2C14E", 12);
+          if(score % 10 === 0){ chant = {text:(score % 20 === 0 ? "I-O!" : "O-H!"), t:1}; }
+        }
+      }
+      if(o.x < BX + R && o.x + o.w > BX - R){
+        if(hitRect(BX,y,R, o.x, -60, o.w, top+60) || hitRect(BX,y,R, o.x, bot, o.w, FLOOR-bot)){ die(); return; }
+      }
+    }
+
+    if(y + R >= FLOOR){ y = FLOOR - R; die(); return; }
+    if(y - R < 2){ y = R + 2; if(vy < 0) vy = 0; }
+
+    for(var p=0;p<parts.length;p++){ var pp=parts[p]; pp.vy+=0.34*dt; pp.x+=pp.vx*dt; pp.y+=pp.vy*dt; pp.life-=0.022*dt; }
+    parts = parts.filter(function(x){ return x.life > 0; });
+    if(chant){ chant.t -= 0.016*dt; if(chant.t <= 0) chant = null; }
+  }
+
+  function rr(x, yy, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x+r, yy);
+    ctx.arcTo(x+w, yy, x+w, yy+h, r);
+    ctx.arcTo(x+w, yy+h, x, yy+h, r);
+    ctx.arcTo(x, yy+h, x, yy, r);
+    ctx.arcTo(x, yy, x+w, yy, r);
+    ctx.closePath();
+  }
+
+  function drawSky(){
+    var g = ctx.createLinearGradient(0,0,0,FLOOR);
+    g.addColorStop(0, "#080C1E"); g.addColorStop(0.48, "#1B1339"); g.addColorStop(1, "#3E1A33");
+    ctx.fillStyle = g; ctx.fillRect(0,0,VW,FLOOR);
+
+    ctx.fillStyle = "rgba(242,193,78,.09)";
+    ctx.beginPath(); ctx.arc(318, 84, 54, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = "#F7E4B2";
+    ctx.beginPath(); ctx.arc(318, 84, 16, 0, 6.2832); ctx.fill();
+
+    var off = (scroll*0.17) % SKYW;
+    for(var pass=0; pass<2; pass++){
+      var base = -off + pass*SKYW;
+      for(var i=0;i<sky.length;i++){
+        var b = sky[i], bx = base + b.x;
+        if(bx > VW || bx + b.w < 0) continue;
+        ctx.fillStyle = "#090D20";
+        ctx.fillRect(bx, FLOOR - b.h, b.w, b.h);
+        if(b.lit){
+          ctx.fillStyle = b.warm ? "rgba(224,58,69,.40)" : "rgba(180,188,201,.28)";
+          for(var wy = FLOOR - b.h + 10; wy < FLOOR - 12; wy += 14){
+            for(var wx = bx + 5; wx < bx + b.w - 6; wx += 10){
+              if((((wx|0)*7 + (wy|0)*13) % 3) === 0) ctx.fillRect(wx, wy, 3, 4);
+            }
+          }
+        }
+      }
+    }
+    drawStadium();
+  }
+
+  /* light standard: (x, baseY) is where it meets the rim, rising h upward */
+  function tower(x, baseY, h){
+    var headY = baseY - h;
+    ctx.fillStyle = "rgba(255,246,214,.07)";
+    ctx.beginPath(); ctx.arc(x, headY + 4, 58, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = "#0A0F22";
+    ctx.fillRect(x - 2.5, headY, 5, h);
+    ctx.fillRect(x - 14, headY - 16, 28, 16);
+    ctx.fillStyle = "rgba(255,250,224,.85)";
+    for(var r=0;r<2;r++){
+      for(var c=0;c<4;c++){ ctx.fillRect(x - 11.5 + c*6.4, headY - 13 + r*7, 4.4, 4.4); }
+    }
+  }
+  /* Ohio Stadium, rolling past in the distance */
+  function drawStadium(){
+    var span = 980, off = (scroll*0.13) % span;
+    for(var pass=0; pass<2; pass++){
+      var bx = -off + pass*span + 40;
+      if(bx > VW + 360 || bx + 340 < -40) continue;
+      var w = 328, h = 138, top = FLOOR - h;
+      /* the bowl */
+      ctx.fillStyle = "#161D3C";
+      ctx.beginPath();
+      ctx.moveTo(bx, FLOOR);
+      ctx.lineTo(bx + 20, top + 34);
+      ctx.quadraticCurveTo(bx + w/2, top - 22, bx + w - 20, top + 34);
+      ctx.lineTo(bx + w, FLOOR);
+      ctx.closePath(); ctx.fill();
+      /* deck shadow + lit windows around the concourse */
+      ctx.fillStyle = "rgba(8,12,28,.55)";
+      ctx.fillRect(bx + 12, top + 62, w - 24, 16);
+      ctx.fillStyle = "rgba(255,238,196,.30)";
+      for(var c2 = bx + 26; c2 < bx + w - 28; c2 += 15){ ctx.fillRect(c2, top + 66, 7, 8); }
+      /* scarlet + silver rim, the way the Horseshoe reads at night */
+      ctx.strokeStyle = "rgba(224,58,69,.85)"; ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(bx + 20, top + 34);
+      ctx.quadraticCurveTo(bx + w/2, top - 22, bx + w - 20, top + 34);
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(200,208,220,.5)"; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(bx + 20, top + 41);
+      ctx.quadraticCurveTo(bx + w/2, top - 15, bx + w - 20, top + 41);
+      ctx.stroke();
+      tower(bx + 34, top - 4, 46);
+      tower(bx + w - 34, top - 4, 46);
+    }
+  }
+  /* the block O at midfield */
+  function drawBlockO(cx, cy, sc){
+    ctx.save();
+    ctx.translate(cx, cy); ctx.scale(sc, sc);
+    ctx.fillStyle = "rgba(224,58,69,.55)"; rr(-15, -19, 30, 38, 7); ctx.fill();
+    ctx.fillStyle = "rgba(246,248,252,.30)"; rr(-11.5, -15.5, 23, 31, 5); ctx.fill();
+    ctx.fillStyle = "rgba(16,62,40,.92)"; rr(-7, -10.5, 14, 21, 3); ctx.fill();
+    ctx.restore();
+  }
+  /* a buckeye leaf: five leaflets off one stem */
+  function drawLeaf(cx, cy){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.sin(scroll*0.03)*0.16);
+    ctx.shadowColor = "rgba(111,192,119,.55)"; ctx.shadowBlur = 11;
+    for(var i=0;i<5;i++){
+      var a = -1.45 + (i/4)*2.9;
+      ctx.save(); ctx.rotate(a);
+      var g = ctx.createLinearGradient(0, 0, 0, -17);
+      g.addColorStop(0, "#28602F"); g.addColorStop(1, "#77C87F");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(0, -9.5, 4, 9.5, 0, 0, 6.2832); ctx.fill();
+      ctx.restore();
+    }
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "#8A5A2B"; ctx.lineWidth = 2; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(0, 1); ctx.lineTo(0, 9); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawTurf(){
+    var g = ctx.createLinearGradient(0, FLOOR, 0, VH);
+    g.addColorStop(0, "#2B8A58"); g.addColorStop(1, "#103F28");
+    ctx.fillStyle = g; ctx.fillRect(0, FLOOR, VW, GROUND);
+
+    var off = scroll % 48;
+    ctx.strokeStyle = "rgba(255,255,255,.20)"; ctx.lineWidth = 2;
+    for(var x = -off; x < VW + 48; x += 48){
+      ctx.beginPath(); ctx.moveTo(x, FLOOR); ctx.lineTo(x, VH); ctx.stroke();
+    }
+    ctx.strokeStyle = "rgba(255,255,255,.30)"; ctx.lineWidth = 3;
+    for(var h = -off + 24; h < VW + 48; h += 48){
+      ctx.beginPath(); ctx.moveTo(h, FLOOR + 30); ctx.lineTo(h, FLOOR + 42); ctx.stroke();
+    }
+    var oSpan = 470, oOff = scroll % oSpan;
+    for(var pass=0; pass<2; pass++){
+      var ox = -oOff + pass*oSpan + 150;
+      if(ox > -40 && ox < VW + 40) drawBlockO(ox, FLOOR + GROUND*0.52, 0.86);
+    }
+
+    ctx.fillStyle = "#F2F5FA"; ctx.fillRect(0, FLOOR - 3, VW, 4);
+    ctx.fillStyle = "#E03A45"; ctx.fillRect(0, FLOOR + 1, VW, 3);
+  }
+
+  function drawColumn(x, yy, w, h){
+    if(h <= 0) return;
+    var g = ctx.createLinearGradient(x, 0, x + w, 0);
+    g.addColorStop(0, "#7E5A11"); g.addColorStop(0.34, "#F2C14E");
+    g.addColorStop(0.58, "#FFEBBC"); g.addColorStop(1, "#7E5A11");
+    ctx.fillStyle = g; ctx.fillRect(x + 8, yy, w - 16, h);
+  }
+  function drawPost(o){
+    var top = o.gy - o.gh/2, bot = o.gy + o.gh/2;
+    ctx.save();
+    ctx.shadowColor = "rgba(242,193,78,.5)"; ctx.shadowBlur = 15;
+    drawColumn(o.x, -50, o.w, top + 50);
+    drawColumn(o.x, bot, o.w, FLOOR - bot);
+    ctx.restore();
+    ctx.fillStyle = "#FFE7A8";
+    ctx.fillRect(o.x - 5, top - 16, o.w + 10, 16);
+    ctx.fillRect(o.x - 5, bot, o.w + 10, 16);
+    ctx.fillStyle = "rgba(224,58,69,.9)";
+    ctx.fillRect(o.x - 5, top - 6, o.w + 10, 4);
+    ctx.fillRect(o.x - 5, bot + 12, o.w + 10, 4);
+  }
+  function drawCan(cx, cy){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.sin(scroll*0.035)*0.24);
+    ctx.shadowColor = "rgba(242,193,78,.55)"; ctx.shadowBlur = 12;
+    ctx.fillStyle = "#DCE2ED"; rr(-8, -13, 16, 26, 3.5); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#E03A45"; ctx.fillRect(-8, -5, 16, 10);
+    ctx.fillStyle = "#F2C14E"; ctx.fillRect(-8, -13, 16, 3.5); ctx.fillRect(-8, 9.5, 16, 3.5);
+    ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.fillRect(-5, -11, 2.5, 22);
+    ctx.restore();
+  }
+  function drawBall(){
+    ctx.save();
+    ctx.translate(BX, y); ctx.rotate(rot);
+    ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = 12; ctx.shadowOffsetY = 5;
+    var g = ctx.createLinearGradient(0, -R, 0, R);
+    g.addColorStop(0, "#B4642E"); g.addColorStop(1, "#5F2C12");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(0, 0, R*1.36, R*0.95, 0, 0, 6.2832); ctx.fill();
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = "#F6F2E7"; ctx.lineCap = "round";
+    ctx.lineWidth = 2.6;
+    ctx.beginPath(); ctx.moveTo(-9.5, 0); ctx.lineTo(9.5, 0); ctx.stroke();
+    ctx.lineWidth = 2;
+    for(var i = -6; i <= 6; i += 4){
+      ctx.beginPath(); ctx.moveTo(i, -3.6); ctx.lineTo(i, 3.6); ctx.stroke();
+    }
+    ctx.lineWidth = 2.6; ctx.strokeStyle = "rgba(246,242,231,.85)";
+    ctx.beginPath(); ctx.moveTo(-R*1.02, -R*0.44); ctx.lineTo(-R*1.02, R*0.44); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(R*1.02, -R*0.44); ctx.lineTo(R*1.02, R*0.44); ctx.stroke();
+    ctx.lineWidth = 1.8; ctx.strokeStyle = "rgba(224,58,69,.9)";
+    ctx.beginPath(); ctx.moveTo(-R*0.76, -R*0.5); ctx.lineTo(-R*0.76, R*0.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(R*0.76, -R*0.5); ctx.lineTo(R*0.76, R*0.5); ctx.stroke();
+    ctx.restore();
+  }
+  function drawParts(){
+    for(var i=0;i<parts.length;i++){
+      var p = parts[i];
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function draw(){
+    drawSky();
+    for(var i=0;i<obs.length;i++){
+      var o = obs[i];
+      drawPost(o);
+      if(o.can && !o.got){
+        if(o.kind === "leaf") drawLeaf(o.x + o.w/2, o.gy);
+        else drawCan(o.x + o.w/2, o.gy);
+      }
+    }
+    drawTurf();
+    drawParts();
+    drawBall();
+    if(chant){
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, chant.t*2.4));
+      ctx.translate(VW/2, FLOOR*0.28);
+      var gs = 1.32 - chant.t*0.34;
+      ctx.scale(gs, gs);
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = '52px "Bungee", Impact, sans-serif';
+      ctx.lineWidth = 8; ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(7,10,20,.9)"; ctx.strokeText(chant.text, 0, 0);
+      ctx.fillStyle = chant.text === "O-H!" ? "#E8404B" : "#F4F7FC";
+      ctx.fillText(chant.text, 0, 0);
+      ctx.restore();
+    }
+    if(flash > 0){
+      ctx.fillStyle = "rgba(255,235,200," + (flash*0.5) + ")";
+      ctx.fillRect(0, 0, VW, VH);
+    }
+  }
+
+  function loop(now){
+    if(!alive) return;
+    var dt = (now - lastT) / 16.6667;
+    lastT = now;
+    if(!isFinite(dt) || dt < 0) dt = 1;
+    if(dt > 2.4) dt = 2.4;
+    step(dt);
+    draw();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function onDown(e){
+    if(e.target && e.target.closest && e.target.closest("[data-mute]")) return;
+    if(mode === "ready"){ launch(); }
+    else if(mode === "play"){ e.preventDefault(); flap(); }
+  }
+  function onKey(e){
+    if(screen !== "main") return;
+    if(e.code === "Space" || e.code === "ArrowUp" || e.key === " " || e.key === "ArrowUp"){
+      e.preventDefault();
+      if(mode === "ready") launch();
+      else if(mode === "play") flap();
+    }
+  }
+
+  stage.addEventListener("pointerdown", onDown);
+  document.addEventListener("keydown", onKey);
+
+  reset();
+  readyOverlay();
+  lastT = performance.now();
+  raf = requestAnimationFrame(loop);
+
+  return {
+    restart: function(){ launch(); },
+    destroy: function(){
+      alive = false;
+      cancelAnimationFrame(raf);
+      stage.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    }
+  };
+}
+
+/* ---------- wiring ---------- */
+var armed = null, armTimer = null;
+function armConfirm(btn){
+  if(armed === btn){
+    clearTimeout(armTimer); armed = null;
+    commishDo(btn.getAttribute("data-do"));
+    return;
+  }
+  if(armed && armed.getAttribute("data-label")){ armed.textContent = armed.getAttribute("data-label"); }
+  armed = btn;
+  if(!btn.getAttribute("data-label")) btn.setAttribute("data-label", btn.textContent);
+  btn.textContent = "Tap again to confirm";
+  clearTimeout(armTimer);
+  armTimer = setTimeout(function(){
+    if(armed === btn){ btn.textContent = btn.getAttribute("data-label"); armed = null; }
+  }, 3800);
+}
+
+byId("app").addEventListener("click", function(e){
+  var t = e.target && e.target.closest ? e.target.closest("[data-act]") : null;
+  if(!t) return;
+  var a = t.getAttribute("data-act");
+  if(a === "pick"){ pendingName = t.getAttribute("data-name"); render(); }
+  else if(a === "lockin"){
+    if(!pendingName) return;
+    me = pendingName; lset(K_ME, me); setHashName(me); loadRuns();
+    screen = "main"; render();
+  }
+  else if(a === "switch"){ pendingName = me; screen = "select"; if(G && G.destroy) G.destroy(); render(); }
+  else if(a === "again"){ if(G && G.restart) G.restart(); }
+  else if(a === "scroll"){
+    var b = byId("board");
+    if(b) b.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+  else if(a === "mute"){
+    var m = lget(K_MUTE) === "1";
+    lset(K_MUTE, m ? "0" : "1");
+    t.textContent = m ? "♪" : "✕";
+  }
+  else if(a === "claim"){ claimSlot(parseInt(t.getAttribute("data-slot"), 10)); }
+  else if(a === "confirm"){ armConfirm(t); }
+});
+
+/* ---------- boot ---------- */
+render();
+
+setInterval(function(){
+  paintCountdown();
+  checkDeadline();
+}, 1000);
+checkDeadline();
+
+if(window.claude && typeof window.claude.use === "function"){
+  window.claude.use("artifact").then(function(a){
+    artifactApi = a || null;
+    if(!a) readOnly = true;
+    capSettled = true;
+    paintStatus(); paintDraft(); healPending();
+  }, function(){
+    artifactApi = null; readOnly = true; capSettled = true;
+    paintStatus(); paintDraft();
+  });
+}else{
+  artifactApi = null; offline = true; capSettled = true;
+  paintStatus(); paintDraft();
+}
+
+})();
+</script>
