@@ -31,94 +31,25 @@ You don't have to count any of this. The meals in sections 4–5 are built to la
 
 ## 2. Workout plan: 3 days (Tue / Wed / Thu)
 
-**When:** Right after work, around 5:30–6:45 PM. You skip the worst of the traffic and drive home on a smaller rush.
+Log every session in the **Lift Log** tracker (`fitness/lift-log.html`). It tells you the exact weight and reps to beat next time. You can swap exercises in its "Edit plan" tab. The upper-body days are built from the exercises you've already been doing.
 
-**Why this split:** Training three days in a row means doing the same full-body workout each day would leave you sore and under-recovered. Instead, upper body gets two sessions (Tue and Thu, with 48 hours between them) and legs get their own day in the middle.
-
-| Day | Session | Time |
-| --- | --- | --- |
-| Tuesday | **Upper A:** bench focus | about 60 min |
-| Wednesday | **Lower + core** | about 55 min |
-| Thursday | **Upper B:** back and shoulder focus | about 60 min |
-| Optional (Mon, Sat, or Sun) | Repeat **Lower + core**, or take a 30-minute walk | about 45 min |
-
-**Every session starts with:** 5 minutes of easy treadmill walking or jogging, then warm-up sets of the first exercise.
-
-**Order matters:** always do the big presses and rows **first**, while you're fresh, and save curls, raises, and flies for the end.
-
-### Your starting weights (from your first logged session)
-
-| Exercise | What you did | What that tells us | Next session target |
+| # | Tuesday: Upper A · Bench | Wednesday: Legs | Thursday: Upper B · Shoulders + Arms |
 | --- | --- | --- | --- |
-| **Barbell bench** | 135×10, 135×6, 135×4, 155×3 | Estimated max is about **175–180 lb**. Dropping from 10 to 6 to 4 reps at the same weight means the first set went to failure and/or rest was too short. | **145 lb, 4 × 5–8, a full 3 min rest.** Leave 1–2 reps in the tank on each set. Warm up with the bar ×10, 95×5, then 115×3. |
-| **Seated DB shoulder press** | 35×12, 40×8, 40×10 | 40s are right | **40s, 3 × 8–12.** Go to 45s once you hit 3 × 12. |
-| **Standing overhead DB press** | 30×12, 35×10, 35×10 | Two overhead presses in one day is overkill | Move it to **Thursday: 35s, 3 × 8–12** |
-| **One-arm DB row** | 50×12, 50×12 | You've already maxed out the dumbbells | **50, 4 × 12–15 per arm.** Squeeze for 2 seconds at the top and take 3 seconds to lower. |
-| **Incline DB curl** | 20×12, 20×12, 20×10 | Almost at the top of the range | **20s, 3 × 10–12.** Go to 25s once you hit 12/12/12. |
-| **Incline hammer curl** | 20s (reps not logged) | — | **20–25s, 3 × 10–12** |
-| **Incline DB fly** | 15×12, 15×12 | Light, with room to add | **20s, 3 × 12–15** |
-| **Lateral raise** | 10×12, 10×12 | Only 2 sets | **10s, 3 × 12–15.** Go to 15s once you hit 3 × 15. |
-| **DB bench (Thu)** | not done yet | Based on your barbell bench | Start with **45s, 4 × 8–12**, then 50s |
-| **Close-grip bench (Thu)** | not done yet | About 80% of your regular bench | Start with **115 lb, 3 × 8–12** |
-| **Legs (Wed)** | not done yet | — | See the Wednesday table. **The first week is for finding your weights:** pick a weight where the last rep is hard but clean. |
+| 1 | Barbell bench press 4×5–8 | Goblet squat 4×8–12 | Standing overhead DB press 3×8–12 |
+| 2 | One-arm DB row 3×12–15 | Bulgarian split squat 3×8–12 / leg | Barbell bench, lighter 3×8–12 |
+| 3 | Seated DB shoulder press 3×8–12 | DB hip thrust 3×10–15 | One-arm DB row 3×12–15 |
+| 4 | Incline DB fly 3×12–15 | Walking lunge 2×10–12 / leg | Lateral raise 3×12–15 |
+| 5 | Lateral raise 3×12–15 | Standing calf raise 3×12–20 | Incline hammer curl 3×10–12 |
+| 6 | Incline DB curl 3×10–12 | Plank 3×30–60 sec | Close-grip bench 3×8–12 |
+| 7 | Overhead DB triceps extension 3×10–12 | | |
 
-### Tuesday: Upper A (bench focus)
+There are no Romanian deadlifts or leg curls. The hip thrust, split squats, and lunges cover your hamstrings and glutes.
 
-| # | Exercise | Sets × Reps | Start weight | Rest |
-| --- | --- | --- | --- | --- |
-| 1 | Barbell bench press | 4 × 5–8 | 145 | 3 min |
-| 2 | One-arm DB row (knee on bench) | 4 × 12–15 each arm | 50 | 90 sec |
-| 3 | Seated DB shoulder press | 3 × 8–12 | 40s | 90 sec |
-| 4 | Incline DB press | 3 × 10–12 | 40s | 90 sec |
-| 5 | Lateral raise | 3 × 12–15 | 10s | 60 sec |
-| 6 | Incline DB curl | 3 × 10–12 | 20s | 60 sec |
-| 7 | Overhead DB triceps extension (one DB, both hands) | 3 × 10–12 | 30–35 | 60 sec |
-
-### Wednesday: Lower + core
-
-| # | Exercise | Sets × Reps | Try first | Rest |
-| --- | --- | --- | --- | --- |
-| 1 | Goblet squat (then DB front squat with two dumbbells once one 50 is too light) | 4 × 8–12 | 40–50 | 2 min |
-| 2 | Lying DB leg curl (face down on the bench, dumbbell between your feet) | 4 × 10–15 | 20–30 | 90 sec |
-| 3 | Bulgarian split squat (back foot on the bench) | 3 × 8–12 each leg | 20s–25s | 90 sec |
-| 4 | DB walking lunge or step-up | 2 × 10–12 each leg | 20s | 90 sec |
-| 5 | Standing calf raise (balls of your feet on a plate) | 3 × 12–20 | 40s–50s | 60 sec |
-| 6 | Farmer carry | 3 × 40–60 steps | 50s | 60 sec |
-| 7 | Plank | 3 × 30–60 sec | — | 60 sec |
-| — | *Optional:* incline treadmill walk | 10 min | — | — |
-
-### Thursday: Upper B (back and shoulder focus)
-
-| # | Exercise | Sets × Reps | Start weight | Rest |
-| --- | --- | --- | --- | --- |
-| 1 | Chest-supported DB row (lie face down on an incline bench) | 4 × 10–12 | 40s–45s | 2 min |
-| 2 | DB bench press | 4 × 8–12 | 45s | 2 min |
-| 3 | Standing overhead DB press | 3 × 8–12 | 35s | 90 sec |
-| 4 | Incline DB fly | 3 × 12–15 | 20s | 60 sec |
-| 5 | Rear-delt fly (bent over) | 3 × 12–15 | 15s | 60 sec |
-| 6 | Incline hammer curl | 3 × 10–12 | 20s–25s | 60 sec |
-| 7 | Close-grip barbell bench | 3 × 8–12 | 115 | 90 sec |
-| 8 | DB shrug | 2 × 15–20 (hold 2 sec at the top) | 50s | 60 sec |
-
-### How to progress ("double progression")
-
-1. Work in the rep range with 1–2 reps left in the tank. Don't go to failure on the big lifts.
-2. Each week, try to add a rep or two.
-3. Once you hit the **top** of the range on every set, move up: +5 lb on the bench, or the next dumbbell size.
-4. Log every set the way you did this session (weight × reps). That log is the most useful thing you can bring back here.
-
-### When you run out of weight (50 lb dumbbells, 165 lb bench)
-
-**Rows and shrugs are already there**, and **bench will probably get there in about 6–10 weeks.** Legs will follow soon after. You can keep making progress without heavier equipment:
-- **Add reps.** Go up to 15–20 reps. Sets taken close to failure still build muscle.
-- **Slow down the lowering** to a 3–4 second count.
-- **Pause** at the bottom for 2 seconds (bench, squats, split squats) or squeeze at the top (rows).
-- **1.5 reps:** go all the way down, halfway up, back down, then all the way up. That counts as one rep. Great for goblet squats and split squats.
-- **For bench once 165 × 8 feels easy:** switch to a 2-second pause on the chest for 4 × 5–8, then add a 5th set.
-
-### Cardio
-
-Keep it light. It's good for your heart and your recovery, but lots of it makes gaining harder. A 10-minute incline walk after Wednesday's session, plus walking on the weekends, is enough. If you add more, eat more.
+**Progression (the tracker does this for you):**
+- Stay in the rep range and beat last time by a rep.
+- Once every set hits the top of the range, go up 5 lb.
+- If you miss the bottom of the range, drop 5 lb.
+- At 50 lb dumbbells or 165 on the bar, add reps and lower each rep over 3 seconds.
 
 ---
 
