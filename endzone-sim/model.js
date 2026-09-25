@@ -21,7 +21,7 @@ function MODEL_HTML(){
     <li><b>Yards and catches: small stakes on the Best value list.</b> This is the only market with a positive test record. It hasn't shown it in 2026 yet, and early-season usage is the weakest part of the model.</li>
     <li><b>Touchdowns: bet news, not the board.</b> At kickoff prices DraftKings' hold is bigger than the model's edge. The window is between news (a starter ruled out, a new goal-line back) and DraftKings repricing. Scratch the player under Games and his teammates' numbers update at once.</li>
     <li><b>Moneyline and spread: a lean, not a bet.</b> The game model now sees team strength and predicts where lines move (sides it liked on Tuesday closed its way 46% of the time and against it 27%), but at the closing price it hasn't shown a profit.</li>
-    <li><b>Right before kickoff:</b> ask for a refresh (it pulls the official injury report, the newest DraftKings lines and props, and reruns everything), type the wind for outdoor games on the game card, and scratch anyone announced inactive.</li>
+    <li><b>Right before kickoff:</b> ask for a refresh (it pulls the official injury report, the newest DraftKings lines and props, and reruns everything), then scratch anyone announced inactive.</li>
     <li><b>Avoid long-shot TDs and QB rushing unders.</b> Blind TD bets longer than +600 lost 21–29%. Quarterback rushing unders lost 24% over three seasons.</li>
     <li><b>Type the real price.</b> Prices marked ≈ are estimates. In the slip, the chance and EV recalculate at whatever DraftKings price you type.</li>
     <li><b>Log every bet with its closing price.</b> Beating the close is the fastest honest signal of an edge.</li>
@@ -36,7 +36,7 @@ function MODEL_HTML(){
   </ul>
 
   <h3>How the models work</h3>
-  <p><b>Player simulation</b> (touchdowns, yards, catches): every snap is played out, and every yard goes to a named player based on his recent share of carries and targets, corrected for role signals. Each offense's efficiency is solved so DraftKings' spread and total land on the simulation's 50/50 point. Fourth-down decisions follow each head coach's own aggressiveness, and wind trims passing at outdoor games. <b>Game model</b> (moneyline, spread): a regression on team strength from past closing lines, each team's opponent-adjusted expected points per play and success rate, the starting quarterback's own expected points per dropback (and whether he is in his second season), rest and home field. Everything is weighted toward recent games and carried across seasons.</p>
+  <p><b>Player simulation</b> (touchdowns, yards, catches): every snap is played out, and every yard goes to a named player based on his recent share of carries and targets, corrected for role signals. Each offense's efficiency is solved so DraftKings' spread and total land on the simulation's 50/50 point. Fourth-down decisions follow each head coach's own aggressiveness. Weather reaches the simulation only through DraftKings' total. <b>Game model</b> (moneyline, spread): a regression on team strength from past closing lines, each team's opponent-adjusted expected points per play and success rate, the starting quarterback's own expected points per dropback (and whether he is in his second season), rest and home field. Everything is weighted toward recent games and carried across seasons.</p>
 
   <h3>Tested and rejected</h3>
   <ul>
@@ -48,6 +48,7 @@ function MODEL_HTML(){
     <li>Head-to-head and coach-vs-coach history, player-vs-team history: no signal.</li>
     <li>Discounting last season for teams with a new head coach: slightly worse usage and pass-rate estimates.</li>
     <li>Recalibrating the simulation's prop chances per market: made the 80/20 blend worse (its lean toward unders is useful).</li>
+    <li>For spreads and moneylines, against closing lines (walk-forward, 2012–25): rest, short weeks, byes, travel and time zones, west-coast teams in early games, primetime, late season, wind, recent covers, last game's margin, QB changes, and Tuesday-to-close line movement, alone or in boosted-tree models. All did no better than a coin flip. Betting DraftKings when its price was off the rest of the market: its spreads almost never are, and its off-market moneylines lost. Training the game model directly on the closing line instead of the score: same results.</li>
   </ul>
 
   <h3>Known limits</h3>
@@ -55,7 +56,6 @@ function MODEL_HTML(){
     <li>2026 is two weeks of data, and it's the season where every model did worst. Early-season usage leans on last year.</li>
     <li>TD grading used kickoff prices; earlier-week DraftKings prices weren't available to test.</li>
     <li>Official game statuses post Friday afternoon and are read automatically by the refresh (Out and Doubtful removed, Questionable flagged). Inactives announced 90 minutes before kickoff aren't in any feed: scratch them on the game card.</li>
-    <li>Wind isn't available from a feed here: type it on the game card. It only matters above 10 mph at outdoor games.</li>
     <li>The game model's margin is turned into chances with a smooth curve, so it slightly misprices spreads on key numbers (3 and 7).</li>
   </ul>
 

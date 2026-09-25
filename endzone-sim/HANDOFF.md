@@ -23,10 +23,13 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   second-year-QB term. 2021–25 MAE 10.30 → 10.03; lean k 0.15 → 0.10 (fit vs closing lines 0.17 ± 0.08). Still no
   proven edge at closing prices.
 - Removed the touchdown-location defense inputs (pure noise); modern 4th-down rates; head-coach 4th-down
-  aggressiveness (`nfl_build.coach_agg`, `g.agg`); wind typed per game on the page (`g.wind`, outdoor games).
+  aggressiveness (`nfl_build.coach_agg`, `g.agg`). Wind: the user won't type it, so the page box was removed; the
+  engine still applies `g.wind` if a slate carries it (only historical games do).
 - TD calibration and DK blend refit on the new engine (`td_cal_nfl.json`, `td_dk_fit.json`, via `audit/cmp_td.py`).
 - Tested and rejected: new-head-coach usage/pass-rate discount (`EZNEWHC=1`), per-market prop recalibration,
   matchup history of any kind.
+- Spread/moneyline: every attempt to make picks significantly better at closing prices failed (off-market DK prices,
+  situational factors, line movement, fitting to the close); see the audit's last section. Don't repeat them.
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
 ## Rules the user set (keep them)

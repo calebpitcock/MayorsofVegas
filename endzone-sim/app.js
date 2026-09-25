@@ -13,11 +13,10 @@ let grades=null, ledger={bets:[]}, suggested=null, dbRef=null;
 let LINES={};                            // user-entered book lines, shared through the db
 const TUNING={posBias:{},schemeScale:1,notes:[]};
 let PFILT={market:"td", game:"all"};
-let WIND={};                             // wind (mph) typed per game right before kickoff; outdoor games only
 const MEM={};   /* keeps this visit working when browser storage is blocked */
 const store={get(k,d){ if(k in MEM) return MEM[k]; try{const v=localStorage.getItem("ez:"+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
              set(k,v){ MEM[k]=v; try{localStorage.setItem("ez:"+k,JSON.stringify(v));}catch(e){}}};
-TAB=store.get("tab","games"); PFILT=store.get("pfilt",PFILT); WIND=store.get("wind",{})||{};
+TAB=store.get("tab","games"); PFILT=store.get("pfilt",PFILT);
 
 const slate=()=>SL[SPORT], games=()=>slate().games;
 const gameById=id=>games().find(g=>g.id===id);
@@ -43,11 +42,9 @@ function evTag(e){ if(e==null) return `<span class="tagpill flat">no price</span
 function gameInputs(g){
   const gi=JSON.parse(JSON.stringify(g));
   gi.players=gi.players.map(p=>({...p,out:isOut(p)}));
-  if(WIND[g.id]!=null) gi.wind=WIND[g.id];
   return gi;
 }
-const outdoor=g=>g.roof!=="dome"&&g.roof!=="closed";
-function needsCal(g){ const touched=g.players.some(p=>OUT.has(p.n)||IN.has(p.n))||(WIND[g.id]!=null&&WIND[g.id]!==g.wind);
+function needsCal(g){ const touched=g.players.some(p=>OUT.has(p.n)||IN.has(p.n));
   return !(g.k&&g.kFor&&g.kFor[0]===g.spread&&g.kFor[1]===g.total&&(g.kTrust??1)===TRUST&&!touched); }
 function simOne(g,n,legs){
   const gi=gameInputs(g);
@@ -184,7 +181,6 @@ function renderGames(){
         return `<button class="prow ${isOut(p)?"out":""}" data-goprops="${g.id}|${esc(p.n)}">${avatar(p,1)}
           <span><span class="pn">${esc(p.n)}</span><span class="ps">${esc(p.t)} ${esc(p.pos)} · ${main}${p.flag?` · <b class="warnc">${esc(p.flag)}</b>`:""}</span></span>
           <span class="pv">${pct(tdFinal(p),0)}</span><span class="pe">TD</span></button>`;}).join("")}</div>`:`<p class="empty">simulating players…</p>`}
-      ${outdoor(g)?`<div class="flagrow"><label class="tiny" for="w-${g.id}">Wind at kickoff (mph)</label> <input class="closein" id="w-${g.id}" data-wind="${g.id}" inputmode="numeric" placeholder="${g.wind!=null?g.wind:"calm"}" value="${WIND[g.id]!=null?WIND[g.id]:""}"> <span class="tiny">${(WIND[g.id]??g.wind??0)>10?"passing trimmed for wind":"under 10 mph changes nothing"}</span></div>`:""}
       <details class="sp"><summary>Scratch or restore a player</summary><div class="scratch">${
         g.players.filter(p=>p.pos==="QB"||p.rush>=.08||p.rec>=.08||p.out).map(p=>`<label><input type="checkbox" data-out="${esc(p.n)}" ${isOut(p)?"checked":""}>
           ${esc(p.n)} <span class="tiny">${esc(p.t)} ${esc(p.pos)}${p.out?" · listed out":""}</span></label>`).join("")}
@@ -195,8 +191,6 @@ function renderGames(){
   tg.querySelectorAll("input[data-out]").forEach(el=>el.onchange=()=>{const n=el.dataset.out, g=games().find(x=>x.players.some(p=>p.n===n)), p=g.players.find(q=>q.n===n);
     if(el.checked){ IN.delete(n); if(!p.out) OUT.add(n); } else { OUT.delete(n); if(p.out) IN.add(n); }
     LEGS=LEGS.filter(l=>l.pn!==n); rerunGame(g);});
-  tg.querySelectorAll("input[data-wind]").forEach(el=>el.onchange=()=>{const g=gameById(el.dataset.wind), v=el.value.trim();
-    if(v===""||isNaN(+v)) delete WIND[g.id]; else WIND[g.id]=Math.max(0,Math.min(60,+v)); store.set("wind",WIND); rerunGame(g);});
 }
 function defBlocks(g,r){
   if(leagueOf(g.id)!=="NFL") return "";
