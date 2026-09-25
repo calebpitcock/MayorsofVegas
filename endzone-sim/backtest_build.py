@@ -15,6 +15,7 @@ db_ = nb.DefBook(b)
 G = pd.read_csv(f'{nb.D}/games.csv'); G = G[(G.season == SEASON) & (G.game_type == 'REG')]
 out = []
 for w in range(W0, W1 + 1):
+    AGG = nb.coach_agg(SEASON, w)
     for r in G[G.week == w].itertuples():
         gid = r.game_id
         if pd.isna(r.spread_line) or pd.isna(r.home_score): continue
@@ -22,6 +23,8 @@ for w in range(W0, W1 + 1):
                  ml=dict(away=None if pd.isna(r.away_moneyline) else int(r.away_moneyline), home=None if pd.isna(r.home_moneyline) else int(r.home_moneyline)),
                  result=dict(hs=int(r.home_score), as_=int(r.away_score)), passRate={}, pace={}, qb={}, players=[], week=w,
                  defp=dict(away=db_.profile(r.home_team, w), home=db_.profile(r.away_team, w)))
+        g['agg'] = dict(away=AGG.get(r.away_team, 0.0), home=AGG.get(r.home_team, 0.0)); g['roof'] = None if pd.isna(r.roof) else r.roof
+        if pd.notna(r.wind): g['wind'] = float(r.wind)
         act = {}
         for side, team in (('away', r.away_team), ('home', r.home_team)):
             sn = b.SN[(b.SN.game_id == gid) & (b.SN.team == team)]

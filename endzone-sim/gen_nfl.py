@@ -1,4 +1,5 @@
-"""Generate the live NFL slate (engine format) for 2026 Week 3 from nflverse data."""
+"""Generate the live NFL slate (engine format) for the week in overrides.json from nflverse data. Games already
+played are skipped, so a refresh right before kickoff shows only what is left."""
 import json, pandas as pd, numpy as np, sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 import nfl_build as nb
@@ -8,7 +9,8 @@ NAMES = dict(ARI='Cardinals',ATL='Falcons',BAL='Ravens',BUF='Bills',CAR='Panther
   MIA='Dolphins',MIN='Vikings',NE='Patriots',NO='Saints',NYG='Giants',NYJ='Jets',PHI='Eagles',PIT='Steelers',SEA='Seahawks',SF='49ers',
   TB='Buccaneers',TEN='Titans',WAS='Commanders')
 
-SEASON, WEEK = 2026, 3
+SEASON = 2026
+WEEK = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'overrides.json')))['week']
 b = nb.Builder(SEASON)
 dbk = nb.DefBook(b)
 R = b.R
@@ -34,6 +36,20 @@ QUESTIONABLE = {  # kept in; flagged
   'Saquon Barkley': 'neck — limited', 'Aaron Jones': 'knee — limited', 'Brock Bowers': 'knee — limited', 'Travis Etienne': 'hamstring — limited',
   'Jaylen Warren': 'shoulder — limited', 'Tony Pollard': 'ankle — limited', 'Michael Pittman': 'foot — limited',
 }
+# Official report (nflverse injuries, game statuses post Friday afternoon): Out and Doubtful are removed, Questionable
+# is flagged. The hand lists above win for anyone named in them, except that an official Out/Doubtful overrides a hand
+# 'questionable'. Keyed by gsis id, so same-name players can't be confused.
+OFFICIAL_OUT = {}
+_f = f'{nb.D}/injuries_{SEASON}.csv'
+if os.path.exists(_f):
+    _i = pd.read_csv(_f); _i = _i[(_i.week == WEEK) & (_i.game_type == 'REG') & _i.position.isin(['QB', 'RB', 'FB', 'WR', 'TE'])]
+    for r in _i.itertuples():
+        inj = r.report_primary_injury.lower() if isinstance(r.report_primary_injury, str) else 'injury'
+        if r.report_status in ('Out', 'Doubtful') and r.full_name not in OUT:
+            OFFICIAL_OUT[r.gsis_id] = (r.full_name, r.team, f"{inj} — {r.report_status.lower()} (official)"); QUESTIONABLE.pop(r.full_name, None)
+        elif r.report_status == 'Questionable' and r.full_name not in OUT and r.full_name not in QUESTIONABLE:
+            QUESTIONABLE[r.full_name] = f"{inj} — questionable (official)"
+print('official report: out/doubtful', len(OFFICIAL_OUT), [v[0] for v in OFFICIAL_OUT.values()])
 # official game statuses post Friday afternoon; until then the flagged list stands in for 'Questionable' in the role correction
 b.status_override = {}
 for _n in QUESTIONABLE:
@@ -56,6 +72,7 @@ for g in old['data']['games'] if 'data' in old else old['games']:
             oldp[p['n']] = {k: p[k] for k in ('mktP', 'mkt') if p.get(k) is not None}
 
 L = nb.lines_for(SEASON, WEEK)
+AGG = nb.coach_agg(SEASON, WEEK)          # head coach fourth-down aggressiveness (log-odds shift)
 games = []
 for r in L.itertuples():
     if pd.notna(r.home_score): continue          # already played
@@ -69,6 +86,8 @@ for r in L.itertuples():
              neutral=bool(r.location == 'Neutral'), roof=None if pd.isna(r.roof) else r.roof,
              soft=dict(away=dict(run=.5, pass_=.5), home=dict(run=.5, pass_=.5)),
              passRate={}, pace={}, qb={}, players=[], live=dict(status='pre', hs=0, as_=0, secs=3600, scored=[]))
+    g['agg'] = dict(away=AGG.get(a, 0.0), home=AGG.get(h, 0.0))
+    if pd.notna(r.wind): g['wind'] = float(r.wind)
     notes = []
     g['defp'] = dict(away=dbk.profile(h, WEEK), home=dbk.profile(a, WEEK))   # the defense each offense faces
     for side, team in (('away', a), ('home', h)):
@@ -76,6 +95,7 @@ for r in L.itertuples():
         g['passRate'][side] = pr; g['pace'][side] = pace
         qb_pid = pid_of(STARTER[team]) if team in STARTER else b.starter(team, WEEK)
         excl = [pid_of(n) for n in OUT if (R.full_name == n).any() and R.loc[pid_of(n), 'team'] == team]
+        excl += [pid for pid, (n, t, _) in OFFICIAL_OUT.items() if t == team]
         rows = [x for x in b.team_players(team, WEEK, qb_pid=qb_pid, exclude=excl) if x['pos']=='QB' or x['rush']>=.04 or x['rec']>=.04]
         # QB-change flag computed from data: how much of this team's 2026 sample did the starter take?
         q = b.Q[(b.Q.posteam == team) & (b.Q.season == SEASON) & (b.Q.week < WEEK)]
@@ -92,6 +112,8 @@ for r in L.itertuples():
         outs = [n for n in OUT if (R.full_name == n).any() and R.loc[pid_of(n), 'team'] == team]
         for n in outs:
             notes.append(f"{team} without {n} ({OUT[n].split(' —')[0]}).")
+        offs = [(n, w) for pid, (n, t, w) in OFFICIAL_OUT.items() if t == team and n not in outs]
+        if offs: notes.append(f"{team} officially out/doubtful: " + ', '.join(f"{n} ({w.split(' —')[0]})" for n, w in offs) + '.')
         g['players'] += rows
     g['note'] = ' '.join(notes) if notes else ''
     games.append(g)
@@ -100,7 +122,10 @@ def fix(o):
     if isinstance(o, dict): return {('pass' if k == 'pass_' else 'as' if k == 'as_' else k): fix(v) for k, v in o.items()}
     if isinstance(o, list): return [fix(x) for x in o]
     return o
-slate = fix(dict(label='Week 3 · Sept 27–28', league='NFL', updated=pd.Timestamp.now('UTC').isoformat(), version=24, engine=3,
+_days = pd.to_datetime(L[L.home_score.isna()].gameday)
+_lab = f"Week {WEEK}" + (f" · {_days.min():%b} {_days.min().day}" + (f"–{_days.max().day}" if _days.max() != _days.min() else "") if len(_days) else "")
+_old = old.get('data', old)
+slate = fix(dict(label=_lab, league='NFL', updated=pd.Timestamp.now('UTC').isoformat(), version=int(_old.get('version', 0)) + 1, engine=3,
                  source='nflverse play-by-play 2025–26 and snap counts (usage and role trends), practice reports + news (availability), DraftKings props and game lines via davidcantugtr/nfl-player-prop-opportunity, anytime-TD prices via jaredpatchett/NFL-Model (DraftKings estimated)',
                  games=games))
 out = os.path.join(os.path.dirname(__file__), 'slate_nfl.json')

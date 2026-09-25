@@ -2,17 +2,17 @@
 The game model never touches the player simulation."""
 import json, sys, os, numpy as np, pandas as pd
 sys.path.insert(0, '..'); sys.path.insert(0, '.')
-import ratings2 as rt, model2
+import ratings2 as rt, model2, model3, market
 P = dict(HG=14.0, CARRY=0.85, M0=3.0); QP = dict(QHL=1500.0, QCARRY=0.8, QM0=100.0, QPRIOR=-0.02)
-K_LEAN = 0.15          # weight on the model vs DraftKings' spread (walk-forward on Tuesday lines: 0.11-0.22)
+K_LEAN = 0.10          # lean toward the model vs DraftKings' line. Fitted vs closing lines 2016-25: 0.17 ± 0.08; set conservatively (close_eval3.py)
 ANCHOR = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'anchor.json')))   # win/cover rates per point, ml_anchor.py
 FULL = {'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Ravens':'BAL','Buffalo Bills':'BUF','Carolina Panthers':'CAR','Chicago Bears':'CHI','Cincinnati Bengals':'CIN','Cleveland Browns':'CLE','Dallas Cowboys':'DAL','Denver Broncos':'DEN','Detroit Lions':'DET','Green Bay Packers':'GB','Houston Texans':'HOU','Indianapolis Colts':'IND','Jacksonville Jaguars':'JAX','Kansas City Chiefs':'KC','Los Angeles Rams':'LA','Los Angeles Chargers':'LAC','Las Vegas Raiders':'LV','Miami Dolphins':'MIA','Minnesota Vikings':'MIN','New England Patriots':'NE','New Orleans Saints':'NO','New York Giants':'NYG','New York Jets':'NYJ','Philadelphia Eagles':'PHI','Pittsburgh Steelers':'PIT','Seattle Seahawks':'SEA','San Francisco 49ers':'SF','Tampa Bay Buccaneers':'TB','Tennessee Titans':'TEN','Washington Commanders':'WAS'}
 def main(slate_path):
     slate = json.load(open(slate_path)); ov = json.load(open('../overrides.json')); WEEK = ov['week']; SEASON = 2026
     # 1) fitted margin model on every completed season
-    D = model2.build(P, QP); W = model2.walk(D, SEASON, SEASON, RHL=8.0) if (D.season == SEASON).any() else None
+    D = model3.add(model2.build(P, QP), model3.MP)
     tr = D[(D.season < SEASON + 1) & (D.week >= 3)]; sw = 0.5 ** ((SEASON - tr.season) / 8.0)
-    cols = model2.F; A = np.column_stack([np.ones(len(tr))] + [tr[c] for c in cols]); Wt = sw.values[:, None]
+    cols = model3.F3; A = np.column_stack([np.ones(len(tr))] + [tr[c] for c in cols]); Wt = sw.values[:, None]
     w = np.linalg.solve((A * Wt).T @ A + np.diag([0] + [1] * len(cols)), (A * Wt).T @ tr.result.values)
     # 2) ratings as of now
     _, st = rt.team_ratings(**P); _, _, qs, used = rt.qb_ratings(**QP)
@@ -30,6 +30,9 @@ def main(slate_path):
         c = QP['QCARRY'] if s['season'] != SEASON else 1.0
         return (s['x'] * c + QP['QM0'] * QP['QPRIOR']) / (s['w'] * c + QP['QM0'])
     G = pd.read_csv('../../data/games.csv'); G = G[(G.season == SEASON) & (G.week == WEEK)]
+    Gm = market.load_games(); Gm = Gm[(Gm.season < SEASON) | (Gm.week < WEEK)]          # lines of games already played
+    _, mstate = market.ratings(Gm, **model3.MP); mr, _ = market.live(mstate, SEASON)
+    y2 = lambda pid: 1.0 if model3.career_year(pid, SEASON) == 1 else 0.0
     dk = pd.read_csv('../../data/dk_game_lines_latest.csv'); dk = dk[dk.Bookmaker == 'DraftKings']
     for g in slate['games']:
         h, a = g['home'], g['away']; r = G[(G.home_team == h) & (G.away_team == a)]
@@ -42,13 +45,17 @@ def main(slate_path):
         uh = used[h]['x'] / used[h]['w'] if h in used and used[h]['w'] > 0 else -0.02
         ua = used[a]['x'] / used[a]['w'] if a in used and used[a]['w'] > 0 else -0.02
         f = dict(epa=diff[0], pepa=diff[1], repa=diff[2], sr=diff[3], qb=rh - ra, qbd=(rh - uh) - (ra - ua),
-                 rest=float(np.clip(r.home_rest - r.away_rest, -7, 7)), div=int(r.div_game), neutral=int(r.location == 'Neutral'))
+                 rest=float(np.clip(r.home_rest - r.away_rest, -7, 7)), div=int(r.div_game), neutral=int(r.location == 'Neutral'),
+                 mkt=mr[h] - mr[a], qb2=y2(qh) - y2(qa))
         m = float(w[0] + sum(w[i + 1] * f[c] for i, c in enumerate(cols)))
         why = []
         qbpts = w[1 + cols.index('qb')] * f['qb'] + w[1 + cols.index('qbd')] * f['qbd']
         if abs(qbpts) >= 1.5: why.append(f"quarterbacks worth {abs(qbpts):.1f} pts to {h if qbpts > 0 else a}")
         effpts = sum(w[1 + cols.index(c)] * f[c] for c in ('epa', 'pepa', 'repa', 'sr'))
-        if abs(effpts) >= 1.5: why.append(f"team efficiency {abs(effpts):.1f} pts to {h if effpts > 0 else a}")
+        mpts = w[1 + cols.index('mkt')] * f['mkt']
+        if abs(mpts) >= 1.5: why.append(f"team strength {abs(mpts):.1f} pts to {h if mpts > 0 else a}")
+        if abs(effpts) >= 1.5: why.append(f"recent efficiency {abs(effpts):.1f} pts to {h if effpts > 0 else a}")
+        if f['qb2']: why.append(f"second-year QB for {h if f['qb2'] > 0 else a}")
         if f['rest']: why.append(f"rest {'+' if f['rest'] > 0 else ''}{int(f['rest'])} days for {h}")
         g['gm'] = dict(m=round(m, 2), qbH=R.loc[qh, 'full_name'] if qh in R.index else None, qbA=R.loc[qa, 'full_name'] if qa in R.index else None, why='; '.join(why))
         # DraftKings lines if posted, else the nflverse consensus line

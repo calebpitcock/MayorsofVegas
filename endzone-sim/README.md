@@ -1,10 +1,12 @@
-# Endzone Sim v3.3 (DraftKings: TD, yards, catches, moneyline, spread)
+# Endzone Sim v3.4 (DraftKings: TD, yards, catches, moneyline, spread)
 
 Source for the published artifact https://claude.ai/artifact/GdsYysQkGu9mq7NycSyCSr.
 The page reads live state from the artifact's database (`slate/current` = NFL,
 `ledger/current`, `tuning/current`, `grades/current`, `slip/suggested`, `lines/current`).
 
 ## Layout
+- `pregame.sh` — the pre-kickoff refresh: newest data, official injury report, DraftKings props/TD prices, calibration, game model, page. `setup_data.sh` — one-time data download for a fresh session. `smoke.js` — Chromium check of the built page. `bt_all.sh <tree>` — every backtest.
+- `audit/` — the 2026-09-25 audit (coaching, matchup history, defense inputs, game model) and the v3.4 results.
 - `engine.js` — play-level simulator, market calibration, histograms.
 - `scheme.js` — coverage/pressure layer and legacy per-player tuning.
 - `app.js`, `model.js`, `shell.html` — the page; `build.py` assembles `endzone.html`.
@@ -24,6 +26,7 @@ The page reads live state from the artifact's database (`slate/current` = NFL,
 ## Game model: moneyline and spread (gm/, separate from the player simulation)
 - `team_games.py` — per team-game EPA/success from play-by-play 2012–2026; `ratings2.py` — opponent-adjusted, recency-weighted team ratings and QB ratings.
 - `model2.py` — walk-forward margin regression; `tune.py`/`tune2.py` tuned on 2016–20 only; `final_eval.py` tests 2021–25 vs closing lines and DraftKings' Tuesday lines (`tue_lines.py`).
+- `market.py`, `model3.py` — v3.4 team strength from past closing lines and the second-year-QB term; `eval3.py`, `final_eval3.py`, `close_eval3.py`, `tune3.py` test them.
 - `ml_anchor.py` — prices moneyline/spread from DraftKings' own odds moved by the model's disagreement (`anchor.json`).
 - `game_live.py` — this week's margins and DraftKings game lines onto the slate (`g.gm`, `g.dk`, `gmfit`). QB overrides live in `overrides.json`, shared with `gen_nfl.py`.
 

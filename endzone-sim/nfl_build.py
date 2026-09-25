@@ -88,6 +88,62 @@ def pace_frames(p):
     q = q.assign(dt=(q.prev - q.game_seconds_remaining)).query('dt>10 and dt<60')
     return q.groupby(['game_id','season','week','posteam']).agg(sdt=('dt','sum'), ndt=('dt','size')).reset_index()
 
+# ---- coaching (audit 2026-09-25) ----
+# New head coach: down-weight last season's usage and pass rate. On raw shares this looked right (audit/share.py),
+# but inside this builder it made new-coach teams slightly WORSE (2023-25 weeks 3+: RB carry and target error up,
+# pass-rate error 0.0300 vs 0.0281), because recency weighting and shrinkage already discount last season.
+# Off by default; EZNEWHC=1 turns it on for tests. Tested and rejected.
+NEWHC = os.environ.get('EZNEWHC', '0') == '1'
+NEWHC_REC, NEWHC_RUSH, NEWHC_ENV = 0.6, 0.3, 0.2
+_REP = {'OAK': 'LV', 'SD': 'LAC', 'STL': 'LA'}
+_G = None
+def games():
+    global _G
+    if _G is None:
+        g = pd.read_csv(f'{D}/games.csv'); g = g[g.game_type == 'REG'].copy()
+        for c in ('home_team', 'away_team'): g[c] = g[c].replace(_REP)
+        _G = g.sort_values(['season', 'week'])
+    return _G
+def team_coaches(season):
+    """(team, week) -> head coach for a season, from nflverse games.csv (listed for scheduled games too)."""
+    g = games(); g = g[g.season == season]
+    return pd.concat([g[['week', 'home_team', 'home_coach']].set_axis(['week', 'team', 'coach'], axis=1),
+                      g[['week', 'away_team', 'away_coach']].set_axis(['week', 'team', 'coach'], axis=1)]).dropna().sort_values('week')
+def new_head_coaches(season):
+    a, b = team_coaches(season - 1), team_coaches(season)
+    last = a.groupby('team').coach.last(); first = b.groupby('team').coach.first()
+    return {t for t in first.index if t in last.index and first[t] != last[t]} if NEWHC else set()
+AGG_K = 25.0     # pseudo-decisions of league-average behaviour (split-half reliability of a season's go rate ~0.45)
+def coach_agg(season, week):
+    """Each team's head coach's fourth-down aggressiveness, as a log-odds shift on the league go rate in
+    4th & <=3 from the opponent 65 in (win prob 10-90%, not the last 2 minutes of a half). Uses the coach's last three
+    seasons with any team plus this season before `week`, league trend removed season by season. Returns
+    {team: shift}. EZAGG=0 turns it off."""
+    if os.environ.get('EZAGG', '1') != '1': return {}
+    rows = []
+    for s in range(season - 3, season + 1):
+        if not os.path.exists(f'{D}/play_by_play_{s}.csv.gz'): continue
+        p = pbp(s); p = p[(p.down == 4) & (p.ydstogo <= 3) & p.yardline_100.between(1, 65) & p.wp.between(.1, .9) &
+                          (p.half_seconds_remaining > 120) & p.play_type.isin(['run', 'pass', 'punt', 'field_goal'])]
+        if s == season: p = p[p.week < week]
+        if not len(p): continue
+        p = p.assign(go=p.play_type.isin(['run', 'pass']).astype(float), posteam=p.posteam.replace(_REP))
+        tc = team_coaches(s).drop_duplicates(['team', 'week']).set_index(['team', 'week']).coach
+        p['coach'] = [tc.get((t, w)) for t, w in zip(p.posteam, p.week)]
+        p['lg'] = p.go.mean(); rows.append(p[['coach', 'go', 'lg', 'season']])
+    if not rows: return {}
+    X = pd.concat(rows).dropna(subset=['coach'])
+    cur = X[X.season == season]; lg_cur = cur.go.mean() if len(cur) >= 100 else X[X.season == X.season.max() - (0 if len(cur) >= 100 else 1)].go.mean()
+    ex = X.assign(e=X.go - X.lg).groupby('coach').agg(n=('e', 'size'), e=('e', 'sum'))
+    lgt = lambda q: np.log(q / (1 - q))
+    out = {}
+    tc = team_coaches(season); tc = tc[tc.week <= max(week, tc.week.min())].groupby('team').coach.last()
+    for t, c in tc.items():
+        if c in ex.index:
+            r = float(np.clip(lg_cur + ex.loc[c, 'e'] / (ex.loc[c, 'n'] + AGG_K), .05, .95))
+            out[t] = round(float(lgt(r) - lgt(lg_cur)), 3)
+    return out
+
 def shrink(num, den, prior, m):
     return (num + prior * m) / (den + m)
 
@@ -101,6 +157,7 @@ class Builder:
         self.NP = neutral_pass(self.P)
         self.PACE = pace_frames(self.P)
         self.R = rosters()
+        self.newhc = new_head_coaches(season)
         sn = pd.concat([snaps(s) for s in (season - 1, season) if os.path.exists(f'{D}/snap_counts_{s}.csv')])
         pfr2g = {v: k for k, v in self.R['pfr_id'].dropna().items()}
         sn = sn.assign(pid=sn.pfr_player_id.map(pfr2g)).dropna(subset=['pid'])
@@ -151,8 +208,9 @@ class Builder:
         G = SN.merge(U[U.posteam == team][['game_id','pid','car','tgt','rzcar','rztgt']], on=['game_id','pid'], how='left').fillna(0)
         G = G.merge(T[['game_id','tcar','ttgt','trzcar','trztgt']], on='game_id', how='inner')
         G['w'] = np.where(G.season == S, np.power(0.5, (week - G.week) / HL), 1.0)
-        prr = np.where(G.season == S, 1.0, PRIOR_W)
-        prt = np.where(G.season == S, 1.0, PRIOR_REC_EARLY if week <= EARLY_WEEKS else PRIOR_W)
+        nr, nt = (NEWHC_RUSH, NEWHC_REC) if team in self.newhc else (1.0, 1.0)
+        prr = np.where(G.season == S, 1.0, PRIOR_W * nr)
+        prt = np.where(G.season == S, 1.0, (PRIOR_REC_EARLY if week <= EARLY_WEEKS else PRIOR_W) * nt)
         def aggregate(G, wr, wt):
             for c in ['car','rzcar','tcar','trzcar']: G['w' + c] = G.w * wr * G[c]
             for c in ['tgt','rztgt','ttgt','trztgt']: G['w' + c] = G.w * wt * G[c]
@@ -268,11 +326,12 @@ class Builder:
     def team_env(self, team, week):
         S = self.season
         n = self.NP[(self.NP.posteam == team) & (((self.NP.season == S) & (self.NP.week < week)) | (self.NP.season == S - 1))]
-        w = np.where(n.season == S, 1.0, 0.15)
+        pw = 0.15 * (NEWHC_ENV if team in self.newhc else 1.0)
+        w = np.where(n.season == S, 1.0, pw)
         np_ = shrink((w * n.np).sum(), (w * n.nn).sum(), self.lg_np, 120)
         pr = .535 + (np_ - self.lg_np) * .9
         pc = self.PACE[(self.PACE.posteam == team) & (((self.PACE.season == S) & (self.PACE.week < week)) | (self.PACE.season == S - 1))]
-        w2 = np.where(pc.season == S, 1.0, 0.15)
+        w2 = np.where(pc.season == S, 1.0, pw)
         sp = shrink((w2 * pc.sdt).sum(), (w2 * pc.ndt).sum(), self.lg_pace, 60)
         pace = float(np.clip(sp / self.lg_pace, .88, 1.12))
         return round(float(pr), 3), round(pace, 3)

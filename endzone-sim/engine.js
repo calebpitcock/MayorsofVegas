@@ -183,10 +183,19 @@ function simGameV3(g,opts,ctx){
   const runEff=[1+(sf[0].run-.5)*.35, 1+(sf[1].run-.5)*.35].map((x,i)=>x*Math.sqrt(mix[i].rush)*(OPP&&dp[i]?Math.pow(dp[i].ypc,.6):1));
   const passEff=[1+(sf[0].pass-.5)*.35, 1+(sf[1].pass-.5)*.35].map((x,i)=>x*(OPP&&dp[i]?Math.pow(dp[i].ypt,.6):1));
   /* where this defense lets targets and receiving touchdowns go, by position */
+  /* Where a defense allowed its touchdowns (by position, run vs pass) is not used: split-half reliability over
+     2016-25 was ~0 (audit/dvp.py), so it only added noise to touchdown odds. ctx.tdloc=1 restores it for tests. */
+  const TDLOC=ctx.tdloc??0;
   const oppT=new Float64Array(n).fill(1), oppRZ=new Float64Array(n).fill(1);
   if(OPP) ROS.forEach((p,i)=>{ const d=dp[p.side===g.home?1:0]; if(!d||p.field||p.pos==="QB") return;
-    oppT[i]=Math.pow(d.tgt[p.pos]??1,.7); oppRZ[i]=Math.pow(d.tdpos[p.pos]??1,.5); });
-  const rzRunLean=[OPP&&dp[0]?(1-dp[0].rtd)*.25:0, OPP&&dp[1]?(1-dp[1].rtd)*.25:0];
+    oppT[i]=Math.pow(d.tgt[p.pos]??1,.7); if(TDLOC) oppRZ[i]=Math.pow(d.tdpos[p.pos]??1,.5); });
+  const rzRunLean=[OPP&&TDLOC&&dp[0]?(1-dp[0].rtd)*.25:0, OPP&&TDLOC&&dp[1]?(1-dp[1].rtd)*.25:0];
+  /* coaching: each head coach's fourth-down aggressiveness as a log-odds shift on the discretionary go rates
+     (g.agg, from nfl_build.coach_agg), and wind, which trims passing at outdoor games (g.wind mph; audit: about
+     -2 points of pass rate at 15-20 mph and -3 above 20, beyond what the lower total already says) */
+  const AGG=[(g.agg&&g.agg.away)||0,(g.agg&&g.agg.home)||0];
+  const goP=(p,ball)=>{const z=Math.log(p/(1-p))+AGG[ball];return 1/(1+Math.exp(-z));};
+  const windAdj=(g.wind>10&&g.roof!=="dome"&&g.roof!=="closed")?-Math.min(.04,.0025*(g.wind-10)):0;
   const pressure=[1+(defFor[0].blitz-LEAGUE.blitz)*.9, 1+(defFor[1].blitz-LEAGUE.blitz)*.9];
   const passLean0=[(sf[0].pass-sf[0].run)*.10+qbI[0].tier*.02,(sf[1].pass-sf[1].run)*.10+qbI[1].tier*.02];
 
@@ -308,7 +317,7 @@ function simGameV3(g,opts,ctx){
 
   function passProb(ball){
     const d=sc[ball]-sc[1-ball], gf=Math.max(0,Math.min(1,t/3600));
-    let p=pBase[ball]+passLean0[ball];
+    let p=pBase[ball]+passLean0[ball]+windAdj;
     if(down===1) p-=.03;
     else if(down===2){ if(togo>=8)p+=.07; else if(togo<=3)p-=.12; }
     else if(down>=3){ if(togo>=5)p+=.30; else if(togo>=3)p+=.12; else p-=.18; }
@@ -376,11 +385,11 @@ function simGameV3(g,opts,ctx){
         else if(needTD&&yl<=75) go=true;
         else if(needAny&&fgDist>L.fgMax&&yl<=80) go=true;
         else if(late&&d>0&&yl>40) go=false;
-        else if(togo<=1&&yl<=72) go=R.u()<(yl<=50?.80:.55);
-        else if(togo<=2&&yl<=50) go=R.u()<.58;
-        else if(yl<=4&&togo<=4) go=R.u()<.50;
-        else if(togo<=4&&fgDist>L.fgMax&&yl<=48) go=R.u()<.55;
-        else if(togo<=3&&yl<=30) go=R.u()<.22;
+        else if(togo<=1&&yl<=72) go=R.u()<goP(yl<=50?.90:.56,ball);
+        else if(togo<=2&&yl<=50) go=R.u()<goP(.60,ball);
+        else if(yl<=4&&togo<=4) go=R.u()<goP(.40,ball);
+        else if(togo<=4&&fgDist>L.fgMax&&yl<=48) go=R.u()<goP(.55,ball);
+        else if(togo<=3&&yl<=30) go=R.u()<goP(.30,ball);
         if(go) diag.fourthGo[ball]++;
         if(!go){
           if(fgDist<=L.fgMax&&!(late&&d<-3)){ attemptFG(ball,fgDist); continue; }
