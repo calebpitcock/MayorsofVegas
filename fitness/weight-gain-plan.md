@@ -2,7 +2,7 @@
 
 **For:** 23-year-old male, 165 lb, desk job (8:00 AM to about 5:30 PM), training at the work gym
 **Goal:** Gain weight, mostly muscle, and get stronger
-**Constraints:** Dumbbells up to 50 lb, barbell bench up to 165 lb, treadmill. Tue–Thu are the best training days. Meals have to be cheap, easy, bulk-cooked with no measuring, not smelly at the office, and easy on the stomach. No protein powder. Already taking creatine.
+**Constraints:** Dumbbells up to 50 lb, barbell bench up to 165 lb, treadmill. Tue–Thu are the best training days. Meals have to be cheap, easy, bulk-cooked, built around pasta, sweet potatoes, and Mexican rice, not smelly at the office, and easy on the stomach. No protein powder. Already taking creatine.
 
 > This is general fitness and nutrition guidance, not medical advice. If stomach pain keeps
 > happening even after the changes below, see a doctor. Things like lactose intolerance
@@ -20,11 +20,11 @@
 | Water | About 3 liters a day | You need more because of creatine and training |
 | Sleep | 7–9 hours | This is when you actually recover and grow |
 
-You don't have to count any of this. The meal system in sections 4–5 is built to land on these numbers when you follow it as written.
+You don't have to count any of this. The meals in sections 4–5 are built to land on these numbers when you follow it as written.
 
 **How to adjust:** Weigh yourself every morning after the bathroom and before eating, then look at the **weekly average**, not individual days.
 - You'll probably jump 2–4 lb in the first week or two. That's water, carbs, and creatine, so don't panic.
-- After that, if the weekly average hasn't gone up in 2 weeks, add the bedtime snack, or put a pat of butter in each rice container.
+- After that, if the weekly average hasn't gone up in 2 weeks, add the bedtime chocolate milk.
 - If you're gaining more than 1.5 lb a week after the first month, skip the bedtime snack.
 
 ---
@@ -138,147 +138,69 @@ Keep it light. It's good for your heart and your recovery, but lots of it makes 
 
 ---
 
-## 4. Daily eating (about 3,100 calories, about 160 g protein, no measuring)
+## 4. Daily eating (about 3,100 calories, about 185 g protein)
 
-Every portion is either a **whole package split evenly**, a **count** (2 cheese sticks), or a **hand-sized** amount.
-
-| Time | What | How much |
+| Time | What | About |
 | --- | --- | --- |
-| 6:30 AM | **Overnight oats** + creatine | One oats jar (see below) |
-| 10:00 AM | **String cheese + nuts** | 2 sticks + one cupped handful of nuts |
-| 12:30 PM | **Meal-prep container #1** | One container |
-| 3:30 PM | **PB&J + banana** (pre-workout) | 2 slices of bread, peanut butter spread thick, and 1 banana |
-| 7:00 PM | **Meal-prep container #2** (a different recipe from lunch) | One container |
-| *Add if you stall* | Fairlife chocolate milk | One big glass |
+| 6:30 AM | 2 breakfast burritos (frozen ones are fine) + a glass of Fairlife, plus creatine | 720 cal · 37 g |
+| 10:00 AM | Greek yogurt cup + a handful of nuts | 330 cal · 20 g |
+| 12:30 PM | Container #1 | 750 cal · 55 g |
+| 3:30 PM | Bagel + 2 string cheese + banana (about 2 hours before lifting) | 550 cal · 25 g |
+| 7:00 PM | Container #2 | 750 cal · 50 g |
+| Bedtime, only if you stall | Fairlife chocolate milk | +250 cal · 18 g |
 
-**Overnight oats, made in bulk (5 at a time, no measuring):**
-1. Line up 5 jars or containers (16 oz or pint size).
-2. Fill each one **halfway with oats**.
-3. Pour Fairlife in until it **just covers the oats**, plus a little extra.
-4. Add **one big spoonful of peanut butter** (scooped with a regular eating spoon) and **a squeeze of honey** to each.
-5. Stir, lid, fridge. They last all week. Add a banana or a handful of frozen berries in the morning.
+**Office rules:** chicken, beef, rice, pasta, sweet potatoes, corn, and green beans are fine to microwave. Keep fish, eggs, broccoli, cauliflower, brussels sprouts, and curry away from the office.
 
 ---
 
-## 5. Sunday bulk cook: 10 containers, no measuring
+## 5. Meal prep: 3-week rotation
 
-The trick is to **buy whole packages sized for the batch**, cook the entire package, then **deal it out evenly** into containers like dealing cards. You never need a measuring cup.
+Cook 10 containers on Sunday: 5 of each recipe. Keep 6 in the fridge and freeze 4 for Thursday and Friday. After week 3, start over.
 
-### The system
-
-- **Each week you make 2 recipes, 5 containers each (10 total).** That covers lunch and dinner Monday to Friday.
-- **Keep 6 in the fridge** (Mon–Wed) and **freeze 4** (Thu–Fri). Cooked food only keeps 3–4 days in the fridge. Move a frozen container to the fridge the night before you need it.
-- **Rotate recipes weekly:**
-  - **Week 1:** teriyaki chicken + beef pasta
-  - **Week 2:** BBQ chicken + taco bowls
-  - Then repeat.
-- **Total time:** about 75 min, because everything cooks at the same time. Start the oven, then the rice pot, then the beef.
-
-### How to deal it out
-
-1. Line up all 5 containers for a recipe.
-2. **Carbs first:** put one big spoonful of rice or pasta in each container, go down the line, and keep going around until the pot is empty.
-3. **Meat next**, the same way, until the pan is empty.
-4. **Veggies last**, the same way.
-5. Look down the row. If one looks light, move a spoonful over. That's all the precision you need.
-
-**Quick check:** each container should be about **half carbs, a third meat, and the rest veggies.** The meat should be around the size of both of your palms.
-
-### Rice without measuring: the "pasta method"
-
-Fill your biggest pot about **¾ with water**, add a little salt, and bring it to a boil. Dump in **the whole 2-lb bag of rice**. Boil it uncovered for **12–15 min**, until it's soft when you bite a grain, then **drain it in a colander** like pasta. No ratios, no burnt bottom.
-
-A 2-lb bag makes enough rice for **10 containers**. On pasta week (week 1), only the chicken needs rice, so **deal out half the pot** (the rice should fill about half of each container) and save the rest in a big container in the fridge for meals at home.
-
-### Recipe A: Teriyaki chicken & rice (5 containers)
-- **Buy:** half a Costco pack of chicken breasts or thighs (the pack is usually split into sealed sections; freeze the rest for next week), 1 bottle of teriyaki sauce, 1 steam-in-bag of frozen corn or green beans
-- **Cook:**
-  1. Cut the chicken into chunks, spread it on a foil-lined sheet pan, and drizzle with oil.
-  2. Shake on salt, pepper, and garlic powder until you can see it on every piece.
-  3. Bake at **425°F for 22–25 min**.
-  4. Pour teriyaki over it until everything is coated and shiny, then toss.
-- **Deal out:** rice, then chicken, then veggies, across 5 containers.
-- **About per container:** 750 kcal, 60 g protein
-
-### Recipe B: Beef pasta with meat sauce (5 containers)
-- **Buy:** 2 lb ground beef (90/10), 1 box of pasta (1 lb), 1 jar of marinara (24 oz), parmesan
-- **Cook:**
-  1. Boil the whole box of pasta and drain it.
-  2. Brown all the beef in a big pan and drain the grease.
-  3. Dump in the whole jar of sauce and simmer 5 min.
-  4. Mix the pasta into the pan.
-- **Deal out:** across 5 containers, then shake parmesan on top.
-- **About per container:** 720 kcal, 48 g protein. Reheats better than almost anything.
-
-### Recipe C: BBQ chicken & rice (5 containers)
-- Same as Recipe A, but with **BBQ sauce** instead of teriyaki.
-- **Lazier version:** shred **2 Costco rotisserie chickens** with two forks, dump in BBQ sauce until coated, and skip the oven entirely.
-- **About per container:** 750 kcal, 50–60 g protein
-
-### Recipe D: Taco rice bowls (5 containers)
-- **Buy:** 2 lb ground beef or turkey, 2 packets of taco seasoning, 1 steam-in-bag of frozen corn, 1 bag of shredded cheese, and salsa
-- **Cook:**
-  1. Brown all the meat and drain it.
-  2. Dump in both packets plus a splash of water (the packet says how much, but eyeballing is fine). Simmer 5 min.
-- **Deal out:** rice, then meat, then corn, then **a handful of cheese** on each container. **Keep the salsa in its jar** and add it at work after heating.
-- **About per container:** 800 kcal, 45 g protein
-
-### No-microwave backup: chicken & cheese wraps
-A large tortilla + a handful of shredded rotisserie chicken + a handful of cheese + a squeeze of ranch or BBQ, rolled up in foil. Eat 2. You can eat them cold or heat them in the work oven for 10 min.
-
-**Office rules:**
-- **Safe to microwave:** chicken, beef or turkey, rice, pasta, corn, green beans, carrots, peas
-- **Never microwave at work:** fish, eggs (hard-boiled eggs included), broccoli, cauliflower, brussels sprouts, curry, popcorn
-- **No fridge at work?** Use an insulated lunch bag with an ice pack.
+| Week | Lunch | Dinner |
+| --- | --- | --- |
+| 1 | **Chicken burrito bowls:** chicken, Mexican rice, corn, cheese, salsa on the side (≈800 cal · 60 g) | **Beef pasta with meat sauce:** ground beef, penne, marinara, parmesan (≈720 cal · 48 g) |
+| 2 | **Taco beef & sweet potato bowls:** taco beef, 1 sweet potato per container, corn, cheese (≈750 cal · 45 g) | **Chicken pasta:** chicken, penne, marinara or vodka sauce, parmesan (≈750 cal · 60 g) |
+| 3 | **Beef & Mexican rice bowls:** taco beef, Mexican rice, corn, cheese, salsa on the side (≈800 cal · 45 g) | **BBQ chicken & sweet potatoes:** BBQ chicken, 1 sweet potato per container, corn or green beans (≈700 cal · 60 g) |
 
 ---
 
-## 6. Grocery list (by package, so there's nothing to measure)
+## 6. Grocery list
 
-### Costco (every 3–4 weeks)
+### Costco (once every 3 weeks)
 
-| Item | How many | Covers |
-| --- | --- | --- |
-| Boneless chicken breasts or thighs (big pack, about 6 lb) | 1 pack | 2 weeks of chicken recipes (use half each week, freeze the other half) |
-| Ground beef 90/10 or 88/12 (big pack) | 1 pack | About 2 weeks (freeze it in 2-lb bags the day you buy it) |
-| Rolled oats (big bag) | 1 | 1–2 months |
-| Creamy peanut butter (2-pack) | 1 | About 1 month |
-| Fairlife 2% (multi-pack) | 1 | 1–2 weeks (check dates) |
-| String cheese (big bag) | 1 | 3–4 weeks |
-| Mixed nuts or trail mix (big tub) | 1 | 3–4 weeks |
-| Bread (2-pack) | 1 | 2 weeks (freeze one loaf) |
-| Frozen berries | 1 bag | About 1 month |
-| Honey | 1 | Months |
-| Rotisserie chickens | 2 (optional) | For the lazy BBQ week or wraps |
-| Meal-prep containers | 1 set of about 15–20 | One-time buy (get extras so you're not washing mid-week) |
+| Item | How many |
+| --- | --- |
+| Boneless chicken breasts | 2 big packs (freeze in weekly portions) |
+| Ground beef 90/10 | 1 big pack, about 6 lb |
+| Frozen breakfast burritos | 1 big box |
+| Fairlife 2% milk | 1 multi-pack |
+| Greek yogurt cups | 1 variety pack |
+| Mixed nuts | 1 tub |
+| Bagels | 1 two-pack (freeze one) |
+| String cheese | 1 big bag |
+| Sweet potatoes | 1 big bag (10+) |
+| Shredded Mexican cheese | 1 big bag |
+| Frozen corn | 1 big bag |
+| Meal-prep containers | 15–20 (one-time buy) |
 
 ### Kroger (weekly)
 
-| Item | Week 1 (teriyaki + pasta) | Week 2 (BBQ + taco) |
-| --- | --- | --- |
-| Jasmine or long-grain rice, 2-lb bag | 1 | 1 |
-| Frozen steam-in-bag corn or green beans | 1 | 2 |
-| Teriyaki sauce | 1 bottle (lasts 2 uses) | — |
-| Pasta, 1-lb box | 1 | — |
-| Marinara, 24-oz jar | 1 | — |
-| Parmesan (shaker) | 1 (lasts a while) | — |
-| BBQ sauce | — | 1 bottle |
-| Taco seasoning packets | — | 2 |
-| Shredded cheese, 8-oz bag | — | 1 |
-| Salsa | — | 1 jar |
-| Bananas | 1 bunch (about 7) | 1 bunch |
-| Jelly | As needed | As needed |
-| Fairlife chocolate milk (optional) | 1 | 1 |
-| Garlic powder, salt, pepper, oil | Once, lasts months | — |
+| Week | Items |
+| --- | --- |
+| 1 | 2 boxes Mexican rice mix, 1 taco or fajita seasoning packet, salsa, 1 box penne or rotini, 1 jar marinara, parmesan |
+| 2 | 2 taco seasoning packets, 1 box penne, 1 jar marinara or vodka sauce |
+| 3 | 2 boxes Mexican rice mix, 2 taco seasoning packets, salsa, BBQ sauce, frozen green beans (optional) |
+| Every week | Bananas, Fairlife chocolate milk (optional) |
 
-**Rough budget:** The first Costco run is the expensive one (about $150–200) because of the bulk staples. After that, expect about **$25–40 a week at Kroger** plus a **Costco restock of about $100–150 every 3–4 weeks**. That works out to roughly $60–90 a week. Prices vary by area.
+**Rough budget:** about $150–200 at Costco every 3 weeks plus $20–35 a week at Kroger, which works out to about $75–100 a week. Prices vary by area.
 
 ---
 
 ## 7. Weekly checklist
 
-- [ ] Sunday: Kroger run and bulk cook (2 recipes, 10 containers, freeze 4), plus 5 overnight oats jars
-- [ ] Each morning: grab 2 containers, 2 cheese sticks, a handful of nuts, a PB&J, and a banana
+- [ ] Sunday: Kroger run and cook that week's 2 recipes (10 containers, freeze 4)
+- [ ] Each morning: grab 2 containers, a yogurt, nuts, a bagel, 2 string cheese, and a banana
 - [ ] Wednesday night: move the frozen Thursday containers to the fridge
 - [ ] Tue / Wed / Thu: lift after work and log every set
 - [ ] Every morning: weigh in, then check the weekly average on Sunday

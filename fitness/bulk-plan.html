@@ -4,9 +4,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 :root{
-  --bg:#F3F5F8; --surface:#FFFFFF; --sunk:#E9EDF2; --ink:#161A21; --muted:#5A6373; --line:#DCE1E8;
-  --accent:#1F5BD0; --accent-ink:#FFFFFF; --accent-soft:#E3ECFC;
-  --tue:#2B63D9; --wed:#C98C06; --thu:#2E8A57; --sun:#7A5AC8;
+  --bg:#F3F5F8; --surface:#FFFFFF; --sunk:#EBEEF3; --ink:#161A21; --muted:#5A6373; --line:#DCE1E8;
+  --accent:#1F5BD0; --accent-soft:#E3ECFC;
+  --tue:#2B63D9; --wed:#C98C06; --thu:#2E8A57;
+  --tue-soft:#E6EDFB; --wed-soft:#FBF1DA; --thu-soft:#E2F2E9;
   --good:#2E8A57; --bad:#C2413A;
   --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -16,506 +17,368 @@
   :root:not([data-theme="light"]){
     color-scheme:dark;
     --bg:#101318; --surface:#181C23; --sunk:#20252E; --ink:#E7EAF0; --muted:#98A1B0; --line:#2A303B;
-    --accent:#7AA2FF; --accent-ink:#0E1420; --accent-soft:#1D2A44;
-    --tue:#7AA2FF; --wed:#E9B53F; --thu:#5CC48A; --sun:#A98BF0;
+    --accent:#7AA2FF; --accent-soft:#1D2A44;
+    --tue:#7AA2FF; --wed:#E9B53F; --thu:#5CC48A;
+    --tue-soft:#1C2740; --wed-soft:#2E2715; --thu-soft:#16291F;
     --good:#5CC48A; --bad:#F0736B;
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#101318; --surface:#181C23; --sunk:#20252E; --ink:#E7EAF0; --muted:#98A1B0; --line:#2A303B;
-  --accent:#7AA2FF; --accent-ink:#0E1420; --accent-soft:#1D2A44;
-  --tue:#7AA2FF; --wed:#E9B53F; --thu:#5CC48A; --sun:#A98BF0;
+  --accent:#7AA2FF; --accent-soft:#1D2A44;
+  --tue:#7AA2FF; --wed:#E9B53F; --thu:#5CC48A;
+  --tue-soft:#1C2740; --wed-soft:#2E2715; --thu-soft:#16291F;
   --good:#5CC48A; --bad:#F0736B;
 }
 *{box-sizing:border-box}
-[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
-.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:20px 56px}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:24px 56px;display:grid;gap:40px}
 h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.01em;line-height:1.05;margin:0;text-wrap:balance}
-h1{font-size:40px;text-transform:uppercase}
-h2{font-size:28px;text-transform:uppercase}
-h3{font-size:21px}
+h1{font-size:42px;text-transform:uppercase}
+h2{font-size:30px;text-transform:uppercase}
+h3{font-size:20px}
 p{margin:0}
-.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .muted{color:var(--muted)}
+.small{font-size:13px}
+section{display:grid;gap:14px}
+.sechead{display:grid;gap:4px}
 
-/* header */
-header.top{display:grid;gap:14px}
-.sub{color:var(--muted);max-width:62ch}
+header{display:grid;gap:14px}
 .targets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .targets div{background:var(--surface);padding:10px 12px;display:grid;gap:2px}
 .targets b{font-family:var(--display);font-size:26px;line-height:1}
 .targets span{font-size:12px;color:var(--muted)}
 @media (max-width:560px){.targets{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.day{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 6px;display:grid;gap:3px;text-align:center;min-width:0}
-.day .d{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.day .w{font-family:var(--display);font-size:15px;line-height:1.1;overflow-wrap:anywhere}
-.day.rest .w{color:var(--muted);font-family:var(--body);font-size:12px}
-.day[data-c]{border-top:4px solid var(--c)}
-.day.today{outline:2px solid var(--ink);outline-offset:1px}
+/* workout chart */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%}
+.chart{min-width:760px;table-layout:fixed}
+.chart th,.chart td{border-bottom:1px solid var(--line);border-left:1px solid var(--line);vertical-align:top;text-align:left}
+.chart tr:last-child td{border-bottom:0}
+.chart th:first-child,.chart td:first-child{border-left:0}
+.chart col.idx{width:44px}
+.chart thead th{padding:12px 12px 10px;border-top:5px solid var(--c);background:var(--soft)}
+.chart thead th.idx{border-top:5px solid transparent;background:var(--surface)}
+.chart thead .day{font-size:11.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--c)}
+.chart thead .ttl{display:block;font-family:var(--display);font-size:22px;line-height:1.1}
+.chart td.i{font-family:var(--display);font-size:20px;color:var(--muted);text-align:center;padding-top:12px}
+.chart td.x{padding:10px 12px;display:table-cell}
+.x .nm{display:block;font-weight:600;line-height:1.3}
+.x .sr{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:5px;align-items:center}
+.x .reps{font-family:var(--mono);font-size:13px}
+.x .wt{font-family:var(--mono);font-size:12.5px;background:var(--accent-soft);border-radius:5px;padding:1px 7px;white-space:nowrap}
+.x .last{display:block;margin-top:5px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.x.empty{background:var(--sunk)}
+.key{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;color:var(--muted)}
+.key b{color:var(--ink);font-weight:600}
 
-/* tabs */
-nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px;margin-top:18px;border-bottom:1px solid var(--line)}
-.seg{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:10px}
-.seg button{flex:1;border:0;background:transparent;color:var(--muted);font:600 15px var(--body);padding:9px 8px;border-radius:7px;cursor:pointer}
-.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0 / .12)}
-.seg button:focus-visible,button:focus-visible,label:focus-within{outline:2px solid var(--accent);outline-offset:2px}
-
-section.panel{display:grid;gap:28px;padding-top:22px}
-.block{display:grid;gap:12px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
-
-/* workouts */
-.daypick{display:flex;gap:8px;flex-wrap:wrap}
-.daypick button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;font:600 14px var(--body);cursor:pointer;display:flex;gap:8px;align-items:center}
-.daypick button i{width:10px;height:10px;border-radius:50%;background:var(--c)}
-.daypick button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.dayhead{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;border-left:5px solid var(--c);padding-left:12px}
-.ex{list-style:none;margin:0;padding:0}
-.ex li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:4px 12px;padding:14px 14px;border-top:1px solid var(--line);align-items:start}
-.ex li:first-child{border-top:0}
-.ex .n{font-family:var(--display);font-size:22px;color:var(--muted);line-height:1}
-.ex .name{font-weight:600}
-.ex .meta{grid-column:2/4;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
-.ex .meta b{font-family:var(--mono);font-weight:500;color:var(--ink)}
-.ex .wt{font-family:var(--mono);font-size:14px;background:var(--accent-soft);color:var(--ink);border-radius:6px;padding:3px 8px;white-space:nowrap}
-.ex .note{grid-column:2/4;font-size:13px;background:var(--sunk);border-radius:6px;padding:6px 9px}
-.ex .note .last{font-family:var(--mono);font-size:12.5px}
-.legend{font-size:13px;color:var(--muted)}
-
-.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media (max-width:640px){.rules{grid-template-columns:1fr}}
-.rules .card{padding:14px 16px;display:grid;gap:8px;align-content:start}
-ol.steps,ul.plain{margin:0;padding-left:20px;display:grid;gap:6px}
-ul.plain{padding-left:18px}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:680px){.two{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px;align-content:start}
+ul.plain,ol.plain{margin:0;padding-left:18px;display:grid;gap:5px}
 
 /* meals */
-.timeline{list-style:none;margin:0;padding:0}
-.timeline li{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:2px 12px;padding:12px 14px;border-top:1px solid var(--line);align-items:baseline}
-.timeline li:first-child{border-top:0}
-.timeline .t{font-family:var(--mono);font-size:13px;color:var(--muted)}
-.timeline .what{font-weight:600}
-.timeline .how{grid-column:2/3;font-size:13px;color:var(--muted)}
-.timeline .mac{font-family:var(--mono);font-size:13px;text-align:right;white-space:nowrap}
-.timeline li.opt{background:var(--sunk)}
-.timeline li.total{background:var(--accent-soft);font-weight:600}
-.timeline li.total .mac{font-weight:500}
+.day-eat{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.day-eat table td{padding:11px 14px;border-top:1px solid var(--line);vertical-align:baseline}
+.day-eat tr:first-child td{border-top:0}
+.day-eat .t{font-family:var(--mono);font-size:13px;color:var(--muted);width:70px;white-space:nowrap}
+.day-eat .w{font-weight:600}
+.day-eat .w span{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.day-eat .m{font-family:var(--mono);font-size:13px;text-align:right;white-space:nowrap}
+.day-eat tr.total td{background:var(--accent-soft);font-weight:600}
+.day-eat tr.opt td{background:var(--sunk)}
+@media (max-width:480px){.day-eat .t{width:52px}.day-eat table td{padding:10px 10px}}
 
-.recipes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media (max-width:640px){.recipes{grid-template-columns:1fr}}
-.recipe{padding:14px 16px;display:grid;gap:10px;align-content:start}
-.recipe .rh{display:flex;justify-content:space-between;gap:8px;align-items:start}
-.tag{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
-.tag.w1{color:var(--accent);border-color:currentColor}
-.tag.w2{color:var(--thu);border-color:currentColor}
-.buy{font-size:13.5px}
-.buy b{font-weight:600}
-.per{font-family:var(--mono);font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.weeks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.weeks{grid-template-columns:1fr}}
+.wk{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:grid;align-content:start}
+.wk>header{padding:10px 14px;border-bottom:1px solid var(--line);background:var(--sunk);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.wk>header h3{font-size:22px}
+.meal{padding:12px 14px;display:grid;gap:5px;border-top:1px solid var(--line)}
+.wk>header + .meal{border-top:0}
+.meal .slot{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.meal h4{margin:0;font-size:16px}
+.meal p{font-size:13.5px}
+.meal .mac{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.chip{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);white-space:nowrap}
 
 .office{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 @media (max-width:560px){.office{grid-template-columns:1fr}}
-.office .card{padding:12px 14px;display:grid;gap:6px;align-content:start}
-.office h3{font-size:18px}
 .ok h3{color:var(--good)} .no h3{color:var(--bad)}
 
-.callout{border-left:4px solid var(--accent);background:var(--surface);padding:12px 14px;border-radius:0 10px 10px 0;display:grid;gap:6px}
-
 /* groceries */
-.shophead{display:flex;justify-content:space-between;align-items:end;gap:10px;flex-wrap:wrap}
-.list{list-style:none;margin:0;padding:0}
-.list li{border-top:1px solid var(--line)}
-.list li:first-child{border-top:0}
-.list label{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 14px;cursor:pointer}
-.list input{width:18px;height:18px;accent-color:var(--accent);margin:0}
-.list .qty{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right}
-.list .for{display:block;font-size:12.5px;color:var(--muted)}
-.list input:checked ~ span .item{text-decoration:line-through;color:var(--muted)}
-.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 12px;font:500 13px var(--body);cursor:pointer}
+.shop{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+@media (max-width:760px){.shop{grid-template-columns:1fr}}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.list > header{padding:12px 14px;border-bottom:1px solid var(--line);display:grid;gap:2px}
+.list table td{padding:8px 14px;border-top:1px solid var(--line);vertical-align:baseline}
+.list table tr:first-child td{border-top:0}
+.list td.q{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right;white-space:nowrap}
+.list tr.sub td{background:var(--sunk);font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:7px;padding-bottom:7px}
 .budget{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:14px}
 .budget b{font-family:var(--mono);font-weight:500}
-footer{margin-top:36px;font-size:12.5px;color:var(--muted);max-width:70ch}
-@media (prefers-reduced-motion:no-preference){.seg button,.daypick button{transition:background .15s,color .15s}}
+footer{font-size:12.5px;color:var(--muted);max-width:72ch}
 </style>
 
 <div class="wrap">
-  <header class="top">
+  <header>
     <div class="eyebrow">Lean bulk · 165 lb start · work gym</div>
     <h1>Tue–Thu Bulk Plan</h1>
-    <p class="sub">Three lifts after work while traffic clears, one Sunday cook, and food you can eat at your desk without anyone noticing.</p>
     <div class="targets">
-      <div><b class="num">3,050</b><span>calories a day</span></div>
-      <div><b class="num">160 g</b><span>protein a day</span></div>
+      <div><b class="num">3,100</b><span>calories a day</span></div>
+      <div><b class="num">160 g+</b><span>protein a day</span></div>
       <div><b class="num">+0.5–1</b><span>lb gained per week</span></div>
       <div><b class="num">5 g</b><span>creatine, with breakfast</span></div>
     </div>
-    <div class="week" id="week" aria-label="Week at a glance"></div>
   </header>
 
-  <nav class="tabs">
-    <div class="seg" role="tablist" aria-label="Plan sections">
-      <button role="tab" id="tab-train" aria-controls="p-train" aria-selected="true">Workouts</button>
-      <button role="tab" id="tab-eat" aria-controls="p-eat" aria-selected="false">Meals</button>
-      <button role="tab" id="tab-shop" aria-controls="p-shop" aria-selected="false">Groceries</button>
-    </div>
-  </nav>
-
   <!-- WORKOUTS -->
-  <section class="panel" id="p-train" role="tabpanel" aria-labelledby="tab-train">
-    <div class="block">
-      <div class="daypick" id="daypick"></div>
-      <div class="dayhead" id="dayhead"></div>
-      <ul class="ex card" id="exlist"></ul>
-      <p class="legend">Weights like <span class="mono">40s</span> mean one dumbbell in each hand. Start every session with 5 minutes on the treadmill. Grey boxes show what you actually lifted last time.</p>
+  <section>
+    <div class="sechead">
+      <h2>Workouts</h2>
+      <p class="muted">Tuesday, Wednesday, Thursday right after work. Start each session with 5 minutes on the treadmill.</p>
+    </div>
+    <div class="scroll">
+      <table class="chart">
+        <colgroup><col class="idx"><col><col><col></colgroup>
+        <thead>
+          <tr>
+            <th class="idx"></th>
+            <th style="--c:var(--tue);--soft:var(--tue-soft)"><span class="day">Tuesday</span><span class="ttl">Upper A · Bench</span></th>
+            <th style="--c:var(--wed);--soft:var(--wed-soft)"><span class="day">Wednesday</span><span class="ttl">Legs + Core</span></th>
+            <th style="--c:var(--thu);--soft:var(--thu-soft)"><span class="day">Thursday</span><span class="ttl">Upper B · Back + Shoulders</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="i">1</td>
+            <td class="x"><span class="nm">Barbell bench press</span><span class="sr"><span class="reps">4 × 5–8</span><span class="wt">145 lb</span></span><span class="last">Last: 135×10, 6, 4 · 155×3</span></td>
+            <td class="x"><span class="nm">Goblet squat</span><span class="sr"><span class="reps">4 × 8–12</span><span class="wt">40–50</span></span></td>
+            <td class="x"><span class="nm">Chest-supported DB row</span><span class="sr"><span class="reps">4 × 10–12</span><span class="wt">40s–45s</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">2</td>
+            <td class="x"><span class="nm">One-arm DB row</span><span class="sr"><span class="reps">4 × 12–15</span><span class="wt">50</span></span><span class="last">Last: 50×12, 12</span></td>
+            <td class="x"><span class="nm">DB Romanian deadlift</span><span class="sr"><span class="reps">4 × 8–12</span><span class="wt">40s–50s</span></span></td>
+            <td class="x"><span class="nm">DB bench press</span><span class="sr"><span class="reps">4 × 8–12</span><span class="wt">45s</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">3</td>
+            <td class="x"><span class="nm">Seated DB shoulder press</span><span class="sr"><span class="reps">3 × 8–12</span><span class="wt">40s</span></span><span class="last">Last: 35×12, 40×8, 40×10</span></td>
+            <td class="x"><span class="nm">Bulgarian split squat</span><span class="sr"><span class="reps">3 × 8–12 / leg</span><span class="wt">20s–25s</span></span></td>
+            <td class="x"><span class="nm">Standing overhead DB press</span><span class="sr"><span class="reps">3 × 8–12</span><span class="wt">35s</span></span><span class="last">Last: 30×12, 35×10, 35×10</span></td>
+          </tr>
+          <tr>
+            <td class="i">4</td>
+            <td class="x"><span class="nm">Incline DB press</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">40s</span></span></td>
+            <td class="x"><span class="nm">Walking lunge or step-up</span><span class="sr"><span class="reps">2 × 10–12 / leg</span><span class="wt">20s</span></span></td>
+            <td class="x"><span class="nm">Incline DB fly</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">20s</span></span><span class="last">Last: 15×12, 12</span></td>
+          </tr>
+          <tr>
+            <td class="i">5</td>
+            <td class="x"><span class="nm">Lateral raise</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">10s</span></span><span class="last">Last: 10×12, 12</span></td>
+            <td class="x"><span class="nm">Standing calf raise</span><span class="sr"><span class="reps">3 × 12–20</span><span class="wt">40s–50s</span></span></td>
+            <td class="x"><span class="nm">Rear-delt fly</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">15s</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">6</td>
+            <td class="x"><span class="nm">Incline DB curl</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">20s</span></span><span class="last">Last: 20×12, 12, 10</span></td>
+            <td class="x"><span class="nm">Farmer carry</span><span class="sr"><span class="reps">3 × 40–60 steps</span><span class="wt">50s</span></span></td>
+            <td class="x"><span class="nm">Incline hammer curl</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">20s–25s</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">7</td>
+            <td class="x"><span class="nm">Overhead triceps extension</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">30–35</span></span></td>
+            <td class="x"><span class="nm">Plank</span><span class="sr"><span class="reps">3 × 30–60 sec</span></span></td>
+            <td class="x"><span class="nm">Close-grip bench</span><span class="sr"><span class="reps">3 × 8–12</span><span class="wt">115 lb</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">8</td>
+            <td class="x empty"></td>
+            <td class="x"><span class="nm">Incline treadmill walk</span><span class="sr"><span class="reps">10 min</span></span></td>
+            <td class="x"><span class="nm">DB shrug</span><span class="sr"><span class="reps">2 × 15–20</span><span class="wt">50s</span></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="key">
+      <span><b>Rest:</b> 2–3 min on exercises 1–2, and 60–90 sec on everything else</span>
+      <span><b>40s</b> = one 40 lb dumbbell in each hand</span>
+      <span><b>Legs:</b> the weights are a first guess, so adjust them in week 1</span>
     </div>
 
-    <div class="block">
-      <h2>How to progress</h2>
-      <div class="rules">
-        <div class="card">
-          <h3>Every week</h3>
-          <ol class="steps">
-            <li>Stay in the rep range with 1–2 reps left in the tank. Don't grind the big lifts to failure.</li>
-            <li>Try to add a rep or two each week.</li>
-            <li>Once every set hits the top of the range, go up: +5 lb on the bar, or the next dumbbell.</li>
-            <li>Log every set as weight × reps, the same way you logged your first session.</li>
-          </ol>
-        </div>
-        <div class="card">
-          <h3>When the 50s and 165 run out</h3>
-          <p class="muted">Rows and shrugs are already there. Bench will probably get there in 6–10 weeks.</p>
-          <ul class="plain">
-            <li><b>More reps:</b> push sets to 15–20.</li>
-            <li><b>Slower:</b> take 3–4 seconds to lower each rep.</li>
-            <li><b>Pauses:</b> 2 seconds at the bottom, or a squeeze at the top of rows.</li>
-            <li><b>1.5 reps</b> on squats and split squats.</li>
-            <li><b>Bench at 165 × 8:</b> switch to a 2-second pause on the chest, then add a 5th set.</li>
-          </ul>
-        </div>
-      </div>
-      <p class="muted">Cardio: a 10-minute incline walk on Wednesday and some weekend walking is plenty. More than that makes gaining harder unless you eat more.</p>
-    </div>
-  </section>
-
-  <!-- MEALS -->
-  <section class="panel" id="p-eat" role="tabpanel" aria-labelledby="tab-eat" hidden>
-    <div class="block">
-      <h2>A normal workday</h2>
-      <p class="muted">Nothing gets measured. Every portion is a whole package split evenly, a count, or a handful.</p>
-      <ul class="timeline card" id="timeline"></ul>
-    </div>
-
-    <div class="block">
-      <h2>Sunday bulk cook</h2>
-      <p class="muted">About 75 minutes. Two recipes make 10 containers, which covers lunch and dinner Monday to Friday.</p>
-      <div class="rules">
-        <div class="card">
-          <h3>The routine</h3>
-          <ol class="steps">
-            <li>Oven to 425°F and get the chicken in.</li>
-            <li>Big pot of water on for rice or pasta.</li>
-            <li>Brown the beef while both cook.</li>
-            <li>Deal everything into containers.</li>
-            <li><b>6 go in the fridge</b> (Mon–Wed). <b>4 go in the freezer</b> (Thu–Fri).</li>
-            <li>Wednesday night, move Thursday's containers to the fridge.</li>
-          </ol>
-        </div>
-        <div class="card">
-          <h3>Deal it out like cards</h3>
-          <ol class="steps">
-            <li>Line up 5 containers.</li>
-            <li>One big spoonful of rice or pasta in each. Go around until the pot is empty.</li>
-            <li>Same with the meat, then the veggies.</li>
-            <li>If one looks light, move a spoonful over. That's all the precision you need.</li>
-          </ol>
-          <p class="muted">Each container: about half carbs, a third meat, the rest veggies.</p>
-        </div>
-      </div>
-      <div class="callout">
-        <b>Rice with no measuring: boil it like pasta</b>
-        <p>Fill your biggest pot ¾ with water, bring it to a boil, and dump in the whole 2-lb bag. Boil 12–15 minutes until a grain is soft, then drain in a colander. That's enough for 10 containers. On pasta week, only the chicken needs rice, so use half the pot and keep the rest for dinners at home.</p>
-      </div>
-    </div>
-
-    <div class="block">
-      <h2>Recipes</h2>
-      <div class="recipes" id="recipes"></div>
-    </div>
-
-    <div class="block">
-      <h2>Overnight oats, 5 at once</h2>
-      <div class="card" style="padding:14px 16px">
-        <ol class="steps">
-          <li>Line up 5 jars and fill each one halfway with oats.</li>
-          <li>Pour Fairlife in until it just covers the oats, plus a splash.</li>
-          <li>Add one big spoonful of peanut butter and a squeeze of honey to each.</li>
-          <li>Stir, lid, fridge. Add a banana or frozen berries in the morning.</li>
-        </ol>
-      </div>
-    </div>
-
-    <div class="block">
-      <h2>Office rules</h2>
-      <div class="office">
-        <div class="card ok"><h3>Fine to microwave</h3><p>Chicken, beef, turkey, rice, pasta, corn, green beans, carrots, peas</p></div>
-        <div class="card no"><h3>Never at work</h3><p>Fish, eggs (hard-boiled too), broccoli, cauliflower, brussels sprouts, curry, popcorn</p></div>
-      </div>
-    </div>
-
-    <div class="block">
-      <h2>Stomach and creatine</h2>
-      <div class="card" style="padding:14px 16px">
+    <div class="two">
+      <div class="card">
+        <h3>Moving up</h3>
         <ul class="plain">
-          <li><b>Creatine:</b> take 3–5 g with breakfast, never on an empty stomach, with no loading phase.</li>
-          <li><b>Fairlife instead of regular milk.</b> It's lactose-free, and lactose is a common reason protein powder causes stomach aches.</li>
-          <li><b>Skip most protein bars.</b> Their sugar alcohols and chicory root fiber are common causes of cramps.</li>
-          <li><b>Eat the PB&amp;J about 2 hours before lifting</b>, not right before.</li>
-          <li><b>Go light on beans and broccoli.</b></li>
+          <li>Stop each set with 1–2 reps left in the tank.</li>
+          <li>Once every set hits the top of the rep range, add 5 lb on the bar or go to the next dumbbell.</li>
+          <li>Log every set as weight × reps.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>When the 50s and 165 get too light</h3>
+        <ul class="plain">
+          <li>Push the reps up to 15–20.</li>
+          <li>Take 3–4 seconds to lower each rep.</li>
+          <li>Pause 2 seconds at the bottom (or squeeze 2 seconds at the top of rows).</li>
+          <li>Once 165 × 8 is easy on bench, pause each rep on your chest and add a 5th set.</li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- GROCERIES -->
-  <section class="panel" id="p-shop" role="tabpanel" aria-labelledby="tab-shop" hidden>
-    <div class="block">
-      <div class="shophead">
-        <div><h2>Kroger</h2><p class="muted">Every week. The list switches with the recipe rotation.</p></div>
-        <div class="daypick" id="weekpick"></div>
-      </div>
-      <ul class="list card" id="kroger"></ul>
+  <!-- MEALS -->
+  <section>
+    <div class="sechead">
+      <h2>Meals</h2>
+      <p class="muted">Cook 10 containers on Sunday: 5 of each recipe for that week. Keep 6 in the fridge and freeze 4 for Thursday and Friday.</p>
     </div>
 
-    <div class="block">
-      <div class="shophead">
-        <div><h2>Costco</h2><p class="muted">Every 3–4 weeks. Freeze the meat in portions the day you buy it.</p></div>
-      </div>
-      <ul class="list card" id="costco"></ul>
+    <div class="day-eat">
+      <table>
+        <tr><td class="t">6:30</td><td class="w">2 breakfast burritos + a glass of Fairlife<span>At home. Frozen ones are fine. Take your creatine here.</span></td><td class="m">720 cal · 37 g</td></tr>
+        <tr><td class="t">10:00</td><td class="w">Greek yogurt cup + a handful of nuts<span>At your desk</span></td><td class="m">330 cal · 20 g</td></tr>
+        <tr><td class="t">12:30</td><td class="w">Container #1<span>This week's lunch recipe</span></td><td class="m">750 cal · 55 g</td></tr>
+        <tr><td class="t">3:30</td><td class="w">Bagel + 2 string cheese + banana<span>About 2 hours before you lift</span></td><td class="m">550 cal · 25 g</td></tr>
+        <tr><td class="t">7:00</td><td class="w">Container #2<span>This week's other recipe</span></td><td class="m">750 cal · 50 g</td></tr>
+        <tr class="total"><td class="t">Total</td><td class="w">A full workday</td><td class="m">≈3,100 cal · 185 g</td></tr>
+        <tr class="opt"><td class="t">Bed</td><td class="w">Fairlife chocolate milk<span>Only if your weekly average weight stops going up</span></td><td class="m">+250 cal · 18 g</td></tr>
+      </table>
     </div>
 
-    <div class="block">
-      <div class="budget">
-        <span>First Costco trip <b>$150–200</b></span>
-        <span>Kroger <b>$25–40</b>/week</span>
-        <span>Costco restock <b>$100–150</b> every 3–4 weeks</span>
+    <div class="weeks">
+      <div class="wk">
+        <header><h3>Week 1</h3><span class="chip">Mexican + pasta</span></header>
+        <div class="meal">
+          <span class="slot">Lunch</span>
+          <h4>Chicken burrito bowls</h4>
+          <p>Seasoned chicken, Mexican rice, corn, shredded cheese, and salsa on the side</p>
+          <span class="mac">≈800 cal · 60 g protein</span>
+        </div>
+        <div class="meal">
+          <span class="slot">Dinner</span>
+          <h4>Beef pasta with meat sauce</h4>
+          <p>Ground beef, penne or rotini, marinara, and parmesan</p>
+          <span class="mac">≈720 cal · 48 g protein</span>
+        </div>
       </div>
-      <p class="muted" style="font-size:13px">Rough estimates. Prices vary by area.</p>
-      <div><button class="ghost" id="clear" type="button">Uncheck everything</button></div>
+      <div class="wk">
+        <header><h3>Week 2</h3><span class="chip">Sweet potato + pasta</span></header>
+        <div class="meal">
+          <span class="slot">Lunch</span>
+          <h4>Taco beef &amp; sweet potato bowls</h4>
+          <p>Taco-seasoned ground beef, 1 roasted sweet potato per container, corn, and cheese</p>
+          <span class="mac">≈750 cal · 45 g protein</span>
+        </div>
+        <div class="meal">
+          <span class="slot">Dinner</span>
+          <h4>Chicken pasta</h4>
+          <p>Chicken, penne, marinara or vodka sauce, and parmesan</p>
+          <span class="mac">≈750 cal · 60 g protein</span>
+        </div>
+      </div>
+      <div class="wk">
+        <header><h3>Week 3</h3><span class="chip">Mexican + sweet potato</span></header>
+        <div class="meal">
+          <span class="slot">Lunch</span>
+          <h4>Beef &amp; Mexican rice bowls</h4>
+          <p>Taco-seasoned ground beef, Mexican rice, corn, cheese, and salsa on the side</p>
+          <span class="mac">≈800 cal · 45 g protein</span>
+        </div>
+        <div class="meal">
+          <span class="slot">Dinner</span>
+          <h4>BBQ chicken &amp; sweet potatoes</h4>
+          <p>BBQ chicken, 1 sweet potato per container, and corn or green beans</p>
+          <span class="mac">≈700 cal · 60 g protein</span>
+        </div>
+      </div>
+    </div>
+    <p class="muted small">After week 3, start over at week 1. Each week makes 5 containers of each recipe.</p>
+
+    <div class="office">
+      <div class="card ok"><h3>Fine to microwave at work</h3><p>Chicken, beef, rice, pasta, sweet potatoes, corn, green beans</p></div>
+      <div class="card no"><h3>Keep away from the office</h3><p>Fish, eggs, broccoli, cauliflower, brussels sprouts, curry</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Stomach and creatine</h3>
+      <ul class="plain">
+        <li>Take 3–5 g of creatine with breakfast, never on an empty stomach. You don't need a loading phase.</li>
+        <li>Drink Fairlife instead of regular milk. It's lactose-free, and lactose is a common reason protein powder upsets stomachs.</li>
+        <li>Skip most protein bars. Their sugar alcohols and chicory root fiber cause cramps.</li>
+        <li>Keep beans and broccoli light, and eat your 3:30 snack about 2 hours before you lift.</li>
+      </ul>
     </div>
   </section>
 
+  <!-- GROCERIES -->
+  <section>
+    <div class="sechead">
+      <h2>Groceries</h2>
+      <p class="muted">Costco once per 3-week rotation, and Kroger each week for that week's recipes.</p>
+    </div>
+    <div class="shop">
+      <div class="list">
+        <header><h3>Costco</h3><span class="muted small">Once every 3 weeks</span></header>
+        <table>
+          <tr class="sub"><td colspan="2">Meat (freeze in weekly portions)</td></tr>
+          <tr><td>Boneless chicken breasts</td><td class="q">2 big packs</td></tr>
+          <tr><td>Ground beef 90/10</td><td class="q">1 big pack (≈6 lb)</td></tr>
+          <tr class="sub"><td colspan="2">Breakfast + snacks</td></tr>
+          <tr><td>Frozen breakfast burritos</td><td class="q">1 big box</td></tr>
+          <tr><td>Fairlife 2% milk</td><td class="q">1 multi-pack</td></tr>
+          <tr><td>Greek yogurt cups</td><td class="q">1 variety pack</td></tr>
+          <tr><td>Mixed nuts</td><td class="q">1 tub</td></tr>
+          <tr><td>Bagels</td><td class="q">1 two-pack (freeze one)</td></tr>
+          <tr><td>String cheese</td><td class="q">1 big bag</td></tr>
+          <tr><td>Bananas</td><td class="q">1 bunch (restock at Kroger)</td></tr>
+          <tr class="sub"><td colspan="2">For the recipes</td></tr>
+          <tr><td>Sweet potatoes</td><td class="q">1 big bag (10+)</td></tr>
+          <tr><td>Shredded Mexican cheese</td><td class="q">1 big bag</td></tr>
+          <tr><td>Frozen corn</td><td class="q">1 big bag</td></tr>
+          <tr><td>Meal-prep containers</td><td class="q">15–20 (one time)</td></tr>
+        </table>
+      </div>
+      <div class="list">
+        <header><h3>Kroger</h3><span class="muted small">Weekly, for that week's recipes</span></header>
+        <table>
+          <tr class="sub"><td colspan="2">Week 1 · burrito bowls + beef pasta</td></tr>
+          <tr><td>Mexican (Spanish) rice mix</td><td class="q">2 boxes</td></tr>
+          <tr><td>Taco or fajita seasoning</td><td class="q">1 packet</td></tr>
+          <tr><td>Salsa</td><td class="q">1 jar</td></tr>
+          <tr><td>Penne or rotini, 1 lb</td><td class="q">1 box</td></tr>
+          <tr><td>Marinara, 24 oz</td><td class="q">1 jar</td></tr>
+          <tr><td>Parmesan shaker</td><td class="q">1 (lasts weeks)</td></tr>
+          <tr class="sub"><td colspan="2">Week 2 · sweet potato bowls + chicken pasta</td></tr>
+          <tr><td>Taco seasoning</td><td class="q">2 packets</td></tr>
+          <tr><td>Penne, 1 lb</td><td class="q">1 box</td></tr>
+          <tr><td>Marinara or vodka sauce, 24 oz</td><td class="q">1 jar</td></tr>
+          <tr class="sub"><td colspan="2">Week 3 · Mexican rice bowls + BBQ chicken</td></tr>
+          <tr><td>Mexican (Spanish) rice mix</td><td class="q">2 boxes</td></tr>
+          <tr><td>Taco seasoning</td><td class="q">2 packets</td></tr>
+          <tr><td>Salsa</td><td class="q">1 jar</td></tr>
+          <tr><td>BBQ sauce</td><td class="q">1 bottle</td></tr>
+          <tr><td>Frozen green beans (optional)</td><td class="q">1 bag</td></tr>
+          <tr class="sub"><td colspan="2">Every week</td></tr>
+          <tr><td>Bananas</td><td class="q">1 bunch</td></tr>
+          <tr><td>Fairlife chocolate milk (optional)</td><td class="q">1</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="budget">
+      <span>Costco <b>$150–200</b> every 3 weeks</span>
+      <span>Kroger <b>$20–35</b> a week</span>
+      <span>Works out to about <b>$75–100</b> a week</span>
+    </div>
+    <p class="muted small">Rough estimates. Prices vary by area.</p>
+  </section>
+
   <footer>
-    <p><b>Adjusting:</b> weigh yourself every morning and go by the weekly average. The first 2–4 lb is mostly water from the carbs and creatine. If the average doesn't go up for 2 weeks, add the bedtime chocolate milk. This is general guidance, not medical advice. If stomach aches keep happening, see a doctor.</p>
+    Weigh yourself every morning and go by the weekly average. The first 2–4 lb you gain is mostly water from the extra carbs and creatine. If your weekly average doesn't go up for 2 weeks, add the bedtime chocolate milk. This is general guidance, not medical advice.
   </footer>
 </div>
-
-<script>
-(function(){
-  var store = {
-    get:function(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},
-    set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-  };
-  function el(tag,attrs,html){var e=document.createElement(tag);if(attrs)for(var k in attrs)e.setAttribute(k,attrs[k]);if(html!=null)e.innerHTML=html;return e;}
-
-  /* ---------- week strip ---------- */
-  var week=[
-    {d:"Sun",w:"Cook",c:"--sun"},
-    {d:"Mon",w:"Rest",rest:1},
-    {d:"Tue",w:"Upper A",c:"--tue"},
-    {d:"Wed",w:"Lower",c:"--wed"},
-    {d:"Thu",w:"Upper B",c:"--thu"},
-    {d:"Fri",w:"Rest",rest:1},
-    {d:"Sat",w:"Optional",rest:1}
-  ];
-  var todayIdx=new Date().getDay();
-  var wk=document.getElementById("week");
-  week.forEach(function(x,i){
-    var a={class:"day"+(x.rest?" rest":"")+(i===todayIdx?" today":"")};
-    if(x.c){a["data-c"]="";a.style="--c:var("+x.c+")";}
-    var e=el("div",a,'<span class="d">'+x.d+'</span><span class="w">'+x.w+'</span>');
-    if(i===todayIdx)e.setAttribute("aria-current","date");
-    wk.appendChild(e);
-  });
-
-  /* ---------- tabs ---------- */
-  var tabs=[["tab-train","p-train"],["tab-eat","p-eat"],["tab-shop","p-shop"]];
-  function showTab(id){
-    tabs.forEach(function(t){
-      var on=t[0]===id;
-      document.getElementById(t[0]).setAttribute("aria-selected",on?"true":"false");
-      document.getElementById(t[1]).hidden=!on;
-    });
-    store.set("bulk.tab",id);
-  }
-  tabs.forEach(function(t){document.getElementById(t[0]).addEventListener("click",function(){showTab(t[0]);});});
-  var hash=(location.hash||"").slice(1);
-  var fromHash={workouts:"tab-train",meals:"tab-eat",groceries:"tab-shop"}[hash];
-  showTab(fromHash||store.get("bulk.tab","tab-train"));
-
-  /* ---------- workouts ---------- */
-  var days={
-    tue:{label:"Tuesday",short:"Tue",title:"Upper A · Bench",c:"--tue",time:"About 60 min",ex:[
-      ["Barbell bench press","4 × 5–8","145 lb","3 min","135×10, 135×6, 135×4, 155×3","Rest the full 3 minutes. Warm up with the bar ×10, 95×5, 115×3."],
-      ["One-arm DB row","4 × 12–15 / arm","50","90 sec","50×12, 50×12","Squeeze 2 seconds at the top and take 3 seconds to lower."],
-      ["Seated DB shoulder press","3 × 8–12","40s","90 sec","35×12, 40×8, 40×10","Go to 45s once you get 3 × 12."],
-      ["Incline DB press","3 × 10–12","40s","90 sec","",""],
-      ["Lateral raise","3 × 12–15","10s","60 sec","10×12, 10×12","Go to 15s once you get 3 × 15."],
-      ["Incline DB curl","3 × 10–12","20s","60 sec","20×12, 20×12, 20×10","Go to 25s once you get 12 / 12 / 12."],
-      ["Overhead triceps extension","3 × 10–12","30–35 (one DB)","60 sec","",""]
-    ]},
-    wed:{label:"Wednesday",short:"Wed",title:"Lower + Core",c:"--wed",time:"About 55 min",ex:[
-      ["Goblet squat","4 × 8–12","40–50","2 min","","Switch to two-dumbbell front squats once one 50 feels light."],
-      ["DB Romanian deadlift","4 × 8–12","40s–50s","2 min","",""],
-      ["Bulgarian split squat","3 × 8–12 / leg","20s–25s","90 sec","","Back foot up on the bench."],
-      ["Walking lunge or step-up","2 × 10–12 / leg","20s","90 sec","",""],
-      ["Standing calf raise","3 × 12–20","40s–50s","60 sec","","Balls of your feet on a plate."],
-      ["Farmer carry","3 × 40–60 steps","50s","60 sec","",""],
-      ["Plank","3 × 30–60 sec","Bodyweight","60 sec","",""],
-      ["Incline treadmill walk (optional)","10 min","Easy pace","—","",""]
-    ],note:"You haven't logged a leg day yet, so treat week 1 as a test: pick weights where the last rep is hard but clean, then log them."},
-    thu:{label:"Thursday",short:"Thu",title:"Upper B · Back + Shoulders",c:"--thu",time:"About 60 min",ex:[
-      ["Chest-supported DB row","4 × 10–12","40s–45s","2 min","","Lie face down on an incline bench."],
-      ["DB bench press","4 × 8–12","45s","2 min","","Move to 50s once you get 4 × 12."],
-      ["Standing overhead DB press","3 × 8–12","35s","90 sec","30×12, 35×10, 35×10",""],
-      ["Incline DB fly","3 × 12–15","20s","60 sec","15×12, 15×12",""],
-      ["Rear-delt fly","3 × 12–15","15s","60 sec","",""],
-      ["Incline hammer curl","3 × 10–12","20s–25s","60 sec","20s",""],
-      ["Close-grip bench","3 × 8–12","115 lb","90 sec","",""],
-      ["DB shrug","2 × 15–20","50s","60 sec","","Hold 2 seconds at the top."]
-    ]}
-  };
-  var order=["tue","wed","thu"];
-  var map={2:"tue",3:"wed",4:"thu"};
-  var current=map[todayIdx]||store.get("bulk.day","tue");
-  if(!days[current])current="tue";
-  var pick=document.getElementById("daypick");
-  order.forEach(function(k){
-    var b=el("button",{type:"button","data-k":k,style:"--c:var("+days[k].c+")"},"<i></i>"+days[k].label);
-    b.addEventListener("click",function(){renderDay(k);});
-    pick.appendChild(b);
-  });
-  function renderDay(k){
-    current=k;store.set("bulk.day",k);
-    var d=days[k];
-    Array.prototype.forEach.call(pick.children,function(b){b.setAttribute("aria-pressed",b.getAttribute("data-k")===k?"true":"false");});
-    var head=document.getElementById("dayhead");
-    head.style.setProperty("--c","var("+d.c+")");
-    head.innerHTML='<div><div class="eyebrow">'+d.label+' · after work</div><h2>'+d.title+'</h2></div><span class="muted mono" style="font-size:13px">'+d.time+'</span>';
-    var ul=document.getElementById("exlist");ul.innerHTML="";
-    d.ex.forEach(function(x,i){
-      var h='<span class="n">'+(i+1)+'</span><span class="name">'+x[0]+'</span><span class="wt">'+x[2]+'</span>'+
-        '<span class="meta"><span>Sets × reps <b>'+x[1]+'</b></span><span>Rest <b>'+x[3]+'</b></span></span>';
-      if(x[4]||x[5]){
-        h+='<span class="note">'+(x[4]?'<span class="last">Last: '+x[4]+'</span>'+(x[5]?'<br>':''):'')+(x[5]||'')+'</span>';
-      }
-      ul.appendChild(el("li",null,h));
-    });
-    if(d.note){ul.appendChild(el("li",null,'<span class="n">!</span><span class="name" style="grid-column:2/4;font-weight:400">'+d.note+'</span>'));}
-  }
-  renderDay(current);
-
-  /* ---------- meals ---------- */
-  var meals=[
-    ["6:30","Overnight oats + creatine","One jar from the Sunday batch","670 cal · 30 g"],
-    ["10:00","String cheese + nuts","2 sticks and one cupped handful","330 cal · 19 g"],
-    ["12:30","Meal-prep container","Microwave 2–3 min, stir halfway","750 cal · 50 g"],
-    ["3:30","PB&amp;J + banana","2 slices, peanut butter spread thick. About 2 hours before lifting.","550 cal · 15 g"],
-    ["7:00","Meal-prep container","A different recipe from lunch","750 cal · 50 g"]
-  ];
-  var tl=document.getElementById("timeline");
-  meals.forEach(function(m){
-    tl.appendChild(el("li",null,'<span class="t">'+m[0]+'</span><span class="what">'+m[1]+'</span><span class="mac">'+m[3]+'</span><span class="how">'+m[2]+'</span>'));
-  });
-  tl.appendChild(el("li",{class:"total"},'<span class="t">Total</span><span class="what">A full workday</span><span class="mac">≈3,050 cal · 165 g</span>'));
-  tl.appendChild(el("li",{class:"opt"},'<span class="t">Bed</span><span class="what">Fairlife chocolate milk</span><span class="mac">+250 cal · 18 g</span><span class="how">Only add this if your weekly average stops going up</span>'));
-
-  var recipes=[
-    {n:"Teriyaki chicken & rice",wk:"Week 1",cls:"w1",
-      buy:"Half a Costco chicken pack, 1 bottle of teriyaki, 1 steam bag of corn or green beans, half the rice",
-      how:["Cut the chicken into chunks on a foil-lined sheet pan and drizzle with oil.","Shake on salt, pepper, and garlic powder until you can see it on every piece.","Bake at 425°F for 22–25 min.","Pour teriyaki over it until it's shiny, then toss."],
-      per:"≈750 cal · 60 g protein per container"},
-    {n:"Beef pasta with meat sauce",wk:"Week 1",cls:"w1",
-      buy:"2 lb ground beef, 1 box of pasta, 1 jar of marinara, parmesan",
-      how:["Boil the whole box of pasta and drain it.","Brown all the beef and drain the grease.","Dump in the whole jar of sauce and simmer 5 min.","Stir the pasta in and deal it out. Shake parmesan on top."],
-      per:"≈720 cal · 48 g protein per container"},
-    {n:"BBQ chicken & rice",wk:"Week 2",cls:"w2",
-      buy:"The other half of the chicken pack (or 2 rotisserie chickens), BBQ sauce, 1 steam bag of corn, half the rice",
-      how:["Same as the teriyaki chicken, with BBQ sauce instead.","Lazy version: shred 2 rotisserie chickens with two forks and stir in BBQ sauce. No oven."],
-      per:"≈750 cal · 50–60 g protein per container"},
-    {n:"Taco rice bowls",wk:"Week 2",cls:"w2",
-      buy:"2 lb ground beef or turkey, 2 taco packets, 1 steam bag of corn, 1 bag of shredded cheese, salsa, half the rice",
-      how:["Brown the meat and drain it.","Add both packets and a splash of water. Simmer 5 min.","Deal out rice, meat, and corn, then a handful of cheese on each.","Keep the salsa in its jar and add it after heating."],
-      per:"≈800 cal · 45 g protein per container"},
-    {n:"Cold chicken wraps",wk:"Backup",cls:"",
-      buy:"Large tortillas, rotisserie chicken, shredded cheese, ranch or BBQ",
-      how:["Tortilla, a handful of chicken, a handful of cheese, and a squeeze of sauce. Roll it up in foil.","Eat 2. They're fine cold, or heat them in the work oven for 10 min."],
-      per:"≈700 cal · 50 g protein for 2 wraps"}
-  ];
-  var rw=document.getElementById("recipes");
-  recipes.forEach(function(r){
-    var h='<div class="rh"><h3>'+r.n+'</h3><span class="tag '+r.cls+'">'+r.wk+'</span></div>'+
-      '<p class="buy"><b>Uses:</b> '+r.buy+'</p><ol class="steps">'+r.how.map(function(s){return "<li>"+s+"</li>";}).join("")+'</ol>'+
-      '<p class="per">'+r.per+'</p>';
-    rw.appendChild(el("div",{class:"card recipe"},h));
-  });
-
-  /* ---------- groceries ---------- */
-  var checks=store.get("bulk.checks",{});
-  function item(list,id,name,qty,forTxt){
-    var li=el("li");
-    var lab=el("label",{for:id});
-    var cb=el("input",{type:"checkbox",id:id});
-    cb.checked=!!checks[id];
-    cb.addEventListener("change",function(){checks[id]=cb.checked;store.set("bulk.checks",checks);});
-    lab.appendChild(cb);
-    lab.appendChild(el("span",null,'<span class="item">'+name+'</span>'+(forTxt?'<span class="for">'+forTxt+'</span>':'')));
-    lab.appendChild(el("span",{class:"qty"},qty));
-    li.appendChild(lab);list.appendChild(li);
-  }
-  var costco=[
-    ["Chicken breasts or thighs (≈6 lb pack)","1 pack","Half each week, freeze the other half"],
-    ["Ground beef 90/10 or 88/12","1 big pack","Freeze in 2-lb bags"],
-    ["Rolled oats","1 big bag","Lasts 1–2 months"],
-    ["Creamy peanut butter","1 two-pack","Oats and PB&J"],
-    ["Fairlife 2% milk","1 multi-pack","Check the dates"],
-    ["String cheese","1 big bag","Morning snack"],
-    ["Mixed nuts or trail mix","1 tub","Morning snack"],
-    ["Bread","1 two-pack","Freeze one loaf"],
-    ["Frozen berries","1 bag","For the oats"],
-    ["Honey","1","Lasts months"],
-    ["Rotisserie chickens","2 (optional)","Lazy BBQ week or wraps"],
-    ["Meal-prep containers","15–20","One-time buy"]
-  ];
-  var cl=document.getElementById("costco");
-  costco.forEach(function(x,i){item(cl,"c"+i,x[0],x[1],x[2]);});
-
-  var kroger={
-    w1:[["Rice, 2-lb bag","1","Chicken containers + home"],["Frozen steam-bag corn or green beans","1","Chicken containers"],["Teriyaki sauce","1 bottle","Lasts 2 uses"],["Pasta, 1-lb box","1","Beef pasta"],["Marinara, 24-oz jar","1","Beef pasta"],["Parmesan shaker","1","Lasts a while"]],
-    w2:[["Rice, 2-lb bag","1","BBQ and taco containers"],["Frozen steam-bag corn","2","BBQ and taco containers"],["BBQ sauce","1 bottle",""],["Taco seasoning packets","2",""],["Shredded cheese, 8-oz bag","1","Taco bowls"],["Salsa","1 jar","Add it after heating"]],
-    every:[["Bananas","1 bunch","Snack and oats"],["Jelly","As needed","PB&J"],["Fairlife chocolate milk","1 (optional)","Bedtime, if you stall"]]
-  };
-  var wkSel=store.get("bulk.wk","w1");
-  var wp=document.getElementById("weekpick");
-  [["w1","Week 1","--tue"],["w2","Week 2","--thu"]].forEach(function(w){
-    var b=el("button",{type:"button","data-w":w[0],style:"--c:var("+w[2]+")"},"<i></i>"+w[1]);
-    b.addEventListener("click",function(){renderKroger(w[0]);});
-    wp.appendChild(b);
-  });
-  function renderKroger(w){
-    wkSel=w;store.set("bulk.wk",w);
-    Array.prototype.forEach.call(wp.children,function(b){b.setAttribute("aria-pressed",b.getAttribute("data-w")===w?"true":"false");});
-    var kl=document.getElementById("kroger");kl.innerHTML="";
-    kroger[w].forEach(function(x,i){item(kl,"k"+w+i,x[0],x[1],x[2]);});
-    kroger.every.forEach(function(x,i){item(kl,"ke"+i,x[0],x[1],x[2]);});
-  }
-  renderKroger(wkSel);
-
-  document.getElementById("clear").addEventListener("click",function(){
-    checks={};store.set("bulk.checks",checks);
-    Array.prototype.forEach.call(document.querySelectorAll('#p-shop input[type="checkbox"]'),function(c){c.checked=false;});
-  });
-})();
-</script>
