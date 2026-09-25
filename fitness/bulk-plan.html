@@ -73,14 +73,6 @@ table{border-collapse:collapse;width:100%}
 .x .wt{font-family:var(--mono);font-size:12.5px;background:var(--accent-soft);border-radius:5px;padding:1px 7px;white-space:nowrap}
 .x .last{display:block;margin-top:5px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
 .x .hint{display:block;margin-top:4px;font-size:12px;color:var(--muted);line-height:1.35}
-.cov{min-width:680px}
-.cov th,.cov td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13.5px}
-.cov thead th{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--sunk)}
-.cov tbody tr:last-child td{border-bottom:0}
-.cov td.mg{font-weight:600;white-space:nowrap}
-.cov .q{text-align:right;font-family:var(--mono);font-size:13px;white-space:nowrap}
-.cov tr.focus td{background:var(--accent-soft)}
-.fchip{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);border:1px solid currentColor;border-radius:999px;padding:0 6px;margin-left:6px;vertical-align:1px}
 .x.empty{background:var(--sunk)}
 .key{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;color:var(--muted)}
 .key b{color:var(--ink);font-weight:600}
@@ -130,6 +122,19 @@ ul.plain,ol.plain{margin:0;padding-left:18px;display:grid;gap:5px}
 .list tr.sub td{background:var(--sunk);font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:7px;padding-bottom:7px}
 .budget{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:14px}
 .budget b{font-family:var(--mono);font-weight:500}
+.rec{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.rec{grid-template-columns:1fr}}
+.rc{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:grid;align-content:start}
+.rc>header{padding:12px 14px;border-bottom:1px solid var(--line);background:var(--sunk);display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rc>header h3{font-size:22px}
+.rc table td{padding:8px 14px;border-top:1px solid var(--line);vertical-align:baseline;font-size:14px}
+.rc table tr:first-child td{border-top:0}
+.rc td.u{font-family:var(--mono);font-size:13px;text-align:right;white-space:nowrap}
+.rc td.pc{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right;white-space:nowrap}
+.rc thead td{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface)}
+.rc .foot{padding:10px 14px;border-top:1px dashed var(--line);font-family:var(--mono);font-size:13px}
+.list td.u{font-family:var(--mono);font-size:13px;text-align:right;white-space:nowrap}
+.list thead td{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 footer{font-size:12.5px;color:var(--muted);max-width:72ch}
 </style>
 
@@ -138,8 +143,8 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
     <div class="eyebrow">Lean bulk · 165 lb start · work gym</div>
     <h1>Tue–Thu Bulk Plan</h1>
     <div class="targets">
-      <div><b class="num">3,150</b><span>calories a day</span></div>
-      <div><b class="num">160 g+</b><span>protein a day</span></div>
+      <div><b class="num">3,100</b><span>calories a day</span></div>
+      <div><b class="num">170 g</b><span>protein a day</span></div>
       <div><b class="num">+0.5–1</b><span>lb gained per week</span></div>
       <div><b class="num">5 g</b><span>creatine, with first food</span></div>
     </div>
@@ -149,7 +154,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
   <section>
     <div class="sechead">
       <h2>Workouts</h2>
-      <p class="muted">Tuesday, Wednesday and Thursday right after work. Your focus muscles (thighs, shoulders, arms) get trained on Tuesday and Thursday. Wednesday covers chest, back, calves and core, so nothing gets hit two days in a row. Start each session with 5 minutes on the treadmill.</p>
+      <p class="muted">Tuesday, Wednesday, Thursday right after work. Start each session with 5 minutes on the treadmill.</p>
     </div>
     <div class="scroll">
       <table class="chart">
@@ -157,50 +162,67 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
         <thead>
           <tr>
             <th class="idx"></th>
-            <th style="--c:var(--tue);--soft:var(--tue-soft)"><span class="day">Tuesday</span><span class="ttl">Thighs · Shoulders · Arms</span></th>
-            <th style="--c:var(--wed);--soft:var(--wed-soft)"><span class="day">Wednesday</span><span class="ttl">Chest · Back · Core</span></th>
-            <th style="--c:var(--thu);--soft:var(--thu-soft)"><span class="day">Thursday</span><span class="ttl">Thighs · Shoulders · Arms</span></th>
+            <th style="--c:var(--tue);--soft:var(--tue-soft)"><span class="day">Tuesday</span><span class="ttl">Upper A · Bench</span></th>
+            <th style="--c:var(--wed);--soft:var(--wed-soft)"><span class="day">Wednesday</span><span class="ttl">Legs + Core</span></th>
+            <th style="--c:var(--thu);--soft:var(--thu-soft)"><span class="day">Thursday</span><span class="ttl">Upper B · Back + Shoulders</span></th>
           </tr>
         </thead>
         <tbody>
-<tr><td class="i">1</td><td class="x"><span class="nm">Goblet squat</span><span class="sr"><span class="reps">4 × 8–12</span><span class="wt">40–50</span></span></td><td class="x"><span class="nm">Barbell bench press</span><span class="sr"><span class="reps">4 × 5–8</span><span class="wt">145 lb</span></span><span class="last">Last: 135×10, 6, 4 · 155×3</span></td><td class="x"><span class="nm">Bulgarian split squat</span><span class="sr"><span class="reps">3 × 8–12 / leg</span><span class="wt">20s–25s</span></span></td></tr>
-<tr><td class="i">2</td><td class="x"><span class="nm">DB hip thrust</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">50</span></span><span class="hint">Upper back on the bench, dumbbell on your hips</span></td><td class="x"><span class="nm">One-arm DB row</span><span class="sr"><span class="reps">4 × 12–15</span><span class="wt">50</span></span><span class="last">Last: 50×12, 12</span></td><td class="x"><span class="nm">Lying DB leg curl</span><span class="sr"><span class="reps">3 × 10–15</span><span class="wt">20–30</span></span><span class="hint">Face down on the bench, one dumbbell between your feet</span></td></tr>
-<tr><td class="i">3</td><td class="x"><span class="nm">Walking lunge</span><span class="sr"><span class="reps">3 × 10–12 / leg</span><span class="wt">20s–25s</span></span></td><td class="x"><span class="nm">Incline DB press</span><span class="sr"><span class="reps">3 × 8–12</span><span class="wt">40s</span></span></td><td class="x"><span class="nm">Heels-elevated goblet squat</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">50</span></span><span class="hint">Heels on a plate to hit the front of the thighs harder</span></td></tr>
-<tr><td class="i">4</td><td class="x"><span class="nm">Seated DB shoulder press</span><span class="sr"><span class="reps">4 × 8–12</span><span class="wt">40s</span></span><span class="last">Last: 35×12, 40×8, 40×10</span></td><td class="x"><span class="nm">Chest-supported DB row</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">40s–45s</span></span></td><td class="x"><span class="nm">Standing overhead DB press</span><span class="sr"><span class="reps">3 × 8–12</span><span class="wt">35s</span></span><span class="last">Last: 30×12, 35×10, 35×10</span></td></tr>
-<tr><td class="i">5</td><td class="x"><span class="nm">Lateral raise</span><span class="sr"><span class="reps">4 × 12–15</span><span class="wt">10s</span></span><span class="last">Last: 10×12, 12</span></td><td class="x"><span class="nm">DB pullover</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">40–50</span></span><span class="hint">For your lats, since there's no pull-up bar</span></td><td class="x"><span class="nm">Lateral raise</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">10s</span></span></td></tr>
-<tr><td class="i">6</td><td class="x"><span class="nm">Incline DB curl</span><span class="sr"><span class="reps">4 × 10–12</span><span class="wt">20s</span></span><span class="last">Last: 20×12, 12, 10</span></td><td class="x"><span class="nm">Farmer carry</span><span class="sr"><span class="reps">3 × 40–60 steps</span><span class="wt">50s</span></span></td><td class="x"><span class="nm">Rear-delt fly</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">15s</span></span></td></tr>
-<tr><td class="i">7</td><td class="x"><span class="nm">Overhead triceps extension</span><span class="sr"><span class="reps">4 × 10–12</span><span class="wt">30–35</span></span></td><td class="x"><span class="nm">Standing calf raise</span><span class="sr"><span class="reps">3 × 12–20</span><span class="wt">40s–50s</span></span></td><td class="x"><span class="nm">Incline hammer curl</span><span class="sr"><span class="reps">4 × 10–12</span><span class="wt">20s–25s</span></span><span class="last">Last: 20s</span></td></tr>
-<tr><td class="i">8</td><td class="x empty"></td><td class="x"><span class="nm">Plank</span><span class="sr"><span class="reps">3 × 30–60 sec</span></span></td><td class="x"><span class="nm">Close-grip bench</span><span class="sr"><span class="reps">4 × 8–12</span><span class="wt">115 lb</span></span></td></tr>
+          <tr>
+            <td class="i">1</td>
+            <td class="x"><span class="nm">Barbell bench press</span><span class="sr"><span class="reps">4 × 5–8</span><span class="wt">145 lb</span></span><span class="last">Last: 135×10, 6, 4 · 155×3</span></td>
+            <td class="x"><span class="nm">Goblet squat</span><span class="sr"><span class="reps">4 × 8–12</span><span class="wt">40–50</span></span></td>
+            <td class="x"><span class="nm">Chest-supported DB row</span><span class="sr"><span class="reps">4 × 10–12</span><span class="wt">40s–45s</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">2</td>
+            <td class="x"><span class="nm">One-arm DB row</span><span class="sr"><span class="reps">4 × 12–15</span><span class="wt">50</span></span><span class="last">Last: 50×12, 12</span></td>
+            <td class="x"><span class="nm">Lying DB leg curl</span><span class="sr"><span class="reps">4 × 10–15</span><span class="wt">20–30</span></span><span class="hint">Lie face down on the bench with one dumbbell squeezed between your feet</span></td>
+            <td class="x"><span class="nm">DB bench press</span><span class="sr"><span class="reps">4 × 8–12</span><span class="wt">45s</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">3</td>
+            <td class="x"><span class="nm">Seated DB shoulder press</span><span class="sr"><span class="reps">3 × 8–12</span><span class="wt">40s</span></span><span class="last">Last: 35×12, 40×8, 40×10</span></td>
+            <td class="x"><span class="nm">Bulgarian split squat</span><span class="sr"><span class="reps">3 × 8–12 / leg</span><span class="wt">20s–25s</span></span></td>
+            <td class="x"><span class="nm">Standing overhead DB press</span><span class="sr"><span class="reps">3 × 8–12</span><span class="wt">35s</span></span><span class="last">Last: 30×12, 35×10, 35×10</span></td>
+          </tr>
+          <tr>
+            <td class="i">4</td>
+            <td class="x"><span class="nm">Incline DB press</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">40s</span></span></td>
+            <td class="x"><span class="nm">Walking lunge or step-up</span><span class="sr"><span class="reps">2 × 10–12 / leg</span><span class="wt">20s</span></span></td>
+            <td class="x"><span class="nm">Incline DB fly</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">20s</span></span><span class="last">Last: 15×12, 12</span></td>
+          </tr>
+          <tr>
+            <td class="i">5</td>
+            <td class="x"><span class="nm">Lateral raise</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">10s</span></span><span class="last">Last: 10×12, 12</span></td>
+            <td class="x"><span class="nm">Standing calf raise</span><span class="sr"><span class="reps">3 × 12–20</span><span class="wt">40s–50s</span></span></td>
+            <td class="x"><span class="nm">Rear-delt fly</span><span class="sr"><span class="reps">3 × 12–15</span><span class="wt">15s</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">6</td>
+            <td class="x"><span class="nm">Incline DB curl</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">20s</span></span><span class="last">Last: 20×12, 12, 10</span></td>
+            <td class="x"><span class="nm">Farmer carry</span><span class="sr"><span class="reps">3 × 40–60 steps</span><span class="wt">50s</span></span></td>
+            <td class="x"><span class="nm">Incline hammer curl</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">20s–25s</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">7</td>
+            <td class="x"><span class="nm">Overhead triceps extension</span><span class="sr"><span class="reps">3 × 10–12</span><span class="wt">30–35</span></span></td>
+            <td class="x"><span class="nm">Plank</span><span class="sr"><span class="reps">3 × 30–60 sec</span></span></td>
+            <td class="x"><span class="nm">Close-grip bench</span><span class="sr"><span class="reps">3 × 8–12</span><span class="wt">115 lb</span></span></td>
+          </tr>
+          <tr>
+            <td class="i">8</td>
+            <td class="x empty"></td>
+            <td class="x"><span class="nm">Incline treadmill walk</span><span class="sr"><span class="reps">10 min</span></span></td>
+            <td class="x"><span class="nm">DB shrug</span><span class="sr"><span class="reps">2 × 15–20</span><span class="wt">50s</span></span></td>
+          </tr>
         </tbody>
       </table>
     </div>
     <div class="key">
-      <span><b>Rest:</b> 2 min on the first 1–2 exercises each day, 60–90 sec on the rest</span>
-      <span><b>Arms:</b> do the curl and triceps exercise back to back, then rest</span>
+      <span><b>Rest:</b> 2–3 min on exercises 1–2, and 60–90 sec on everything else</span>
       <span><b>40s</b> = one 40 lb dumbbell in each hand</span>
-      <span><b>Legs:</b> the starting weights are a first guess, so adjust them in week 1</span>
-    </div>
-
-    <div class="sechead" style="margin-top:10px">
-      <h3>Every muscle group, checked</h3>
-      <p class="muted small">Sets are per week, counting direct work. The focus muscles get the most sets. Everything else still gets enough work to grow.</p>
-    </div>
-    <div class="scroll">
-      <table class="cov">
-        <thead><tr><th>Muscle</th><th style="color:var(--tue)">Tue</th><th style="color:var(--wed)">Wed</th><th style="color:var(--thu)">Thu</th><th class="q">Sets / week</th></tr></thead>
-        <tbody>
-<tr class="focus"><td class="mg">Thighs (quads) <span class="fchip">Focus</span></td><td>Goblet squat, lunge</td><td>—</td><td>Bulgarian split squat, heels-up squat</td><td class="q">13</td></tr>
-<tr class="focus"><td class="mg">Hamstrings + glutes <span class="fchip">Focus</span></td><td>Hip thrust, lunge</td><td>—</td><td>Leg curl, Bulgarian split squat</td><td class="q">6 + lunges</td></tr>
-<tr class="focus"><td class="mg">Shoulders <span class="fchip">Focus</span></td><td>Shoulder press, lateral raise</td><td>Bench and incline (front)</td><td>Overhead press, lateral raise, rear-delt fly</td><td class="q">17</td></tr>
-<tr class="focus"><td class="mg">Biceps <span class="fchip">Focus</span></td><td>Incline curl</td><td>Rows (indirect)</td><td>Hammer curl</td><td class="q">8 + rows</td></tr>
-<tr class="focus"><td class="mg">Triceps <span class="fchip">Focus</span></td><td>Overhead extension</td><td>Bench and incline (indirect)</td><td>Close-grip bench</td><td class="q">8 + presses</td></tr>
-<tr><td class="mg">Chest</td><td>—</td><td>Bench, incline press</td><td>Close-grip bench (indirect)</td><td class="q">7 + close-grip</td></tr>
-<tr><td class="mg">Back and lats</td><td>—</td><td>Two rows, pullover</td><td>Rear-delt fly (upper back)</td><td class="q">10</td></tr>
-<tr><td class="mg">Traps + forearms</td><td>—</td><td>Farmer carry</td><td>Hammer curl</td><td class="q">3 + curls</td></tr>
-<tr><td class="mg">Calves</td><td>—</td><td>Calf raise</td><td>—</td><td class="q">3</td></tr>
-<tr><td class="mg">Core</td><td>Lunges (stability)</td><td>Plank, farmer carry</td><td>—</td><td class="q">6</td></tr>
-        </tbody>
-      </table>
+      <span><b>Legs:</b> the weights are a first guess, so adjust them in week 1</span>
     </div>
 
     <div class="two">
@@ -217,8 +239,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
         <ul class="plain">
           <li>Push the reps up to 15–20.</li>
           <li>Take 3–4 seconds to lower each rep.</li>
-          <li>Pause 2 seconds at the bottom of squats and split squats.</li>
-          <li>Hip thrusts and leg curls: switch to one leg at a time.</li>
+          <li>Pause 2 seconds at the bottom (or squeeze 2 seconds at the top of rows).</li>
           <li>Once 165 × 8 is easy on bench, pause each rep on your chest and add a 5th set.</li>
         </ul>
       </div>
@@ -228,146 +249,115 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
   <!-- MEALS -->
   <section>
     <div class="sechead">
+      <div class="eyebrow">This week</div>
       <h2>Meals</h2>
-      <p class="muted">Cook 10 containers on Sunday: 5 of each recipe for that week. Keep 6 in the fridge and freeze 4 for Thursday and Friday.</p>
+      <p class="muted">Two recipes with 7 containers each, which covers lunch and dinner every day for the full week. Nothing to eat before work. There's no fruit and no protein drinks in this plan.</p>
     </div>
 
     <div class="day-eat">
       <table>
-        <tr><td class="t">9:00</td><td class="w">Bagel + 2 string cheese + Fairlife chocolate milk<span>At your desk. This is your first food of the day. Take your creatine with it.</span></td><td class="m">650 cal · 43 g</td></tr>
-        <tr><td class="t">12:00</td><td class="w">Container #1<span>This week's lunch recipe</span></td><td class="m">750 cal · 55 g</td></tr>
-        <tr><td class="t">3:00</td><td class="w">Greek yogurt cup + a handful of nuts + a banana<span>Your pre-workout snack</span></td><td class="m">415 cal · 21 g</td></tr>
-        <tr><td class="t">7:00</td><td class="w">Container #2<span>At home after the gym</span></td><td class="m">750 cal · 50 g</td></tr>
-        <tr><td class="t">9:00 pm</td><td class="w">2 frozen breakfast burritos<span>At home. Microwave them.</span></td><td class="m">600 cal · 25 g</td></tr>
-        <tr class="total"><td class="t">Total</td><td class="w">A full day</td><td class="m">≈3,150 cal · 190 g</td></tr>
-        <tr class="opt"><td class="t">Stalled?</td><td class="w">Add a third burrito at night<span>Only if your weekly average weight stops going up for 2 weeks</span></td><td class="m">+300 cal</td></tr>
+        <tr><td class="t">9:00</td><td class="w">1 bagel + 2 string cheese<span>At your desk. Take your creatine with it.</span></td><td class="m">460 cal · 25 g</td></tr>
+        <tr><td class="t">12:00</td><td class="w">BBQ chicken &amp; sweet potato container</td><td class="m">845 cal · 50 g</td></tr>
+        <tr><td class="t">3:00</td><td class="w">1 Greek yogurt cup + a handful of mixed nuts<span>About 2 hours before you lift</span></td><td class="m">310 cal · 20 g</td></tr>
+        <tr><td class="t">7:00</td><td class="w">Baked ziti container<span>At home after the gym</span></td><td class="m">900 cal · 53 g</td></tr>
+        <tr><td class="t">9:00 pm</td><td class="w">2 frozen breakfast burritos<span>At home</span></td><td class="m">600 cal · 24 g</td></tr>
+        <tr class="total"><td class="t">Total</td><td class="w">Every day, weekends included</td><td class="m">≈3,115 cal · 172 g</td></tr>
+        <tr class="opt"><td class="t">Stalled?</td><td class="w">Add a third burrito at night<span>Only if your weekly average weight hasn't gone up in 2 weeks</span></td><td class="m">+300 cal</td></tr>
       </table>
     </div>
 
-    <div class="weeks">
-      <div class="wk">
-        <header><h3>Week 1</h3><span class="chip">Mexican + pasta</span></header>
-        <div class="meal">
-          <span class="slot">Lunch</span>
-          <h4>Chicken burrito bowls</h4>
-          <p>Seasoned chicken, Mexican rice, corn, shredded cheese, and salsa on the side</p>
-          <span class="mac">≈800 cal · 60 g protein</span>
-        </div>
-        <div class="meal">
-          <span class="slot">Dinner</span>
-          <h4>Beef pasta with meat sauce</h4>
-          <p>Ground beef, penne or rotini, marinara, and parmesan</p>
-          <span class="mac">≈720 cal · 48 g protein</span>
-        </div>
+    <div class="rec">
+      <div class="rc">
+        <header><h3>BBQ chicken &amp; sweet potatoes</h3><span class="chip">Lunch · makes 7</span></header>
+        <table>
+          <thead><tr><td>Ingredient</td><td class="u">Use all week</td><td class="pc">Per container</td></tr></thead>
+          <tr><td>Boneless skinless chicken thighs</td><td class="u">3½ lb raw</td><td class="pc">½ lb raw</td></tr>
+          <tr><td>Sweet potatoes, large</td><td class="u">7</td><td class="pc">1</td></tr>
+          <tr><td>BBQ sauce</td><td class="u">1 cup (about ½ bottle)</td><td class="pc">2 Tbsp</td></tr>
+          <tr><td>Frozen green beans</td><td class="u">2 steam bags (12 oz)</td><td class="pc">about ¾ cup</td></tr>
+          <tr><td>Olive oil, on the sweet potatoes</td><td class="u">3 Tbsp</td><td class="pc">—</td></tr>
+          <tr><td>Butter, on the sweet potatoes</td><td class="u">1 stick</td><td class="pc">1 pat</td></tr>
+          <tr><td>Salt, pepper, garlic powder</td><td class="u">to taste</td><td class="pc">—</td></tr>
+        </table>
+        <div class="foot">≈845 cal · 50 g protein per container</div>
       </div>
-      <div class="wk">
-        <header><h3>Week 2</h3><span class="chip">Sweet potato + pasta</span></header>
-        <div class="meal">
-          <span class="slot">Lunch</span>
-          <h4>Taco beef &amp; sweet potato bowls</h4>
-          <p>Taco-seasoned ground beef, 1 roasted sweet potato per container, corn, and cheese</p>
-          <span class="mac">≈750 cal · 45 g protein</span>
-        </div>
-        <div class="meal">
-          <span class="slot">Dinner</span>
-          <h4>Chicken pasta</h4>
-          <p>Chicken, penne, marinara or vodka sauce, and parmesan</p>
-          <span class="mac">≈750 cal · 60 g protein</span>
-        </div>
-      </div>
-      <div class="wk">
-        <header><h3>Week 3</h3><span class="chip">Mexican + sweet potato</span></header>
-        <div class="meal">
-          <span class="slot">Lunch</span>
-          <h4>Beef &amp; Mexican rice bowls</h4>
-          <p>Taco-seasoned ground beef, Mexican rice, corn, cheese, and salsa on the side</p>
-          <span class="mac">≈800 cal · 45 g protein</span>
-        </div>
-        <div class="meal">
-          <span class="slot">Dinner</span>
-          <h4>BBQ chicken &amp; sweet potatoes</h4>
-          <p>BBQ chicken, 1 sweet potato per container, and corn or green beans</p>
-          <span class="mac">≈700 cal · 60 g protein</span>
-        </div>
+      <div class="rc">
+        <header><h3>Baked ziti with beef</h3><span class="chip">Dinner · makes 7</span></header>
+        <table>
+          <thead><tr><td>Ingredient</td><td class="u">Use all week</td><td class="pc">Per container</td></tr></thead>
+          <tr><td>Ground beef 90/10</td><td class="u">2 lb</td><td class="pc">—</td></tr>
+          <tr><td>Ziti or penne</td><td class="u">2 boxes (1 lb each)</td><td class="pc">—</td></tr>
+          <tr><td>Marinara</td><td class="u">2 jars (24 oz each)</td><td class="pc">—</td></tr>
+          <tr><td>Shredded mozzarella</td><td class="u">1 bag (8 oz)</td><td class="pc">—</td></tr>
+          <tr><td>Parmesan shaker</td><td class="u">a shake on each</td><td class="pc">—</td></tr>
+        </table>
+        <div class="foot">≈900 cal · 53 g protein per container. Mix everything together and split it into 7.</div>
       </div>
     </div>
-    <p class="muted small">After week 3, start over at week 1. Each week makes 5 containers of each recipe.</p>
 
-    <div class="office">
-      <div class="card ok"><h3>Fine to microwave at work</h3><p>Chicken, beef, rice, pasta, sweet potatoes, corn, green beans</p></div>
-      <div class="card no"><h3>Keep away from the office</h3><p>Fish, eggs, broccoli, cauliflower, brussels sprouts, curry</p></div>
-    </div>
-
-    <div class="card">
-      <h3>Stomach and creatine</h3>
-      <ul class="plain">
-        <li>Take 3–5 g of creatine with your 9:00 snack, never on an empty stomach. You don't need a loading phase.</li>
-        <li>Drink Fairlife instead of regular milk. It's lactose-free, and lactose is a common reason protein powder upsets stomachs.</li>
-        <li>Skip most protein bars. Their sugar alcohols and chicory root fiber cause cramps.</li>
-        <li>Keep beans and broccoli light, and eat your 3:30 snack about 2 hours before you lift.</li>
-      </ul>
+    <div class="two">
+      <div class="card">
+        <h3>Keeping it fresh</h3>
+        <ul class="plain">
+          <li>Cook on Sunday. Keep Monday–Wednesday in the fridge (6 containers).</li>
+          <li>Freeze the other 8 (Thursday–Sunday). Move each day's pair to the fridge the night before.</li>
+          <li>For the fruit flies: keep the sweet potatoes in a closed cabinet and use them all this week. Put open sauces in the fridge.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Stomach and creatine</h3>
+        <ul class="plain">
+          <li>Take 3–5 g of creatine with your 9:00 food, never on an empty stomach, and skip the loading phase.</li>
+          <li>Skip protein bars. Their sugar alcohols and chicory root fiber commonly cause cramps.</li>
+          <li>Eat your 3:00 snack about 2 hours before you lift.</li>
+        </ul>
+      </div>
     </div>
   </section>
 
   <!-- GROCERIES -->
   <section>
     <div class="sechead">
+      <div class="eyebrow">This week</div>
       <h2>Groceries</h2>
-      <p class="muted">Costco once per 3-week rotation, and Kroger each week for that week's recipes.</p>
+      <p class="muted">Everything you need for 7 days. Buy it once, and the Costco items that last longer carry into next week.</p>
     </div>
     <div class="shop">
       <div class="list">
-        <header><h3>Costco</h3><span class="muted small">Once every 3 weeks</span></header>
+        <header><h3>Costco</h3></header>
         <table>
-          <tr class="sub"><td colspan="2">Meat (freeze in weekly portions)</td></tr>
-          <tr><td>Boneless chicken breasts</td><td class="q">2 big packs</td></tr>
-          <tr><td>Ground beef 90/10</td><td class="q">1 big pack (≈6 lb)</td></tr>
-          <tr class="sub"><td colspan="2">Snacks + night burritos</td></tr>
-          <tr><td>Frozen breakfast burritos</td><td class="q">2 big boxes</td></tr>
-                    <tr><td>Greek yogurt cups</td><td class="q">1 variety pack</td></tr>
-          <tr><td>Mixed nuts</td><td class="q">1 tub</td></tr>
-          <tr><td>Bagels</td><td class="q">1 two-pack (freeze one)</td></tr>
-          <tr><td>String cheese</td><td class="q">1 big bag</td></tr>
-          <tr><td>Bananas</td><td class="q">1 bunch (restock at Kroger)</td></tr>
-          <tr class="sub"><td colspan="2">For the recipes</td></tr>
-          <tr><td>Sweet potatoes</td><td class="q">1 big bag (10+)</td></tr>
-          <tr><td>Shredded Mexican cheese</td><td class="q">1 big bag</td></tr>
-          <tr><td>Frozen corn</td><td class="q">1 big bag</td></tr>
-          <tr><td>Meal-prep containers</td><td class="q">15–20 (one time)</td></tr>
+          <thead><tr><td>Buy</td><td class="u">Use this week</td></tr></thead>
+          <tr><td>Boneless skinless chicken thighs, 1 pack</td><td class="u">3½ lb (freeze the rest)</td></tr>
+          <tr><td>Ground beef 90/10, 1 pack</td><td class="u">2 lb (freeze the rest)</td></tr>
+          <tr><td>Sweet potatoes, 1 bag</td><td class="u">7 large</td></tr>
+          <tr><td>Frozen breakfast burritos, 1 box</td><td class="u">14</td></tr>
+          <tr><td>Bagels, 1 two-pack</td><td class="u">7 (freeze the other 5)</td></tr>
+          <tr><td>String cheese, 1 bag</td><td class="u">14</td></tr>
+          <tr><td>Greek yogurt cups, 1 pack</td><td class="u">7</td></tr>
+          <tr><td>Mixed nuts, 1 tub</td><td class="u">7 handfuls (lasts about a month)</td></tr>
         </table>
       </div>
       <div class="list">
-        <header><h3>Kroger</h3><span class="muted small">Weekly, for that week's recipes</span></header>
+        <header><h3>Kroger</h3></header>
         <table>
-          <tr class="sub"><td colspan="2">Week 1 · burrito bowls + beef pasta</td></tr>
-          <tr><td>Mexican (Spanish) rice mix</td><td class="q">2 boxes</td></tr>
-          <tr><td>Taco or fajita seasoning</td><td class="q">1 packet</td></tr>
-          <tr><td>Salsa</td><td class="q">1 jar</td></tr>
-          <tr><td>Penne or rotini, 1 lb</td><td class="q">1 box</td></tr>
-          <tr><td>Marinara, 24 oz</td><td class="q">1 jar</td></tr>
-          <tr><td>Parmesan shaker</td><td class="q">1 (lasts weeks)</td></tr>
-          <tr class="sub"><td colspan="2">Week 2 · sweet potato bowls + chicken pasta</td></tr>
-          <tr><td>Taco seasoning</td><td class="q">2 packets</td></tr>
-          <tr><td>Penne, 1 lb</td><td class="q">1 box</td></tr>
-          <tr><td>Marinara or vodka sauce, 24 oz</td><td class="q">1 jar</td></tr>
-          <tr class="sub"><td colspan="2">Week 3 · Mexican rice bowls + BBQ chicken</td></tr>
-          <tr><td>Mexican (Spanish) rice mix</td><td class="q">2 boxes</td></tr>
-          <tr><td>Taco seasoning</td><td class="q">2 packets</td></tr>
-          <tr><td>Salsa</td><td class="q">1 jar</td></tr>
-          <tr><td>BBQ sauce</td><td class="q">1 bottle</td></tr>
-          <tr><td>Frozen green beans (optional)</td><td class="q">1 bag</td></tr>
-          <tr class="sub"><td colspan="2">Every week</td></tr>
-          <tr><td>Bananas</td><td class="q">1 bunch</td></tr>
-          <tr><td>Fairlife chocolate milk, 52 oz</td><td class="q">2</td></tr>
+          <thead><tr><td>Buy</td><td class="u">Use this week</td></tr></thead>
+          <tr><td>Ziti or penne, 1 lb box</td><td class="u">2 boxes</td></tr>
+          <tr><td>Marinara, 24 oz jar</td><td class="u">2 jars</td></tr>
+          <tr><td>Shredded mozzarella, 8 oz bag</td><td class="u">1 bag</td></tr>
+          <tr><td>Parmesan shaker</td><td class="u">a little (lasts weeks)</td></tr>
+          <tr><td>BBQ sauce, 18 oz bottle</td><td class="u">about half</td></tr>
+          <tr><td>Frozen green beans, 12 oz steam bags</td><td class="u">2 bags</td></tr>
+          <tr><td>Butter, 1 lb</td><td class="u">1 stick</td></tr>
+          <tr><td>Olive oil (if you don't have it)</td><td class="u">3 Tbsp</td></tr>
+          <tr><td>Garlic powder (if you don't have it)</td><td class="u">a few shakes</td></tr>
         </table>
       </div>
     </div>
     <div class="budget">
-      <span>Costco <b>$150–200</b> every 3 weeks</span>
-      <span>Kroger <b>$20–35</b> a week</span>
-      <span>Works out to about <b>$75–100</b> a week</span>
+      <span>Costco <b>≈$110–140</b></span>
+      <span>Kroger <b>≈$25–35</b></span>
     </div>
-    <p class="muted small">Rough estimates. Prices vary by area.</p>
+    <p class="muted small">Rough estimates. Prices vary by area. Most of the Costco cost is packs that last into next week, like the extra meat, nuts, and bagels.</p>
   </section>
 
   <footer>
