@@ -116,6 +116,34 @@ function gmCover(g,side){ const d=g.dk||{}, o=d.spo||{};
   const ph=Math.min(.97,Math.max(.03,ps+GMFIT.slope*gmEdge(g))); return {p:side==="home"?ph:1-ph, push:0}; }
 const half=x=>Math.round(x*2)/2;
 
+/* ===================== team ratings and "line doesn't add up" flags =====================
+   Every team has a value: points against an average team on a neutral field (slate.teams, from gm/game_live.py:
+   market strength + quarterback + efficiency). A game's fair line is home field + value(home) - value(away) + rest.
+   When DraftKings' spread sits FLAGAT or more points from it, the game is flagged. The record of such flags
+   (gm/flag_record.py, closing lines 2016-25, each season predicted from earlier seasons) is shown with every flag. */
+const FLAGAT=()=>(slate().gmfit&&slate().gmfit.flagAt)||3;
+function lineGap(g){ if(!g.gm||g.gm.m==null) return null; const L=gmLine(g); return g.gm.m-L; }   // + = ratings like the home side more than DraftKings does
+function flagOf(g){ const gap=lineGap(g), d=g.dk||{}; if(gap==null||d.spread==null||Math.abs(gap)<FLAGAT()) return null;
+  const home=gap>0, team=home?g.home:g.away, line=home?d.spread:-d.spread, price=home?(d.spo||{}).home:(d.spo||{}).away;
+  return {team,line,price,gap:Math.abs(gap)}; }
+const spreadTxt=x=>x===0?"pk":(x>0?"+":"−")+Math.abs(x);
+function flagRecord(){ const r=((slate().gmfit||{}).flags||{}).byGap; const k=r&&(r[String(FLAGAT())]||r["3"]); if(!k) return "";
+  return `Since ${slate().gmfit.flags.since}, lines ${FLAGAT()}+ points off the ratings: the flagged side covered ${pct(k.cover,1)} (${k.spreadROI>=0?"+":"−"}${Math.abs(100*k.spreadROI).toFixed(1)}% ± ${(100*k.spreadSE).toFixed(1)}% at closing prices, ${k.seasonsUp} of 10 seasons up, about ${Math.round(k.perSeason/17)} a week). Break-even is 52.4%, so it's a small, unproven lean. Moneylines on the same games lost ${Math.abs(100*k.mlROI).toFixed(0)}%, so flags are for spreads only.`; }
+function flagBox(){ const fl=games().map(g=>({g,f:flagOf(g)})).filter(x=>x.f).sort((a,b)=>b.f.gap-a.f.gap);
+  const tm=x=>x;
+  return `<div class="flagbox"><h3>Lines that don't add up · ${fl.length}</h3>${fl.length?fl.map(({g,f})=>{const m=g.gm.m, L=gmLine(g);
+    const says=x=>x>=0?`${esc(g.home)} by ${Math.abs(x).toFixed(1)}`:`${esc(g.away)} by ${Math.abs(x).toFixed(1)}`;
+    return `<div class="flagline"><span><b>${esc(f.team)} ${spreadTxt(f.line)}</b> ${f.price!=null?`<span class="tiny">${fmtOdds(f.price)}</span>`:""}<span class="sub">ratings ${says(m)} · DraftKings ${says(L)}</span></span><span class="lineflag">${f.gap.toFixed(1)} pts off</span></div>`;}).join(""):`<p class="empty">Every DraftKings spread is within ${FLAGAT()} points of the ratings this week.</p>`}
+    <p class="tiny" style="margin:8px 0 0">${flagRecord()}</p></div>`; }
+function renderTeams(){ const T=slate().teams||[]; const opp={};
+  games().forEach(g=>{opp[g.home]={g,vs:g.away,home:1}; opp[g.away]={g,vs:g.home,home:0};});
+  const sg=x=>`<span class="${x>0.05?"up":x<-0.05?"dn":""}">${x>0?"+":x<0?"−":""}${Math.abs(x).toFixed(1)}</span>`;
+  $("#tab-teams").innerHTML=`<p class="lead">Every team's value in points against an average team on a neutral field. Strength comes from how the betting market has rated the team in recent weeks, which carries defense, roster and coaching; QB is this week's starter against the team's recent quarterbacks; efficiency is opponent-adjusted play-by-play. Home field is worth ${(slate().hfa??2.3).toFixed(1)}. A game's fair line is home field plus the difference in values.</p>
+  ${T.length?`<div class="gcard"><div class="tscroll"><table class="teams"><thead><tr><th>Team</th><th>Value</th><th>Str.</th><th>QB</th><th>Eff.</th><th>Week</th></tr></thead><tbody>${T.map(x=>{const o=opp[x.t], f=o?flagOf(o.g):null;
+    return `<tr><td><span class="rank">${x.rank}</span> ${esc(x.t)} <span class="tiny">${esc(x.qbName||"")}</span></td><td class="v">${sg(x.value)}</td><td>${sg(x.strength)}</td><td>${sg(x.qb)}</td><td>${sg(x.eff)}</td>
+      <td>${o?`${o.home?"vs":"@"} ${esc(o.vs)}${f&&f.team===x.t?` <span class="lineflag">flag</span>`:""}`:"<span class=\"tiny\">bye / played</span>"}</td></tr>`;}).join("")}</tbody></table></div></div>`:`<p class="empty">Team values arrive with the next refresh.</p>`}
+  ${flagBox()}`; }
+
 /* =============================== TD pricing ============================== */
 /* DraftKings anytime-TD pricing, fitted on 8,422 DK prices 2023-24 (about 5 minutes before kickoff):
    fair(DK alone) = logistic(dva + dvb·logit(implied)); best estimate = logistic(a + bk·logit(implied) + bm·logit(model)). */
@@ -134,11 +162,11 @@ function render(){
   $("#srcText").textContent=SRC[SPORT]==="feed"?"live":"built in";
   $("#srcChip").className="pill "+(SRC[SPORT]==="feed"?"on":"");
   if(TAB==="games") renderGames(); if(TAB==="props") renderProps(); if(TAB==="slip") renderSlip();
-  if(TAB==="bets") renderBets(); if(TAB==="model") renderModel();
+  if(TAB==="bets") renderBets(); if(TAB==="model") renderModel(); if(TAB==="teams") renderTeams();
 }
 function showTab(t){ TAB=t; store.set("tab",t);
   document.querySelectorAll('[role="tablist"] button').forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===t)));
-  ["games","props","slip","bets","model"].forEach(k=>{$("#tab-"+k).hidden=(k!==t);}); render(); }
+  ["games","teams","props","slip","bets","model"].forEach(k=>{$("#tab-"+k).hidden=(k!==t);}); render(); }
 
 /* ------------------------------- games ---------------------------------- */
 function mrow(label,side,pModel,price,fair,legSpec,extra){
@@ -150,8 +178,8 @@ function mrow(label,side,pModel,price,fair,legSpec,extra){
 }
 function renderGames(){
   const lg=SPORT, R=RES[lg];
-  $("#tab-games").innerHTML=`<p class="lead">Moneyline and spread come from the game model: team strength (a rating built from every team's past closing lines, which carries defense, roster and coaching), opponent-adjusted efficiency, each starting quarterback's own record, second-year quarterbacks, rest and home field. Each chance starts from DraftKings' own price and moves ${Math.round(100*GMFIT.k)}% of the way toward the model's margin. Against closing lines 2016–25 its sides covered 52.5% when it disagreed by 3+ points (+1.9% ± 3.5% after DraftKings' price, and −2.3% in 2021–25): a lean, not a proven edge. It's separate from the player numbers: nothing here changes a touchdown, yardage or catch number, and scratching a player doesn't change these.</p>`+
-  games().map(g=>{
+  $("#tab-games").innerHTML=`<p class="lead">Each game shows the fair line from the team ratings (Teams tab) next to DraftKings' line, and flags the spreads that sit ${FLAGAT()}+ points away. Moneyline and spread chances start from DraftKings' own price and move ${Math.round(100*GMFIT.k)}% toward the ratings. None of this touches the player numbers.</p>`+
+  flagBox()+games().map(g=>{
     const r=R[g.id], d=g.dk||{}, sp=d.spread, spo=d.spo||{}, ml=d.ml||{};
     const L=gmLine(g), hat=gmHat(g), m=g.gm?g.gm.m:null;
     const fav=sp==null?"":(sp<0?g.home:g.away);
@@ -175,7 +203,7 @@ function renderGames(){
         <div class="mhead"><span>Market</span><span>Chance</span><span>Fair</span><span>DK</span><span>Value</span></div>
         ${mk||'<p class="empty">No line posted yet.</p>'}
       </div>
-      ${g.gm?`<p class="tiny gmwhy">Game model ${tm(m)} · DraftKings ${tm(L)} · after the lean ${tm(hat)}${g.gm.why?` · ${esc(g.gm.why)}`:""}</p>`:""}
+      ${g.gm?`<div class="fairrow">Ratings <b>${tm(m)}</b> · DraftKings <b>${tm(L)}</b>${flagOf(g)?` <span class="lineflag">${esc(flagOf(g).team)} ${spreadTxt(flagOf(g).line)} · ${flagOf(g).gap.toFixed(1)} pts off</span>`:` <span class="tiny">${Math.abs(lineGap(g)).toFixed(1)} pts apart</span>`}</div><p class="tiny gmwhy">${g.gm.why?esc(g.gm.why):"no single factor stands out"}</p>`:""}
       ${r?`<div class="plist">${r.players.filter(p=>!p.field&&!p.hidden).sort((a,b)=>tdFinal(b)-tdFinal(a)).slice(0,8).map(p=>{
         const main=p.mean.RA>=6?`${Math.round(fairLine(p,"rushYds"))} rush yds`:(p.isQB?`${Math.round(fairLine(p,"rushYds"))} rush yds`:`${fairLine(p,"rec")} catches · ${Math.round(fairLine(p,"recYds"))} yds`);
         return `<button class="prow ${isOut(p)?"out":""}" data-goprops="${g.id}|${esc(p.n)}">${avatar(p,1)}

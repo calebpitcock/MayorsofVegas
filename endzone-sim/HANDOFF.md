@@ -30,6 +30,11 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   matchup history of any kind.
 - Spread/moneyline: every attempt to make picks significantly better at closing prices failed (off-market DK prices,
   situational factors, line movement, fitting to the close); see the audit's last section. Don't repeat them.
+- Team ratings + line flags (the user's ask): `game_live.py` writes `slate.teams` (value/rank, parts: strength, QB,
+  efficiency; sums exactly to the game model's margin) and `gmfit.flags` from `gm/flag_record.py`. The page flags DK
+  spreads 3+ pts from the fair line (record since 2016: 52.7% cover, +2.4% ± 3.5%; moneylines −4%, so spreads only).
+  Found and fixed while building it: `model2.build` and `game_live.py` counted defense backwards (defense ratings are EPA
+  allowed); pure-efficiency MAE 10.30 → 10.18, combined model unchanged (10.04).
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
 ## Rules the user set (keep them)

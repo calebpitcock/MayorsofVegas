@@ -11,7 +11,7 @@ def build(tp, qp):
         if h is None or a is None: continue
         qh = qpre.get((g.game_id, g.home_qb_id), qp.get('QPRIOR', -0.02) - 0.08); qa = qpre.get((g.game_id, g.away_qb_id), qp.get('QPRIOR', -0.02) - 0.08)
         uh, ua = upre.get((g.game_id, g.home_team), -0.02), upre.get((g.game_id, g.away_team), -0.02)
-        dh = (h[0] - a[1]) - (a[0] - h[1])
+        dh = (h[0] + a[1]) - (a[0] + h[1])      # offense EPA gained + opponent defense EPA allowed (defense ratings are EPA ALLOWED)
         rows.append(dict(game_id=g.game_id, season=g.season, week=g.week, result=g.result, spread_line=g.spread_line, home_team=g.home_team, away_team=g.away_team,
                          home_moneyline=g.home_moneyline, away_moneyline=g.away_moneyline,
                          epa=dh[0], pepa=dh[1], repa=dh[2], sr=dh[3], qb=qh - qa, qbd=(qh - uh) - (qa - ua),

@@ -199,6 +199,17 @@ nav.bot button{flex:1;display:flex;flex-direction:column;align-items:center;gap:
 nav.bot button[aria-selected="true"]{color:var(--mint)}
 nav.bot svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- team ratings + line flags ---------- */
+.flagbox{background:var(--card);border:1px solid #5a4410;border-left:3px solid var(--amber);border-radius:14px;padding:11px 13px;margin:12px 0}
+.flagbox h3{font-size:14px;margin:0 0 6px}
+.flagline{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line2);font-size:13px}
+.flagline:first-of-type{border-top:0}
+.flagline b{font-family:"DM Mono",monospace;font-weight:500}
+.lineflag{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#3A2A08;color:var(--amber);white-space:nowrap}
+.fairrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 13px 10px;font-size:12px;color:var(--ink2)}
+.fairrow b{font-family:"DM Mono",monospace;font-weight:500;color:var(--ink)}
+table.teams th,table.teams td{padding:8px 5px} table.teams td:first-child{padding-left:10px} table.teams td.v{color:var(--ink)} table.teams .up{color:var(--mint)} table.teams .dn{color:var(--red)}
 </style>
 
 <style>
@@ -276,6 +287,7 @@ details.mine{margin-top:6px} details.mine summary{cursor:pointer;list-style:none
   </div>
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="games" aria-selected="true">Games</button>
+    <button role="tab" data-tab="teams" aria-selected="false">Teams</button>
     <button role="tab" data-tab="props" aria-selected="false">Props</button>
     <button role="tab" data-tab="slip" aria-selected="false">Slip</button>
     <button role="tab" data-tab="bets" aria-selected="false">My bets</button>
@@ -287,11 +299,13 @@ details.mine{margin-top:6px} details.mine summary{cursor:pointer;list-style:none
 <section id="tab-games"></section>
 <section id="tab-props" hidden></section>
 <section id="tab-slip" hidden></section>
+<section id="tab-teams" hidden></section>
 <section id="tab-bets" hidden></section>
 <section id="tab-model" hidden></section>
 </div>
 <nav class="bot" role="tablist">
   <button data-tab="games" aria-selected="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/><path d="M8 12h8M12 9v6"/></svg>Games</button>
+  <button data-tab="teams" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 6h10M4 12h14M4 18h7"/><path d="M18 4l2 2-2 2"/></svg>Teams</button>
   <button data-tab="props" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 19V10M10 19V5M16 19v-7M21 19H3"/></svg>Props</button>
   <button data-tab="slip" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Slip</button>
   <button data-tab="bets" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>My bets</button>

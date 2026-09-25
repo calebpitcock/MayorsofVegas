@@ -34,13 +34,34 @@ def main(slate_path):
     _, mstate = market.ratings(Gm, **model3.MP); mr, _ = market.live(mstate, SEASON)
     y2 = lambda pid: 1.0 if model3.career_year(pid, SEASON) == 1 else 0.0
     dk = pd.read_csv('../../data/dk_game_lines_latest.csv'); dk = dk[dk.Bookmaker == 'DraftKings']
+    # ---- team values: every team's worth in points against an average team on a neutral field. The game model is
+    # linear in home-minus-away features, so each team has its own value and a game's fair margin is
+    # home field + value(home) - value(away) + rest/division terms. Parts: market strength, QB, efficiency.
+    ci = {c: w[1 + i] for i, c in enumerate(cols)}
+    TEAMS = sorted(mr)
+    def starter(t): return name2pid.get(ov['STARTER'].get(t)) or b.starter(t, WEEK)
+    parts = {}
+    for t in TEAMS:
+        o, dd = team(t); q = starter(t); rq = qbr(q); u = used[t]['x'] / used[t]['w'] if t in used and used[t]['w'] > 0 else -0.02
+        parts[t] = dict(strength=ci['mkt'] * mr[t], eff=float(sum(ci[c] * (o[i] - dd[i]) for i, c in enumerate(('epa', 'pepa', 'repa', 'sr')))),
+                        qb=ci['qb'] * rq + ci['qbd'] * (rq - u) + ci['qb2'] * y2(q), qbName=R.loc[q, 'full_name'] if q in R.index else None)
+    mean = {k: float(np.mean([parts[t][k] for t in TEAMS])) for k in ('strength', 'eff', 'qb')}
+    rows = []
+    for t in TEAMS:
+        p = parts[t]; v = {k: p[k] - mean[k] for k in ('strength', 'eff', 'qb')}
+        rows.append(dict(t=t, value=round(sum(v.values()), 1), strength=round(v['strength'], 1), qb=round(v['qb'], 1), eff=round(v['eff'], 1), qbName=p['qbName']))
+    rows.sort(key=lambda x: -x['value'])
+    for i, x in enumerate(rows): x['rank'] = i + 1
+    slate['teams'] = rows; slate['hfa'] = round(float(w[0]), 2)
+    FR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'flag_record.json')
+    flags = json.load(open(FR)) if os.path.exists(FR) else None
     for g in slate['games']:
         h, a = g['home'], g['away']; r = G[(G.home_team == h) & (G.away_team == a)]
         if r.empty: continue
         r = r.iloc[0]
         qh = name2pid.get(ov['STARTER'].get(h)) or b.starter(h, WEEK); qa = name2pid.get(ov['STARTER'].get(a)) or b.starter(a, WEEK)
         (oh, dh), (oa, da) = team(h), team(a)
-        diff = (oh - da) - (oa - dh)
+        diff = (oh + da) - (oa + dh)          # defense ratings are EPA allowed (higher = worse)
         rh, ra = qbr(qh), qbr(qa)
         uh = used[h]['x'] / used[h]['w'] if h in used and used[h]['w'] > 0 else -0.02
         ua = used[a]['x'] / used[a]['w'] if a in used and used[a]['w'] > 0 else -0.02
@@ -70,6 +91,7 @@ def main(slate_path):
             g['dk'] = dict(src='consensus', spread=-float(r.spread_line), spo=dict(home=int(r.home_spread_odds), away=int(r.away_spread_odds)),
                            ml=dict(home=int(r.home_moneyline), away=int(r.away_moneyline)))
         print(f"{a}@{h}: model {h} {m:+.1f} | line {h} {-g['dk']['spread']:+.1f} ({g['dk']['src']}) | {g['gm']['why']}")
-    slate['gmfit'] = dict(k=K_LEAN, b=ANCHOR['b'], slope=ANCHOR['slope'], coef=dict(zip(['hfa'] + cols, map(float, w))))
+    slate['gmfit'] = dict(k=K_LEAN, b=ANCHOR['b'], slope=ANCHOR['slope'], coef=dict(zip(['hfa'] + cols, map(float, w))), flagAt=3.0, flags=flags)
+    for x in rows[:32]: print(f"{x['rank']:2d} {x['t']:3s} {x['value']:+5.1f}  strength {x['strength']:+5.1f} qb {x['qb']:+5.1f} eff {x['eff']:+5.1f}  {x['qbName']}")
     json.dump(slate, open(slate_path, 'w'))
 if __name__ == '__main__': main(sys.argv[1])
