@@ -2,7 +2,7 @@
 The game model never touches the player simulation."""
 import json, sys, os, numpy as np, pandas as pd
 sys.path.insert(0, '..'); sys.path.insert(0, '.')
-import ratings2 as rt, model2, model3, market
+import ratings2 as rt, model2, model3, model4, market
 P = dict(HG=14.0, CARRY=0.85, M0=3.0); QP = dict(QHL=1500.0, QCARRY=0.8, QM0=100.0, QPRIOR=-0.02)
 K_LEAN = 0.10          # lean toward the model vs DraftKings' line. Fitted vs closing lines 2016-25: 0.17 ± 0.08; set conservatively (close_eval3.py)
 ANCHOR = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'anchor.json')))   # win/cover rates per point, ml_anchor.py
@@ -10,10 +10,13 @@ FULL = {'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Ravens':'BA
 def main(slate_path):
     slate = json.load(open(slate_path)); ov = json.load(open('../overrides.json')); WEEK = ov['week']; SEASON = 2026
     # 1) fitted margin model on every completed season
-    D = model3.add(model2.build(P, QP), model3.MP)
+    D = model4.add(model2.build(P, QP))
     tr = D[(D.season < SEASON + 1) & (D.week >= 3)]; sw = 0.5 ** ((SEASON - tr.season) / 8.0)
-    cols = model3.F3; A = np.column_stack([np.ones(len(tr))] + [tr[c] for c in cols]); Wt = sw.values[:, None]
+    cols = model4.F4; A = np.column_stack([np.ones(len(tr))] + [tr[c] for c in cols]); Wt = sw.values[:, None]
     w = np.linalg.solve((A * Wt).T @ A + np.diag([0] + [1] * len(cols)), (A * Wt).T @ tr.result.values)
+    # stats-only view (no books rating): how good each team is on the field, for the Stats rank and the off/def/ST columns
+    cols2 = [c for c in cols if c != 'mkt']; A2 = np.column_stack([np.ones(len(tr))] + [tr[c] for c in cols2])
+    w2 = np.linalg.solve((A2 * Wt).T @ A2 + np.diag([0] + [1] * len(cols2)), (A2 * Wt).T @ tr.result.values); c2 = {c: w2[1 + i] for i, c in enumerate(cols2)}
     # 2) ratings as of now
     _, st = rt.team_ratings(**P); _, _, qs, used = rt.qb_ratings(**QP)
     T0 = rt.T0; mu = T0[T0.season == SEASON][rt.STATS].mean().values
@@ -35,50 +38,66 @@ def main(slate_path):
     y2 = lambda pid: 1.0 if model3.career_year(pid, SEASON) == 1 else 0.0
     dk = pd.read_csv('../../data/dk_game_lines_latest.csv'); dk = dk[dk.Bookmaker == 'DraftKings']
     # ---- team values: every team's worth in points against an average team on a neutral field. The game model is
-    # linear in home-minus-away features, so each team has its own value and a game's fair margin is
-    # home field + value(home) - value(away) + rest/division terms. Parts: market strength, QB, efficiency.
+    # linear in home-minus-away features, so each team has its own value and a game's fair margin is exactly
+    # home field + value(home) - value(away) + rest/division terms. Parts: the books' rating, this week's QB, offense,
+    # defense and special teams (opponent-adjusted play-by-play), plus a small public-opinion share when available.
     ci = {c: w[1 + i] for i, c in enumerate(cols)}
+    _, stst = model4.st_ratings()
+    def st_of(t):
+        x = stst.get(t)
+        if not x: return 0.0
+        c = model4.ST['CARRY'] if x['season'] != SEASON else 1.0
+        return x['x'] * c / (x['w'] * c + model4.ST['M0'])
     TEAMS = sorted(mr)
     def starter(t): return name2pid.get(ov['STARTER'].get(t)) or b.starter(t, WEEK)
     parts = {}
     for t in TEAMS:
         o, dd = team(t); q = starter(t); rq = qbr(q); u = used[t]['x'] / used[t]['w'] if t in used and used[t]['w'] > 0 else -0.02
-        parts[t] = dict(strength=ci['mkt'] * mr[t], eff=float(sum(ci[c] * (o[i] - dd[i]) for i, c in enumerate(('epa', 'pepa', 'repa', 'sr')))),
-                        qb=ci['qb'] * rq + ci['qbd'] * (rq - u) + ci['qb2'] * y2(q), qbName=R.loc[q, 'full_name'] if q in R.index else None)
-    mean = {k: float(np.mean([parts[t][k] for t in TEAMS])) for k in ('strength', 'eff', 'qb')}
-    rows = []
+        parts[t] = dict(books=ci['mkt'] * mr[t], off=ci['off_epa'] * o[0] + ci['off_sr'] * o[3], dfn=-(ci['def_epa'] * dd[0] + ci['def_sr'] * dd[3]),
+                        st=ci['st'] * st_of(t), qb=ci['qb'] * rq + ci['qbd'] * (rq - u) + ci['qb2'] * y2(q),
+                        qbName=R.loc[q, 'full_name'] if q in R.index else None, qbid=q,
+                        off2=c2['off_epa'] * o[0] + c2['off_sr'] * o[3], dfn2=-(c2['def_epa'] * dd[0] + c2['def_sr'] * dd[3]), st2=c2['st'] * st_of(t),
+                        qbS=c2['qb'] * rq + c2['qbd'] * (rq - u) + c2['qb2'] * y2(q))
+    K = ('books', 'qb', 'off', 'dfn', 'st')
+    mean = {k: float(np.mean([parts[t][k] for t in TEAMS])) for k in K + ('off2', 'dfn2', 'st2', 'qbS')}
     for t in TEAMS:
-        p = parts[t]; v = {k: p[k] - mean[k] for k in ('strength', 'eff', 'qb')}
-        rows.append(dict(t=t, value=round(sum(v.values()), 1), strength=round(v['strength'], 1), qb=round(v['qb'], 1), eff=round(v['eff'], 1), qbName=p['qbName']))
-    rows.sort(key=lambda x: -x['value'])
-    for i, x in enumerate(rows): x['rank'] = i + 1
+        for k in K + ('off2', 'dfn2', 'st2', 'qbS'): parts[t][k] -= mean[k]
+        parts[t]['model'] = sum(parts[t][k] for k in K); parts[t]['stats'] = parts[t]['off2'] + parts[t]['dfn2'] + parts[t]['st2']
+    # public opinion (power rankings fetched at refresh time into public_rank.json); fixed small weight, untestable
+    PUBW = 0.10
+    pf = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public_rank.json')
+    pub = json.load(open(pf)) if os.path.exists(pf) else None
+    if pub and (pub.get('season'), pub.get('week')) != (SEASON, WEEK): pub = None          # stale: last week's rankings don't count
+    ladder = sorted((parts[t]['model'] for t in TEAMS), reverse=True)                    # public rank r -> the r-th best model value
+    for t in TEAMS:
+        r = (pub or {}).get('ranks', {}).get(t)
+        parts[t]['public'] = ladder[r - 1] if r else None
+        parts[t]['value'] = (1 - PUBW) * parts[t]['model'] + PUBW * parts[t]['public'] if r else parts[t]['model']
+    rk = lambda key: {t: i + 1 for i, t in enumerate(sorted(TEAMS, key=lambda t: -parts[t][key]))}
+    rv, rb, rs = rk('value'), rk('books'), rk('stats')
+    rows = [dict(t=t, rank=rv[t], value=round(parts[t]['value'], 1), books=round(parts[t]['books'], 1), qb=round(parts[t]['qb'], 1),
+                 off=round(parts[t]['off2'], 1), dfn=round(parts[t]['dfn2'], 1), st=round(parts[t]['st2'], 1), stats=round(parts[t]['stats'], 1),
+                 booksRank=rb[t], statsRank=rs[t], publicRank=(pub or {}).get('ranks', {}).get(t), qbName=parts[t]['qbName']) for t in TEAMS]
+    rows.sort(key=lambda x: x['rank'])
     slate['teams'] = rows; slate['hfa'] = round(float(w[0]), 2)
+    slate['public'] = dict(source=pub['source'], asOf=pub.get('asOf'), weight=PUBW) if pub else None
     FR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'flag_record.json')
     flags = json.load(open(FR)) if os.path.exists(FR) else None
     for g in slate['games']:
         h, a = g['home'], g['away']; r = G[(G.home_team == h) & (G.away_team == a)]
         if r.empty: continue
         r = r.iloc[0]
-        qh = name2pid.get(ov['STARTER'].get(h)) or b.starter(h, WEEK); qa = name2pid.get(ov['STARTER'].get(a)) or b.starter(a, WEEK)
-        (oh, dh), (oa, da) = team(h), team(a)
-        diff = (oh + da) - (oa + dh)          # defense ratings are EPA allowed (higher = worse)
-        rh, ra = qbr(qh), qbr(qa)
-        uh = used[h]['x'] / used[h]['w'] if h in used and used[h]['w'] > 0 else -0.02
-        ua = used[a]['x'] / used[a]['w'] if a in used and used[a]['w'] > 0 else -0.02
-        f = dict(epa=diff[0], pepa=diff[1], repa=diff[2], sr=diff[3], qb=rh - ra, qbd=(rh - uh) - (ra - ua),
-                 rest=float(np.clip(r.home_rest - r.away_rest, -7, 7)), div=int(r.div_game), neutral=int(r.location == 'Neutral'),
-                 mkt=mr[h] - mr[a], qb2=y2(qh) - y2(qa))
-        m = float(w[0] + sum(w[i + 1] * f[c] for i, c in enumerate(cols)))
+        qh, qa = parts[h]['qbid'], parts[a]['qbid']
+        rest = float(np.clip(r.home_rest - r.away_rest, -7, 7)); neu = int(r.location == 'Neutral')
+        m = float(w[0] + ci['neutral'] * neu + ci['rest'] * rest + ci['div'] * int(r.div_game) + parts[h]['value'] - parts[a]['value'])
+        sv = lambda t: parts[t]['stats'] + parts[t]['qbS']          # stats view: on-field numbers and QB only, no books
+        ms = float(w2[0] + c2['neutral'] * neu + c2['rest'] * rest + c2['div'] * int(r.div_game) + sv(h) - sv(a))
         why = []
-        qbpts = w[1 + cols.index('qb')] * f['qb'] + w[1 + cols.index('qbd')] * f['qbd']
-        if abs(qbpts) >= 1.5: why.append(f"quarterbacks worth {abs(qbpts):.1f} pts to {h if qbpts > 0 else a}")
-        effpts = sum(w[1 + cols.index(c)] * f[c] for c in ('epa', 'pepa', 'repa', 'sr'))
-        mpts = w[1 + cols.index('mkt')] * f['mkt']
-        if abs(mpts) >= 1.5: why.append(f"team strength {abs(mpts):.1f} pts to {h if mpts > 0 else a}")
-        if abs(effpts) >= 1.5: why.append(f"recent efficiency {abs(effpts):.1f} pts to {h if effpts > 0 else a}")
-        if f['qb2']: why.append(f"second-year QB for {h if f['qb2'] > 0 else a}")
-        if f['rest']: why.append(f"rest {'+' if f['rest'] > 0 else ''}{int(f['rest'])} days for {h}")
-        g['gm'] = dict(m=round(m, 2), qbH=R.loc[qh, 'full_name'] if qh in R.index else None, qbA=R.loc[qa, 'full_name'] if qa in R.index else None, why='; '.join(why))
+        for k, lab in (('books', 'books rate'), ('qb', 'quarterback'), ('off', 'offense'), ('dfn', 'defense'), ('st', 'special teams')):
+            x = parts[h][k] - parts[a][k]
+            if abs(x) >= 1.5: why.append(f"{lab} {abs(x):.1f} pts to {h if x > 0 else a}")
+        if rest: why.append(f"rest {'+' if rest > 0 else ''}{int(rest)} days for {h}")
+        g['gm'] = dict(m=round(m, 2), ms=round(ms, 2), qbH=R.loc[qh, 'full_name'] if qh in R.index else None, qbA=R.loc[qa, 'full_name'] if qa in R.index else None, why='; '.join(why))
         # DraftKings lines if posted, else the nflverse consensus line
         d = dk[(dk.Home.map(FULL) == h) & (dk.Away.map(FULL) == a)]
         if len(d):
@@ -90,8 +109,8 @@ def main(slate_path):
         else:
             g['dk'] = dict(src='consensus', spread=-float(r.spread_line), spo=dict(home=int(r.home_spread_odds), away=int(r.away_spread_odds)),
                            ml=dict(home=int(r.home_moneyline), away=int(r.away_moneyline)))
-        print(f"{a}@{h}: model {h} {m:+.1f} | line {h} {-g['dk']['spread']:+.1f} ({g['dk']['src']}) | {g['gm']['why']}")
-    slate['gmfit'] = dict(k=K_LEAN, b=ANCHOR['b'], slope=ANCHOR['slope'], coef=dict(zip(['hfa'] + cols, map(float, w))), flagAt=3.0, flags=flags)
-    for x in rows[:32]: print(f"{x['rank']:2d} {x['t']:3s} {x['value']:+5.1f}  strength {x['strength']:+5.1f} qb {x['qb']:+5.1f} eff {x['eff']:+5.1f}  {x['qbName']}")
+        print(f"{a}@{h}: ratings {h} {m:+.1f} stats {h} {ms:+.1f} | line {h} {-g['dk']['spread']:+.1f} ({g['dk']['src']}) | {g['gm']['why']}")
+    slate['gmfit'] = dict(k=K_LEAN, b=ANCHOR['b'], slope=ANCHOR['slope'], coef=dict(zip(['hfa'] + cols, map(float, w))), flagAt=3.0, flagAtStats=5.0, flags=flags)
+    for x in rows: print(f"{x['rank']:2d} {x['t']:3s} {x['value']:+5.1f} | books {x['books']:+5.1f} (#{x['booksRank']}) qb {x['qb']:+5.1f} | stats {x['stats']:+5.1f} #{x['statsRank']} (off {x['off']:+4.1f} def {x['dfn']:+4.1f} st {x['st']:+4.1f}) public #{x['publicRank']}  {x['qbName']}")
     json.dump(slate, open(slate_path, 'w'))
 if __name__ == '__main__': main(sys.argv[1])

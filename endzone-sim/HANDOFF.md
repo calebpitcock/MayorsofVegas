@@ -35,6 +35,16 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   spreads 3+ pts from the fair line (record since 2016: 52.7% cover, +2.4% ± 3.5%; moneylines −4%, so spreads only).
   Found and fixed while building it: `model2.build` and `game_live.py` counted defense backwards (defense ratings are EPA
   allowed); pure-efficiency MAE 10.30 → 10.18, combined model unchanged (10.04).
+- Team values v2 (user's spec): `gm/model4.py` splits opponent-adjusted offense and defense, adds special teams
+  (`gm/st_games.py`, split-half r 0.16, shrunk) and keeps the books' rating and QB terms. `game_live.py` writes
+  `slate.teams` (value, books, stats with off/def/st, QB, public rank) and two fair lines per game: `g.gm.m` (ratings) and
+  `g.gm.ms` (stats only, no books). Flags: stats 5+ pts off (2016–25: 57.0%, 9/10 seasons), ratings 3+ (53.0%, 8/10);
+  records in `gm/flag_record.json` (`gm/flag_record.py`). Flags are shown as mismatches, not picks (user's ask).
+- Team-specific home field: tested and rejected (season-to-season r −0.04 vs the line, 2002–25; fitted weight −0.3).
+- Public opinion: `public_rank.json` = {season, week, source, asOf, ranks: {TEAM: rank}}, 10% of value, only used when
+  its week matches. The rankings sites (nfl.com, espn.com, walterfootball.com, sharpfootballanalysis.com) are blocked by
+  this environment's network policy; once the user allows one, fetch this week's ranking with WebFetch during the
+  refresh, write the file, rerun `gm/game_live.py`. Not backtestable (no history), so its weight is fixed, not fitted.
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
 ## Rules the user set (keep them)
