@@ -66,7 +66,7 @@ def main(slate_path):
     # ---- ONE combined value per team (user's spec). Blend chosen on 2016-20 only (blend_select.py): the books' view gets
     # BOOKS_W, the stats view (offense, defense, special teams, QB; no books) the rest. Public power rankings count
     # PUBW of the final value when this week's ranking is available. Each home team gets the league home field plus
-    # HFA_SHARE of its own edge (nfelo's tracker when reachable, else computed from nflverse results), capped.
+    # HFA_SHARE of its own edge (computed from nflverse results; an optional hfa_source.json overrides it), capped.
     BOOKS_W, PUBW, HFA_SHARE, HFA_CAP = 0.25, 0.10, 0.5, 1.0
     here = os.path.dirname(os.path.abspath(__file__))
     for t in TEAMS:

@@ -49,12 +49,12 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   stats + QB) + 0.75 × stats view (off/def/ST + QB, no books), then 10% public power ranking when available; each home
   team's home field = league + 0.5 × its own edge (cap ±1). Flag at 4+ pts. Blend and threshold chosen on 2016–20
   (`gm/blend_select.py`); record in `gm/flag_record.json`: 2016–25 55.1% (532), 2021–25 53.1% (241).
-- Sources: public = NFL.com weekly power rankings (`public_rank.json`: {season, week, source, asOf, ranks: {TEAM: rank}});
-  home field = nfelo HFA tracker, https://www.nfeloapp.com/tools/nfl-home-field-advantage-hfa-tracker/ (`hfa_source.json`:
-  {season, source, asOf, hfa: {TEAM: points}}). Both sites are BLOCKED by this environment's network policy (only GitHub and
-  package registries pass). Until the user allows www.nfl.com and www.nfeloapp.com, public is left out and home field comes
-  from nflverse results (`model4.home_edges`). Once allowed: WebFetch both during the refresh, write the two files,
-  rerun `cd gm && python3 game_live.py ../slate_nfl.json`, then build and publish.
+- Sources: public = NFL.com weekly power rankings (`public_rank.json`: {season, week, source, asOf, ranks: {TEAM: rank}}),
+  e.g. https://www.nfl.com/news/nfl-power-rankings-week-3-2026-nfl-season. Home field = nflverse results
+  (`model4.home_edges`); the user chose not to use nfelo. Network: the environment needs Custom access with
+  `www.nfl.com` plus the default package-manager list (GitHub, raw/release-assets, PyPI, npm cover everything else).
+  At refresh: WebFetch this week's NFL.com ranking, write `public_rank.json`, rerun `cd gm && python3 game_live.py
+  ../slate_nfl.json`, then build and publish.
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
 ## Rules the user set (keep them)
