@@ -53,7 +53,8 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   e.g. https://www.nfl.com/news/nfl-power-rankings-week-3-2026-nfl-season. Home field = nflverse results
   (`model4.home_edges`); the user chose not to use nfelo. Network: the environment needs Custom access with
   `www.nfl.com` plus the default package-manager list (GitHub, raw/release-assets, PyPI, npm cover everything else).
-  At refresh: WebFetch this week's NFL.com ranking, write `public_rank.json`, rerun `cd gm && python3 game_live.py
+  At refresh, `fetch_public.py` (run by pregame.sh) downloads the week's NFL.com ranking with curl (WebFetch stays blocked
+  even when the session network allows the host) and writes `public_rank.json`; rerun `cd gm && python3 game_live.py
   ../slate_nfl.json`, then build and publish.
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
