@@ -1,0 +1,17 @@
+data/
+*.parquet
+_bundle.js
+endzone-sim/bt_*.json
+endzone-sim/role_20*.csv
+__pycache__/
+db/
+endzone-sim/*.log
+endzone-sim/lb*.txt
+endzone-sim/lp*.txt
+endzone-sim/role_coef_ex*.json
+endzone-sim/endzone.html
+endzone-sim/slate_nfl.json
+endzone-sim/smoke_games.png
+endzone-sim/smoke_teams.png
+
+endzone-sim/hfa_source.json
