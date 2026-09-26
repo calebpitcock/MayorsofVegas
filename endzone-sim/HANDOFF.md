@@ -45,6 +45,16 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   its week matches. The rankings sites (nfl.com, espn.com, walterfootball.com, sharpfootballanalysis.com) are blocked by
   this environment's network policy; once the user allows one, fetch this week's ranking with WebFetch during the
   refresh, write the file, rerun `gm/game_live.py`. Not backtestable (no history), so its weight is fixed, not fitted.
+- ONE combined value + ONE flag (user's latest spec, replaces the two-flag version): value = 0.25 × ratings view (books +
+  stats + QB) + 0.75 × stats view (off/def/ST + QB, no books), then 10% public power ranking when available; each home
+  team's home field = league + 0.5 × its own edge (cap ±1). Flag at 4+ pts. Blend and threshold chosen on 2016–20
+  (`gm/blend_select.py`); record in `gm/flag_record.json`: 2016–25 55.1% (532), 2021–25 53.1% (241).
+- Sources: public = NFL.com weekly power rankings (`public_rank.json`: {season, week, source, asOf, ranks: {TEAM: rank}});
+  home field = nfelo HFA tracker, https://www.nfeloapp.com/tools/nfl-home-field-advantage-hfa-tracker/ (`hfa_source.json`:
+  {season, source, asOf, hfa: {TEAM: points}}). Both sites are BLOCKED by this environment's network policy (only GitHub and
+  package registries pass). Until the user allows www.nfl.com and www.nfeloapp.com, public is left out and home field comes
+  from nflverse results (`model4.home_edges`). Once allowed: WebFetch both during the refresh, write the two files,
+  rerun `cd gm && python3 game_live.py ../slate_nfl.json`, then build and publish.
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
 ## Rules the user set (keep them)
