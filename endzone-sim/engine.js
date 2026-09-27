@@ -162,6 +162,8 @@ function simGameV3(g,opts,ctx){
   const tun=ctx.tuning||{}, SS=tun.schemeScale??1;
   /* matchup layer (v3.1): the defense each side faces, from data (g.defp.away = the defense the AWAY offense faces) */
   const OPP=ctx.opp??1, SCH=ctx.scheme||"data";
+  /* matchup weight: 1 = the weight that tested best, 0 = matchups off, >1 = emphasised (tested worse; see audit) */
+  const MW=ctx.mw??1;
   const dp=[(g.defp&&g.defp.away)||null,(g.defp&&g.defp.home)||null];
   const schemeFrom=(i,team)=>{
     if(opts.neutral||SCH==="off") return Object.assign({},LEAGUE);
@@ -180,19 +182,19 @@ function simGameV3(g,opts,ctx){
   const K=opts.k||[1,1];
   const pace=[(g.pace&&g.pace.away)||1,(g.pace&&g.pace.home)||1];
   const pBase=[(g.passRate&&g.passRate.away)??L.passBase,(g.passRate&&g.passRate.home)??L.passBase];
-  const runEff=[1+(sf[0].run-.5)*.35, 1+(sf[1].run-.5)*.35].map((x,i)=>x*Math.sqrt(mix[i].rush)*(OPP&&dp[i]?Math.pow(dp[i].ypc,.6):1));
-  const passEff=[1+(sf[0].pass-.5)*.35, 1+(sf[1].pass-.5)*.35].map((x,i)=>x*(OPP&&dp[i]?Math.pow(dp[i].ypt,.6):1));
+  const runEff=[1+(sf[0].run-.5)*.35, 1+(sf[1].run-.5)*.35].map((x,i)=>x*Math.sqrt(mix[i].rush)*(OPP&&dp[i]?Math.pow(dp[i].ypc,.6*MW):1));
+  const passEff=[1+(sf[0].pass-.5)*.35, 1+(sf[1].pass-.5)*.35].map((x,i)=>x*(OPP&&dp[i]?Math.pow(dp[i].ypt,.6*MW):1));
   /* where this defense lets targets and receiving touchdowns go, by position */
   /* Where a defense allowed its touchdowns (by position, run vs pass) is not used: split-half reliability over
      2016-25 was ~0 (audit/dvp.py), so it only added noise to touchdown odds. ctx.tdloc=1 restores it for tests. */
   const TDLOC=ctx.tdloc??0;
   const oppT=new Float64Array(n).fill(1), oppRZ=new Float64Array(n).fill(1);
   if(OPP) ROS.forEach((p,i)=>{ const d=dp[p.side===g.home?1:0]; if(!d||p.field||p.pos==="QB") return;
-    oppT[i]=Math.pow(d.tgt[p.pos]??1,.7); if(TDLOC) oppRZ[i]=Math.pow(d.tdpos[p.pos]??1,.5); });
+    oppT[i]=Math.pow(d.tgt[p.pos]??1,.7*MW); if(TDLOC) oppRZ[i]=Math.pow(d.tdpos[p.pos]??1,.5); });
   const rzRunLean=[OPP&&TDLOC&&dp[0]?(1-dp[0].rtd)*.25:0, OPP&&TDLOC&&dp[1]?(1-dp[1].rtd)*.25:0];
   /* coverage and pressure matchup (scheme_match.py): each receiver's man/zone and blitz target split against this
      defense's rates, damped to the share of it that held up out of sample. p.cov = 1 when unknown. */
-  const covM=Float64Array.from(ROS,p=>(p.cov>0&&!p.field)?p.cov:1);
+  const covM=Float64Array.from(ROS,p=>(p.cov>0&&!p.field)?Math.max(.5,1+MW*(p.cov-1)):1);
   /* coaching: each head coach's fourth-down aggressiveness as a log-odds shift on the discretionary go rates
      (g.agg, from nfl_build.coach_agg), and wind, which trims passing at outdoor games (g.wind mph; audit: about
      -2 points of pass rate at 15-20 mph and -3 above 20, beyond what the lower total already says) */

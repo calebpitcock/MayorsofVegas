@@ -6,7 +6,7 @@ const SL={NFL:JSON.parse(JSON.stringify(BASE_NFL))};
 const SRC={NFL:"baseline"};
 const RES={NFL:{}};
 let SPORT="NFL", TAB="games", N=5000, running=false, runToken=0;
-let TRUST=1, LAMP=.8;
+let TRUST=1, LAMP=.8, MW=1;          // MW: matchup weight (1 = the weight that tested best)
 const OUT=new Set(), IN=new Set();       // manual scratches / manual restores
 let LEGS=[];
 let grades=null, ledger={bets:[]}, suggested=null, dbRef=null;
@@ -16,14 +16,14 @@ let PFILT={market:"td", game:"all"};
 const MEM={};   /* keeps this visit working when browser storage is blocked */
 const store={get(k,d){ if(k in MEM) return MEM[k]; try{const v=localStorage.getItem("ez:"+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
              set(k,v){ MEM[k]=v; try{localStorage.setItem("ez:"+k,JSON.stringify(v));}catch(e){}}};
-TAB=store.get("tab","games"); PFILT=store.get("pfilt",PFILT);
+TAB=store.get("tab","games"); PFILT=store.get("pfilt",PFILT); MW=+store.get("mw",1)||0;
 
 const slate=()=>SL[SPORT], games=()=>slate().games;
 const gameById=id=>games().find(g=>g.id===id);
 const leagueOf=gid=>"NFL";
 const initials=n=>n.split(" ").filter(w=>w&&!/^(I{1,3}|IV|V|Jr\.?|Sr\.?)$/.test(w)).slice(0,2).map(w=>w[0]).join("");
 const POSCOLOR={QB:"var(--qb)",RB:"var(--rb)",WR:"var(--wr)",TE:"var(--te)",FLD:"var(--fld)"};
-const ctx=()=>({tuning:TUNING,out:outSet(),tune:TUNE,opp:1,scheme:"off"});
+const ctx=()=>({tuning:TUNING,out:outSet(),tune:TUNE,opp:1,scheme:"off",mw:MW});
 function outSet(){ const s=new Set(OUT); return s; }
 function isOut(p){ return (p.out&&!IN.has(p.n))||OUT.has(p.n); }
 
@@ -45,7 +45,7 @@ function gameInputs(g){
   return gi;
 }
 function needsCal(g){ const touched=g.players.some(p=>OUT.has(p.n)||IN.has(p.n));
-  return !(g.k&&g.kFor&&g.kFor[0]===g.spread&&g.kFor[1]===g.total&&(g.kTrust??1)===TRUST&&!touched); }
+  return !(g.k&&g.kFor&&g.kFor[0]===g.spread&&g.kFor[1]===g.total&&(g.kTrust??1)===TRUST&&MW===1&&!touched); }
 function simOne(g,n,legs){
   const gi=gameInputs(g);
   let k=g._k;
@@ -207,11 +207,11 @@ function renderGames(){
         ${mk||'<p class="empty">No line posted yet.</p>'}
       </div>
       ${g.gm?`<div class="fairrow">DraftKings <b>${tm(L)}</b> · team values <b>${tm(m)}</b>${flagOf(g)?` <span class="lineflag">${flagOf(g).gap.toFixed(1)} pts apart</span>`:` <span class="tiny">${Math.abs(lineGap(g)).toFixed(1)} pts apart</span>`}</div><p class="tiny gmwhy">${g.gm.why?esc(g.gm.why):"no single factor stands out"}</p>`:""}
-      ${g.defScheme?`<p class="tiny gmwhy">Coverage · ${[[g.home,g.defScheme.away],[g.away,g.defScheme.home]].map(([t,d])=>`${esc(t)} D: man ${Math.round(100*d.man)}%, blitz ${Math.round(100*d.blitz)}%`).join(" · ")} <span class="tiny">(league ${Math.round(100*g.defScheme.lg.man)}% / ${Math.round(100*g.defScheme.lg.blitz)}%)</span></p>`:""}
+      ${g.mx?`<details class="sp"><summary>Matchups: ${Object.values(g.mx.players).filter(v=>v.verdict!=="No edge").length} players with an edge or disadvantage</summary><div class="note">${[g.away,g.home].map(t=>g.mx.teams[t]?`<p class="tiny"><b>${esc(t)} offense:</b> ${esc(g.mx.teams[t])}</p>`:"").join("")}${Object.entries(g.mx.players).sort((a,b)=>Math.abs(b[1].dTD)-Math.abs(a[1].dTD)).map(([n,v])=>`<p class="tiny">${mxBadge(v)} <b>${esc(n)}</b> ${esc(v.text.replace(/^[^:]+: /,""))}</p>`).join("")}</div></details>`:""}
       ${r?`<div class="plist">${r.players.filter(p=>!p.field&&!p.hidden).sort((a,b)=>tdFinal(b)-tdFinal(a)).slice(0,8).map(p=>{
         const main=p.mean.RA>=6?`${Math.round(fairLine(p,"rushYds"))} rush yds`:(p.isQB?`${Math.round(fairLine(p,"rushYds"))} rush yds`:`${fairLine(p,"rec")} catches · ${Math.round(fairLine(p,"recYds"))} yds`);
         return `<button class="prow ${isOut(p)?"out":""}" data-goprops="${g.id}|${esc(p.n)}">${avatar(p,1)}
-          <span><span class="pn">${esc(p.n)}</span><span class="ps">${esc(p.t)} ${esc(p.pos)} · ${main}${p.cov&&Math.abs(p.cov-1)>=.02?` · coverage matchup ${p.cov>1?"+":"−"}${Math.abs(100*(p.cov-1)).toFixed(0)}% targets`:""}${p.flag?` · <b class="warnc">${esc(p.flag)}</b>`:""}</span></span>
+          <span><span class="pn">${esc(p.n)}</span><span class="ps">${esc(p.t)} ${esc(p.pos)} · ${main}${(()=>{const v=mxOf(g,p);return v&&v.verdict!=="No edge"?` · matchup: ${esc(v.verdict.toLowerCase())} (${v.dTD>=0?"+":"−"}${Math.abs(100*v.dTD).toFixed(1)} TD pts)`:"";})()}${p.flag?` · <b class="warnc">${esc(p.flag)}</b>`:""}</span></span>
           <span class="pv">${pct(tdFinal(p),0)}</span><span class="pe">TD</span></button>`;}).join("")}</div>`:`<p class="empty">simulating players…</p>`}
       <details class="sp"><summary>Scratch or restore a player</summary><div class="scratch">${
         g.players.filter(p=>p.pos==="QB"||p.rush>=.08||p.rec>=.08||p.out).map(p=>`<label><input type="checkbox" data-out="${esc(p.n)}" ${isOut(p)?"checked":""}>
@@ -255,7 +255,7 @@ function renderProps(){
         <span class="who"><span class="nm">${esc(p.n)} ${isOut(p)?'<span class="verdict pricey">out</span>':""}</span>
           <span class="sub">${esc(p.t)} vs ${esc(p.t===g.home?g.away:g.home)} · ${esc(g.kick||"")}${price!=null?` · DK ${p.mktSrc==="est"?"≈":""}${fmtOdds(price)}`:" · no price on file"}${p.flag?` · <b class="warnc">${esc(p.flag)}</b>`:""}</span>
           <span class="bar"><i style="width:${(100*f).toFixed(1)}%;background:${POSCOLOR[p.pos]}"></i></span>
-          <span class="sub">${tdWhy(p,g)} ${inS?'<span class="tagpill up">✓ in slip</span>':""}</span></span>
+          <span class="sub">${tdWhy(p,g)} ${inS?'<span class="tagpill up">✓ in slip</span>':""}</span>${mxHTML(g,p)}</span>
         <span class="rt"><span class="big">${(100*f).toFixed(0)}<i>%</i></span><span class="sub">fair ${fmtOdds(fairAm(f))}</span>${evTag(e)}</span>
       </button></li>`;}).join("");
   } else if(mk==="value"){
@@ -275,6 +275,12 @@ function renderProps(){
   $("#pgame").onchange=e=>{PFILT.game=e.target.value; store.set("pfilt",PFILT); renderProps();};
   tp.querySelectorAll("input[data-line]").forEach(el=>el.onchange=()=>{ saveLine(el.dataset.line,el.dataset.f,el.value); });
 }
+/* Matchup read (matchups.js): what this week's defense and scheme do to the player vs a league-average defense. */
+function mxOf(g,p){ return g&&g.mx&&g.mx.players?g.mx.players[p.n]:null; }
+function mxBadge(v){ if(!v) return ""; const c={"Edge":"up","Slight edge":"up","Disadvantage":"dn","Slight disadvantage":"dn"}[v.verdict]||"flat";
+  return `<span class="tagpill ${c}">${esc(v.verdict)}${v.verdict!=="No edge"?` ${v.dTD>=0?"+":"−"}${Math.abs(100*v.dTD).toFixed(1)} TD pts`:""}</span>`; }
+function mxHTML(g,p){ const v=mxOf(g,p); if(!v) return "";
+  return `<details class="mine mx"><summary class="tiny">Matchup ${mxBadge(v)}</summary><span class="tiny mxtext">${esc(v.text)}</span></details>`; }
 function tdWhy(p,g){
   const r=RES[leagueOf(g.id)][g.id], m=p.mean;
   const bits=[];
@@ -322,6 +328,7 @@ function propRowHTML(g,p,mk){
     <span class="who"><span class="nm">${esc(p.n)} ${isOut(p)?'<span class="verdict pricey">out</span>':""}</span>
       <span class="sub">${esc(p.t)} vs ${esc(p.t===g.home?g.away:g.home)} · ${esc(STATS[mk].label.toLowerCase())} · 10–90%: ${qs[0]}–${qs[1]}${p.flag?` · <b class="warnc">${esc(p.flag)}</b>`:""}${p.conf==="low"?' · <b class="warnc">thin sample</b>':""}</span>
       ${detail}
+      ${mxHTML(g,p)}
       <details class="mine"><summary class="tiny">${L.line!=null?"Your line":"Use your own line"}</summary><span class="lin">
         <label class="tiny" for="ln-${idOf(key)}">Line</label><input id="ln-${idOf(key)}" inputmode="decimal" data-line="${esc(key)}" data-f="line" value="${L.line??""}" placeholder="${b?b.line:fl}">
         <label class="tiny" for="lo-${idOf(key)}">Over</label><input id="lo-${idOf(key)}" inputmode="numeric" data-line="${esc(key)}" data-f="o" value="${L.o??""}" placeholder="-110">
@@ -485,9 +492,10 @@ function renderBets(){
 
 /* ------------------------------- model ---------------------------------- */
 function renderModel(){ $("#tab-model").innerHTML=MODEL_HTML()+notesHTML();
-  const kp=$("#kProp"),kt=$("#kTrust");
+  const kp=$("#kProp"),kt=$("#kTrust"),km=$("#kMw");
   const bind=(el,set,lab,fmt,rerun)=>{ if(!el) return; el.oninput=()=>{set(+el.value);$(lab).textContent=fmt(+el.value);}; el.onchange=()=>{ if(rerun){invalidate();runAll();} else render(); }; };
   bind(kp,v=>LAMP=v/100,"#vProp",v=>v+"%"); bind(kt,v=>TRUST=v/100,"#vTrust",v=>v+"%",true);
+  bind(km,v=>{MW=v/100;store.set("mw",MW);},"#vMw",v=>v+"%"+(v===100?" (tested)":""),true);
 }
 function notesHTML(){
   return `<div class="prose"><h3>What we've learned</h3>${TUNING.notes&&TUNING.notes.length?`<ul>${TUNING.notes.slice(0,10).map(nt=>`<li><b>${esc(nt.week||"")}</b> — ${esc(nt.text||"")}</li>`).join("")}</ul>`:"<p>Nothing logged yet.</p>"}

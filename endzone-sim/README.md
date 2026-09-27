@@ -6,6 +6,7 @@ The page reads live state from the artifact's database (`slate/current` = NFL,
 
 ## Layout
 - `pregame.sh` — the pre-kickoff refresh: newest data, official injury report, DraftKings props/TD prices, calibration, game model, page. `setup_data.sh` — one-time data download for a fresh session. `smoke.js` — Chromium check of the built page. `bt_all.sh <tree>` — every backtest.
+- `scheme_match.py` — coverage/blitz splits and defense rates from charting data; `matchups.js` — per-player matchup verdicts and reasons (vs a league-average defense), written onto the slate.
 - `audit/` — the 2026-09-25 audit (coaching, matchup history, defense inputs, game model) and the v3.4 results.
 - `engine.js` — play-level simulator, market calibration, histograms.
 - `scheme.js` — coverage/pressure layer and legacy per-player tuning.

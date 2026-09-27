@@ -28,6 +28,7 @@ echo "== DK TD prices";  python3 attach_td.py slate_nfl.json /home/user/ext/jare
 echo "== calibrate";     node precompute.js slate_nfl.json > /dev/null
 echo "== public";        python3 fetch_public.py || true
 echo "== game model";    (cd gm && python3 team_games.py > /dev/null && python3 st_games.py > /dev/null && python3 game_live.py ../slate_nfl.json | grep -E "^[A-Z]+@")
+echo "== matchups";      node matchups.js slate_nfl.json | head -1
 echo "== page";          python3 build.py
 python3 - <<'PY'
 import json; s = json.load(open('slate_nfl.json'))

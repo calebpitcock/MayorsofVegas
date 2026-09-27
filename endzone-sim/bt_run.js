@@ -2,7 +2,7 @@ const E=require('./harness.js');const fs=require('fs');
 const f=process.argv[2]||'bt_2025_4_18.json';
 const tuning=JSON.parse(process.argv[3]||'{}');
 const V=JSON.parse(process.env.EZV||'{}');
-const ctx={tuning,out:new Set(),tune:{},opp:V.opp??1,scheme:V.scheme||'data'};   // data-driven gl/deep only; hand TUNE ignored
+const ctx={tuning,out:new Set(),tune:{},opp:V.opp??1,scheme:V.scheme||'data',mw:V.mw??1};   // data-driven gl/deep only; hand TUNE ignored
 const games=JSON.parse(fs.readFileSync(f));
 const rows=[], grows=[], propRows=[];
 let t0=Date.now();

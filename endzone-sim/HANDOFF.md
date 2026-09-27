@@ -63,6 +63,14 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   cards. Held-out: target-share MSE −0.1%; TD vs DK gain 2024 0.00133→0.00143, 2023 0.00102→0.00112; props flat.
   Run/pass funnel: pass-rate error −0.3% (8/10 seasons), no effect on rush-vs-pass TD share: not used.
   `EZCOV=0` turns it off in backtests. Scripts: /audit/scheme_*.
+- Matchups v2 (user: make scheme/coverage a big factor and explain edges): coverage splits now shrink toward each
+  POSITION's league pattern (RBs get ~60% more of targets vs zone than man) instead of 1. `ctx.mw` matchup weight
+  (engine: coverage, DvP targets, ypc/ypt); page slider on the Model tab (default 100%). Backtest vs DK: weight 1 =
+  TD log-loss gain 2024 0.00155 (95% CI clear of 0), 2023 0.00106, props +13.3%; weight 2 = 0.00145 / 0.00096 / +9.9%;
+  none (v3.4) = 0.00133 / 0.00102 / +11.8%. `matchups.js` (run by pregame.sh after the game model) simulates each game
+  vs this week's defense and vs a league-average one (both anchored to DK) and writes `g.mx` = per-player verdict
+  (Edge / Slight edge / No edge / Slight disadvantage / Disadvantage: |ΔTD| ≥ 2 pts or |Δyds| ≥ 6% = Edge; ≥ 1 pt/3% = slight)
+  with plain-English reasons; shown on game cards (Matchups section), TD rows and prop rows.
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
 ## Rules the user set (keep them)
