@@ -1,4 +1,6 @@
-"""Public opinion: this week's NFL.com power rankings (Nick Shook's weekly column) -> public_rank.json.
+"""Public opinion: a CONSENSUS of this week's published power rankings -> public_rank.json (average rank across every
+list that could be read; one writer's list is too idiosyncratic on its own). Sources: NFL.com's two weekly lists
+(Nick Shook, Neil Reynolds). Add outlets to SOURCES as their domains are allowed.
 Needs www.nfl.com in the environment's allowed domains. Leaves the previous file alone if the page can't be read or
 doesn't parse into exactly 32 distinct ranks (a stale week is ignored by gm/game_live.py anyway)."""
 import re, html, json, os, sys, subprocess
@@ -17,17 +19,36 @@ def parse(s):
             i += 1
         if len(ranks) == 32: return ranks
     return None
-def main(season, week):
-    url = f'https://www.nfl.com/news/nfl-power-rankings-week-{week}-{season}-nfl-season'
+def parse_changes(s):
+    """Lists written as 'Team Name  --' / 'Team Name  +6' lines in rank order (Neil Reynolds' format)."""
+    t = re.sub(r'<script.*?</script>|<style.*?</style>', '', s, flags=re.S)
+    L = [re.sub(r'\s+', ' ', l.replace('\xa0', ' ')).strip() for l in html.unescape(re.sub(r'<[^>]+>', '\n', t)).split('\n')]
+    pat = re.compile(r'^(%s) (--|[+-]\d+)$' % '|'.join(map(re.escape, FULL))); order = []
+    for l in L:
+        m = pat.match(l)
+        if m and FULL[m.group(1)] not in order: order.append(FULL[m.group(1)])
+    return {t: i + 1 for i, t in enumerate(order)} if len(order) == 32 else None
+SOURCES = [  # (label, url pattern, parser)
+    ('NFL.com (Nick Shook)', 'https://www.nfl.com/news/nfl-power-rankings-week-{week}-{season}-nfl-season', parse),
+    ('NFL.com (Neil Reynolds)', 'https://www.nfl.com/news/reynolds-week-{week}-power-rankings-{season}', parse_changes),
+]
+def get(url):
     r = subprocess.run(['curl', '-sSfL', '-m', '30', '-A', 'Mozilla/5.0', url], capture_output=True)
-    if r.returncode != 0: print(f'public: could not read {url} (is www.nfl.com allowed?)'); return 1
-    s = r.stdout.decode('utf-8', 'ignore'); ranks = parse(s)
-    if not ranks: print('public: page read but the 32-team list did not parse; keeping the previous file'); return 1
-    d = re.search(r'"datePublished"\s*:\s*"([^"]+)"', s); a = re.search(r'"author"\s*:\s*\[?\s*\{[^}]*"name"\s*:\s*"([^"]+)"', s)
-    out = dict(season=season, week=week, source='NFL.com power rankings' + (f' ({a.group(1)})' if a else ''), url=url,
-               asOf=d.group(1) if d else None, ranks=ranks)
+    return r.stdout.decode('utf-8', 'ignore') if r.returncode == 0 else None
+def main(season, week):
+    lists = {}
+    for label, pat, fn in SOURCES:
+        url = pat.format(week=week, season=season); s = get(url)
+        r = fn(s) if s else None
+        if r and len(set(r.values())) == 32: lists[label] = dict(url=url, ranks=r); print(f'public: {label} read')
+        else: print(f'public: {label} not available ({url})')
+    if not lists: print('public: no ranking could be read; keeping the previous file'); return 1
+    avg = {t: sum(l['ranks'][t] for l in lists.values()) / len(lists) for t in FULL.values()}
+    order = sorted(avg, key=lambda t: (avg[t], min(l['ranks'][t] for l in lists.values())))
+    out = dict(season=season, week=week, source='consensus of ' + ', '.join(lists), asOf=None,
+               ranks={t: i + 1 for i, t in enumerate(order)}, avgRank={t: round(avg[t], 2) for t in order}, lists=lists)
     json.dump(out, open(os.path.join(H, 'public_rank.json'), 'w'), indent=1)
-    print(f"public: {out['source']}, {out['asOf']}: " + ' '.join(f'{v}.{k}' for k, v in sorted(ranks.items(), key=lambda kv: kv[1])[:5]) + ' ...')
+    print('public consensus: ' + ' '.join(f'{i + 1}.{t}' for i, t in enumerate(order)))
     return 0
 if __name__ == '__main__':
     wk = json.load(open(os.path.join(H, 'overrides.json')))['week']

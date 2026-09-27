@@ -49,7 +49,8 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   stats + QB) + 0.75 × stats view (off/def/ST + QB, no books), then 10% public power ranking when available; each home
   team's home field = league + 0.5 × its own edge (cap ±1). Flag at 4+ pts. Blend and threshold chosen on 2016–20
   (`gm/blend_select.py`); record in `gm/flag_record.json`: 2016–25 55.1% (532), 2021–25 53.1% (241).
-- Sources: public = NFL.com weekly power rankings (`public_rank.json`: {season, week, source, asOf, ranks: {TEAM: rank}}),
+- Sources: public = CONSENSUS (average rank) of every readable weekly list: NFL.com Nick Shook + Neil Reynolds now
+  (`fetch_public.py` SOURCES; one writer alone was too idiosyncratic). `public_rank.json` keeps each list,
   e.g. https://www.nfl.com/news/nfl-power-rankings-week-3-2026-nfl-season. Home field = nflverse results
   (`model4.home_edges`); the user chose not to use nfelo. Network: the environment needs Custom access with
   `www.nfl.com` plus the default package-manager list (GitHub, raw/release-assets, PyPI, npm cover everything else).
