@@ -1,18 +1,44 @@
-# Endzone Sim — handoff (v3.4, Friday 2026-09-25, NFL Week 3)
+# Endzone Sim — handoff (v3.5, Sunday 2026-09-27 12:30 ET, NFL Week 3)
+
+## Start here (state at handoff)
+- **Week 3 is live.** Slate v35 is in the page DB (`slate/current` version 35; `tuning/current` v13). 1:00 ET games
+  kicked off at handoff; still to play: 4:05 ARI@SF, MIN@TB; 4:25 BAL@DAL (Brazil), LV@NO; SNF LA@DEN; MNF PHI@CHI.
+  `gen_nfl.py` skips games already final, so a refresh shows only what's left.
+- **Refresh = `cd endzone-sim && ./pregame.sh`** (~3 min), then `ArtifactData set slate/current file_path=slate_nfl.json`
+  with `if_version` (current + 1 after each write), then republish `endzone.html` to the page URL (source files go under
+  `src/` with contentType text/plain). **Picks = `node picks.js`** (TD board with EV at the estimated DK price, "no price"
+  list, props with EV>0). Flags come from `g.dk` vs `g.gm.m` (4+ pts).
+- **Open item:** CHI QB is a hand override (Case Keenum, `overrides.json` STARTER + `OUT` in `gen_nfl.py`). Caleb Williams
+  had no official game status yet and Tyson Bagent is officially Questionable. Confirm before MNF and rerun if it changes.
+- **Picks given Sunday 12:30 ET** (leans, not locks; TD prices are Friday best-price estimates): TD Walker III (−250 or
+  better), Chase Brown (−120), Cook (−210), Gibbs (−280), McBride (+150), Henry (−255); props JSN u92.5, DJ Moore u48.5,
+  Stevenson u37.5 rush, Nabers u53.5 (Thursday lines); flags KC@MIA (line KC −10 vs values KC by 4.1), CAR@CLE (CAR −2.5
+  vs CLE by 2.5), ARI@SF (SF −7.5 vs SF by 12). Grade these after the week with the two-source rule.
+- **Biggest known weakness: prices, not football data.** TD prices come from jaredpatchett/NFL-Model (best US price →
+  DK estimate, refreshed ~Friday, whole teams missing: DEN, LA, NE, PIT, TB this week); DK props from davidcantugtr
+  (Thursday snapshot, yards only, 9/15 games). The fix is a live odds feed: the user was told to add an Odds API key as
+  env var `ODDS_API_KEY` and allow `api.the-odds-api.com`. If a new session has that variable, write a fetcher
+  (DK only: game lines, player_anytime_td, player_receptions, player_reception_yds, player_rush_yds), save every pull as
+  a timestamped snapshot (price history for CLV/early-week tests), and replace `attach_td.py`'s estimate with real DK prices.
+- **Honest records** (keep telling the user): TD blend beats DK log loss but EV>0 TD bets lost at kickoff historically;
+  props +13.3% ± 5.6% 2024–25, ~flat 2026; game model no proven spread edge; 4+ pt flags 55.1% (2016–25), 53.1% held-out.
+- **Tested and rejected 2026-09-27** (`audit/tdfeat/RESULTS.md`): nflfastR xpass and xYAC, end-zone targets, inside-5
+  carries, red-zone snap share. Don't redo them.
 
 ## What this is
-An NFL betting model for one user who bets **only on DraftKings** and **only on five bet types: anytime TD, receiving yards, rushing yards, catches, moneyline, spread.** Singles only.
+An NFL betting model for one user who bets **only on DraftKings** and **only on six bet types: anytime TD (their favorite
+— "the point of this whole model"), receiving yards, rushing yards, catches, moneyline, spread.** Singles only.
 
 - **Page:** https://claude.ai/artifact/GdsYysQkGu9mq7NycSyCSr (private). Read and publish it with the Artifact tool. The artifact also stores the source under `src/`.
 - **Database** (ArtifactData on that URL; always pass `if_version`):
-  - `slate/current` — this week's slate (v24). It replaces the page's built-in copy.
-  - `tuning/current` — notes, weights, fits (v12).
+  - `slate/current` — this week's slate (v35). It replaces the page's built-in copy.
+  - `tuning/current` — notes, weights, fits (v13).
   - `ledger/current` — the user's logged bets, with closing prices for CLV.
   - `lines/current` — lines the user typed.
   - `grades/current` — graded results.
   - `slip/suggested` — legacy; the slip no longer shows it.
 - **Source:** `endzone-sim/` in `calebpitcock/MayorsofVegas`, branch `claude/sports-model-accuracy-9mhl6y` (pushed).
-- **Data is not committed.** `README.md` lists every download URL. All of it is reachable from a cloud session only through GitHub (nflverse releases, raw.githubusercontent, git clone). Sports sites are blocked.
+- **Data is not committed.** `README.md` lists every download URL. All of it is reachable through GitHub (nflverse releases, raw.githubusercontent, git clone). Network is Custom: `www.nfl.com` (power rankings) + default package list; other sports/odds sites are blocked (curl works, WebFetch doesn't).
 
 ## v3.4 in one paragraph (2026-09-25)
 Built for use **right before kickoff**. `./pregame.sh` refreshes everything in about 2 minutes: this season's data,
@@ -40,7 +66,7 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   `slate.teams` (value, books, stats with off/def/st, QB, public rank) and two fair lines per game: `g.gm.m` (ratings) and
   `g.gm.ms` (stats only, no books). Flags: stats 5+ pts off (2016–25: 57.0%, 9/10 seasons), ratings 3+ (53.0%, 8/10);
   records in `gm/flag_record.json` (`gm/flag_record.py`). Flags are shown as mismatches, not picks (user's ask).
-- Team-specific home field: tested and rejected (season-to-season r −0.04 vs the line, 2002–25; fitted weight −0.3).
+- Team-specific home field: tested and rejected as a free-fitted term (r −0.04); later added at the user's request as a shrunk half-weight edge (see ONE combined value below).
 - Public opinion: `public_rank.json` = {season, week, source, asOf, ranks: {TEAM: rank}}, 10% of value, only used when
   its week matches. The rankings sites (nfl.com, espn.com, walterfootball.com, sharpfootballanalysis.com) are blocked by
   this environment's network policy; once the user allows one, fetch this week's ranking with WebFetch during the
