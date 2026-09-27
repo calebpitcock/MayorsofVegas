@@ -173,6 +173,24 @@ class Builder:
         if os.path.exists(fw):
             rw = pd.read_csv(fw, low_memory=False); rw = rw[rw.week == rw.week.max()]
             self.ACT = set(rw[rw.status == 'ACT'].gsis_id.dropna())
+            self.ACT_TEAM = rw[rw.status == 'ACT'].dropna(subset=['gsis_id']).set_index('gsis_id').team.to_dict()
+
+    def live_starter(self, team, week, unavailable=()):
+        """This week's starting QB for the live slate: the latest depth chart's QB1 when he is on the active roster and
+        not ruled out (official Out/Doubtful or the caller's list), else whoever took the most dropbacks last week.
+        The dropback rule alone keeps a fill-in as the starter after the regular QB returns (e.g. Lock for Darnold)."""
+        f = f'{D}/depth_charts_{self.season}.csv'
+        if os.path.exists(f) and self.ACT is not None:
+            d = pd.read_csv(f, usecols=['dt', 'team', 'gsis_id', 'pos_abb', 'pos_rank'], low_memory=False)
+            d = d[(d.dt == d.dt.max()) & (d.team == team) & (d.pos_abb == 'QB') & (d.pos_rank == 1)].dropna(subset=['gsis_id'])
+            fi = f'{D}/injuries_{self.season}.csv'
+            out = set(unavailable)
+            if os.path.exists(fi):
+                i = pd.read_csv(fi); out |= set(i[(i.week == week) & i.report_status.isin(['Out', 'Doubtful'])].gsis_id)
+            if len(d):
+                q = d.gsis_id.iloc[0]
+                if q in self.R.index and self.ACT_TEAM.get(q) == team and q not in out: return q
+        return self.starter(team, week)
 
     def weight(self, season, week, cut_week):
         if season == self.season:
@@ -196,7 +214,12 @@ class Builder:
         SN = self.SN[(self.SN.team == team) & self.hist_mask(self.SN, week)]
         if active_pids is None:
             active = set(SN[SN.season == S].pid)
-            if self.ACT is not None: active &= self.ACT      # drop injured reserve, cuts, practice squad
+            if self.ACT is not None:
+                active &= self.ACT      # drop injured reserve, cuts, practice squad
+                # back from injury: on this team's active roster now, played for it last season, no snaps yet this
+                # season (e.g. Bowers). The backtest uses actual game actives, which always include these players.
+                played = set(self.SN[self.SN.season == S].pid)
+                active |= {p for p in SN[SN.season == S - 1].pid.unique() if self.ACT_TEAM.get(p) == team and p not in played}
         else:
             active = set(active_pids)
         active -= set(exclude)

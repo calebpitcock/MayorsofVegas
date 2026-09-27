@@ -133,7 +133,7 @@ function flagRecord(){ const F=GF().flags, k=F&&F.byGap&&F.byGap[String(FLAGAT()
   return `<b>Record of ${FLAGAT()}+ point flags</b> since ${F.since}: the side the team values liked covered the closing spread ${pct(a.cover,1)} of the time (${a.n} games, ${a.seasonsUp} of ${a.seasons} seasons above 50%, about ${Math.max(1,Math.round(a.perSeason/17))} a week). In 2021–25, years not used to choose the blend or the threshold: ${pct(h.cover,1)} (${h.n} games). Break-even at DraftKings' usual price is 52.4%. Public opinion has no history, so it isn't in this record.`; }
 function flagBox(){ const fl=games().map(g=>({g,f:flagOf(g)})).filter(x=>x.f).sort((a,b)=>b.f.gap-a.f.gap);
   return `<div class="flagbox"><h3>Lines that don't match the teams · ${fl.length}</h3>${fl.length?fl.map(({g,f})=>
-    `<div class="flagline"><span><b>${esc(g.away)} @ ${esc(g.home)}</b><span class="sub">DraftKings ${says(g,gmLine(g))} · team values say ${says(g,g.gm.m)}</span></span><span class="lineflag">${f.gap.toFixed(1)} pts apart</span></div>`).join(""):`<p class="empty">Every DraftKings spread is within ${FLAGAT()} points of the team values this week.</p>`}
+    `<div class="flagline"><span><b>${esc(g.away)} @ ${esc(g.home)}</b><span class="sub">${(g.dk||{}).src==="dk"?"DraftKings":"Current line"} ${says(g,gmLine(g))} · team values say ${says(g,g.gm.m)}</span></span><span class="lineflag">${f.gap.toFixed(1)} pts apart</span></div>`).join(""):`<p class="empty">Every DraftKings spread is within ${FLAGAT()} points of the team values this week.</p>`}
     <p class="tiny" style="margin:8px 0 0">${flagRecord()}</p></div>`; }
 function renderTeams(){ const T=slate().teams||[]; const opp={}, SR=slate().sources||{}, P=SR.public;
   games().forEach(g=>{opp[g.home]={g,vs:g.away,home:1}; opp[g.away]={g,vs:g.home,home:0};});
@@ -179,10 +179,16 @@ function mrow(label,side,pModel,price,fair,legSpec,extra){
     <span class="mv n">${pct(pModel,1)}</span><span class="mf n">${fmtOdds(fair)}</span>
     <span class="mb n">${price!=null?fmtOdds(price):"—"}</span>${evTag(price!=null?e:null)}${inS?`<span class="tagpill up">✓</span>`:""}</button>`;
 }
+/* what the refresh could and couldn't get this week (data_check.py) */
+function dataBox(){ const c=slate().dataCheck; if(!c||!c.items) return "";
+  const gap=c.items.filter(x=>x.level==="gap").length, wn=c.items.filter(x=>x.level==="warn").length;
+  const pill=l=>`<span class="tagpill ${l==="gap"?"dn":l==="warn"?"warn":"up"}">${l==="gap"?"gap":l==="warn"?"partial":"ok"}</span>`;
+  return `<details class="dcheck"><summary>Data check · ${gap?`<b style="color:var(--red)">${gap} gap${gap>1?"s":""}</b>`:"no gaps"}${wn?` · ${wn} partial`:""} <span class="tiny">refreshed ${esc(c.at.slice(0,16).replace("T"," "))} UTC — tap for details</span></summary>
+    <ul>${c.items.map(x=>`<li>${pill(x.level)} <b>${esc(x.area)}</b> — ${esc(x.text)}</li>`).join("")}</ul></details>`; }
 function renderGames(){
   const lg=SPORT, R=RES[lg];
   $("#tab-games").innerHTML=`<p class="lead">Each game shows DraftKings\' line next to the fair line from the team values (Teams tab), and flags games where they sit ${FLAGAT()}+ points apart. Flags aren\'t picks. Moneyline and spread chances start from DraftKings\' own price and move ${Math.round(100*GMFIT.k)}% toward the team values. None of this touches the player numbers.</p>`+
-  flagBox()+games().map(g=>{
+  dataBox()+flagBox()+games().map(g=>{
     const r=R[g.id], d=g.dk||{}, sp=d.spread, spo=d.spo||{}, ml=d.ml||{};
     const L=gmLine(g), hat=gmHat(g), m=g.gm?g.gm.m:null;
     const fav=sp==null?"":(sp<0?g.home:g.away);
@@ -199,7 +205,7 @@ function renderGames(){
     const tm=x=>x>=0?`${esc(g.home)} by ${Math.abs(x).toFixed(1)}`:`${esc(g.away)} by ${Math.abs(x).toFixed(1)}`;
     return `<article class="gcard" id="g-${g.id}">
       <div class="ghead"><div><div class="gt">${esc(g.awayName||g.away)} @ ${esc(g.homeName||g.home)}</div>
-        <div class="gm">${esc(g.kick||"")}${sp!=null?` · ${esc(fav)} −${Math.abs(sp)}`:""} · ${d.src==="dk"?"DraftKings":"<b class=\"warnc\">consensus line, not DraftKings yet</b>"}</div></div>
+        <div class="gm">${esc(g.kick||"")}${sp!=null?` · ${esc(fav)} −${Math.abs(sp)}`:""} · ${d.src==="dk"?"DraftKings":d.dkOld?`<b class="warnc">current consensus line — DraftKings snapshot (${esc(d.dkOld.asOf.slice(5,10))}, ${d.dkOld.spread<0?esc(g.home):esc(g.away)} −${Math.abs(d.dkOld.spread)}) is stale</b>`:"<b class=\"warnc\">consensus line, not DraftKings yet</b>"}</div></div>
         <div class="scorestack">${m!=null?`${tm(m)}<br><span class="tiny">game model</span>`:""}</div></div>
       ${qbc?`<div class="flagrow"><span class="qbflag">QB change</span> ${[[g.away,r.qb.away],[g.home,r.qb.home]].filter(x=>x[1].change).map(([t,q])=>`${esc(t)}: ${esc(q.name||"new starter")}`).join(" · ")}</div>`:""}
       <div class="mtable">

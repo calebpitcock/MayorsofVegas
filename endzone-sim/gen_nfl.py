@@ -49,6 +49,12 @@ if os.path.exists(_f):
             OFFICIAL_OUT[r.gsis_id] = (r.full_name, r.team, f"{inj} — {r.report_status.lower()} (official)"); QUESTIONABLE.pop(r.full_name, None)
         elif r.report_status == 'Questionable' and r.full_name not in OUT and r.full_name not in QUESTIONABLE:
             QUESTIONABLE[r.full_name] = f"{inj} — questionable (official)"
+    # the official report comes out after the hand list was written: a player it lists as Questionable (practising,
+    # undecided) is kept and flagged rather than removed on older news. No game status yet (Monday games) leaves the hand list.
+    for r in _i.itertuples():
+        if r.report_status == 'Questionable' and r.full_name in OUT:
+            print(f'official Questionable overrides hand out: {r.full_name}'); OUT.pop(r.full_name)
+            QUESTIONABLE[r.full_name] = f"{r.report_primary_injury.lower() if isinstance(r.report_primary_injury, str) else 'injury'} — questionable (official)"
 print('official report: out/doubtful', len(OFFICIAL_OUT), [v[0] for v in OFFICIAL_OUT.values()])
 # official game statuses post Friday afternoon; until then the flagged list stands in for 'Questionable' in the role correction
 b.status_override = {}
@@ -61,6 +67,7 @@ QBWHY = {
   'WAS': "Daniels dislocated his elbow; Mariota starts. He threw 17 of Washington's 40 dropbacks in Week 2 after Daniels left, so the priors are about 20% his.",
   'CHI': "Caleb Williams (hamstring) and Tyson Bagent (concussion) both out — Case Keenum starts with zero snaps in the sample behind Chicago's usage.",
   'NYG': "Dart is out for the season. Winston started Week 2 (11 of 29, 111 yards), so roughly half the sample is his.",
+  'SEA': "Darnold is back from the glute injury (full practice, no game status, depth-chart QB1). He left Week 1 after 5 snaps and Lock started Week 2, so Seattle's 2026 sample is almost all Lock.",
   'MIN': "Murray is back from the concussion. He took 7 dropbacks in Week 1 before leaving; Wentz generated almost all of Minnesota's priors.",
 }
 
@@ -96,9 +103,9 @@ for r in L.itertuples():
     for side, team in (('away', a), ('home', h)):
         pr, pace = b.team_env(team, WEEK)
         g['passRate'][side] = pr; g['pace'][side] = pace
-        qb_pid = pid_of(STARTER[team]) if team in STARTER else b.starter(team, WEEK)
         excl = [pid_of(n) for n in OUT if (R.full_name == n).any() and R.loc[pid_of(n), 'team'] == team]
         excl += [pid for pid, (n, t, _) in OFFICIAL_OUT.items() if t == team]
+        qb_pid = pid_of(STARTER[team]) if team in STARTER else b.live_starter(team, WEEK, excl)
         rows = [x for x in b.team_players(team, WEEK, qb_pid=qb_pid, exclude=excl) if x['pos']=='QB' or x['rush']>=.04 or x['rec']>=.04]
         # QB-change flag computed from data: how much of this team's 2026 sample did the starter take?
         q = b.Q[(b.Q.posteam == team) & (b.Q.season == SEASON) & (b.Q.week < WEEK)]

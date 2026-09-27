@@ -49,7 +49,7 @@ def main(slate_path):
         c = model4.ST['CARRY'] if x['season'] != SEASON else 1.0
         return x['x'] * c / (x['w'] * c + model4.ST['M0'])
     TEAMS = sorted(mr)
-    def starter(t): return name2pid.get(ov['STARTER'].get(t)) or b.starter(t, WEEK)
+    def starter(t): return name2pid.get(ov['STARTER'].get(t)) or b.live_starter(t, WEEK)
     parts = {}
     for t in TEAMS:
         o, dd = team(t); q = starter(t); rq = qbr(q); u = used[t]['x'] / used[t]['w'] if t in used and used[t]['w'] > 0 else -0.02
@@ -125,9 +125,12 @@ def main(slate_path):
             g['dk'] = dict(src='dk', spread=float(hs.Line), spo=dict(home=int(hs['American Odds']), away=int(as_['American Odds'])),
                            ml=dict(home=int(ml[ml['Team / Side'].map(FULL) == h]['American Odds'].iloc[0]), away=int(ml[ml['Team / Side'].map(FULL) == a]['American Odds'].iloc[0])),
                            asOf=str(d['Last Update'].max()))
-        else:
-            g['dk'] = dict(src='consensus', spread=-float(r.spread_line), spo=dict(home=int(r.home_spread_odds), away=int(r.away_spread_odds)),
-                           ml=dict(home=int(r.home_moneyline), away=int(r.away_moneyline)))
+        cons = dict(src='consensus', spread=-float(r.spread_line), spo=dict(home=int(r.home_spread_odds), away=int(r.away_spread_odds)),
+                    ml=dict(home=int(r.home_moneyline), away=int(r.away_moneyline)))
+        if not len(d): g['dk'] = cons
+        elif (pd.Timestamp.now('UTC') - pd.to_datetime(g['dk']['asOf'], utc=True)).total_seconds() > 24 * 3600 and cons['spread'] != g['dk']['spread']:
+            # the DraftKings snapshot is more than a day old and the market has moved since: flag against today's line
+            cons['dkOld'] = dict(spread=g['dk']['spread'], asOf=g['dk']['asOf']); g['dk'] = cons
         print(f"{a}@{h}: fair {h} {m:+.1f} | line {h} {-g['dk']['spread']:+.1f} ({g['dk']['src']}) | {g['gm']['why']}")
     slate['gmfit'] = dict(k=K_LEAN, b=ANCHOR['b'], slope=ANCHOR['slope'], coef=dict(zip(['hfa'] + cols, map(float, w))), flagAt=(flags or {}).get('flagAt', 4.0), flags=flags)
     for x in rows: print(f"{x['rank']:2d} {x['t']:3s} {x['value']:+5.1f} | books {x['books']:+5.1f} (#{x['booksRank']}) qb {x['qb']:+5.1f} | stats {x['stats']:+5.1f} #{x['statsRank']} | home {x['home']:.1f} | public #{x['publicRank']}  {x['qbName']}")

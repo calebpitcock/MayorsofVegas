@@ -73,6 +73,24 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   with plain-English reasons; shown on game cards (Matchups section), TD rows and prop rows.
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
+## Data check (2026-09-27)
+`data_check.py` runs at the end of `pregame.sh` and puts a "Data check" panel at the top of the Games tab (gap / partial / ok).
+It compares this season's play-by-play, snap counts and FTN charting with the games played, the injury report with the
+slate's teams, each team's slate QB with the depth chart's QB1, depth-chart starters with the slate, and TD/prop price
+coverage and age. Fixes made from the first run:
+- **Starting QB**: `Builder.live_starter` takes the latest depth chart's QB1 when he is active and not Out/Doubtful, and
+  only then falls back to "most dropbacks last week". The fallback had Drew Lock starting for Seattle after Darnold returned.
+- **Returning players**: players on the team's active roster with snaps for it last season but none yet this season
+  (Bowers, Flowers) are now in the slate. The backtest always included them (it uses real game actives).
+- **Official Questionable beats an older hand "out"** in `gen_nfl.py` (the official report is newer than Friday-morning news).
+- **Stale DraftKings lines**: when the DK game-line snapshot is over a day old and the nflverse line has moved, the flags and
+  win/cover chances use the current line and the card says the DK snapshot is stale.
+- `pregame.sh` now also refreshes FTN charting and depth charts; `setup_data.sh` fetches FTN, participation, depth charts.
+Gaps that can't be fixed from free data: 2026 man/zone charting (published after the season); DK props only from the
+davidcantugtr snapshot (Thursday, yards only, some games missing); TD prices from jaredpatchett (some teams absent). The
+fix is a DraftKings odds feed (e.g. The Odds API key as an environment variable `ODDS_API_KEY`, with api.the-odds-api.com
+allowed in the network settings).
+
 ## Rules the user set (keep them)
 1. **Only DraftKings prices.** Don't line-shop or show other books. TD prices from best-across-books sources are converted to an estimated DK price and marked ≈.
 2. **Only the five bet types, and they stay separate.** The game model (moneyline/spread) never feeds the player simulation. The player simulation uses DK's spread and total only to set each team's scoring level. Scratching a player never changes a moneyline or spread. No parlays.

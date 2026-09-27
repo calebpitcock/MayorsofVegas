@@ -8,7 +8,10 @@ get() { [ -s "$2" ] || curl -sSfL -o "$2" "$1"; }
 curl -sSfL -o $D/games.csv https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv
 for s in $(seq 2012 2026); do get $B/pbp/play_by_play_$s.csv.gz $D/play_by_play_$s.csv.gz & done; wait
 for s in 2022 2023 2024 2025 2026; do get $B/snap_counts/snap_counts_$s.csv $D/snap_counts_$s.csv & get $B/rosters/roster_$s.csv $D/roster_$s.csv &
-  get $B/injuries/injuries_$s.csv $D/injuries_$s.csv & done; wait
+  get $B/injuries/injuries_$s.csv $D/injuries_$s.csv & get $B/ftn_charting/ftn_charting_$s.parquet $D/ftn_charting_$s.parquet & done; wait
+# coverage charting (man/zone) - published after each season, so none for the current one
+for s in 2022 2023 2024 2025; do get $B/pbp_participation/pbp_participation_$s.parquet $D/pbp_participation_$s.parquet & done
+get $B/weekly_rosters/roster_weekly_2026.csv $D/roster_weekly_2026.csv & get $B/depth_charts/depth_charts_2026.csv $D/depth_charts_2026.csv & wait
 clone() { # repo dir paths...
   [ -d /home/user/ext/$2 ] || { git clone -q --depth 1 --filter=blob:none --sparse https://github.com/$1 /home/user/ext/$2; git -C /home/user/ext/$2 sparse-checkout set --no-cone "${@:3}"; }
 }

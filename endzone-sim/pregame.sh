@@ -1,9 +1,9 @@
 #!/bin/bash
 # Pre-game refresh, meant to run right before kickoff (Sunday late morning, or before any window).
-# Pulls this season's newest data (play-by-play, snap counts, the official injury report, weekly rosters, closing
+# Pulls this season's newest data (play-by-play, snap counts, FTN charting, depth charts, the official injury report, weekly rosters, closing
 # lines of games already played) and the newest DraftKings snapshots, then rebuilds everything:
 #   player usage + official statuses -> DraftKings props -> anytime-TD prices -> offense calibration ->
-#   game model (team strength, QBs) -> page.
+#   game model (team strength, QBs) -> matchups -> data check (gaps listed on the page) -> page.
 # Afterwards the slate goes to the page's database (slate/current) and the page is republished; Claude does those
 # two steps with the Artifact tools. Set the week in overrides.json (plus any starting-QB changes) before running.
 set -e
@@ -16,7 +16,7 @@ curl -sSfL -o $D/.games.tmp https://raw.githubusercontent.com/nflverse/nfldata/m
 fetch() { local out=$D/$(basename $1) t=$D/.$(basename $1).tmp
   for i in 1 2 3; do curl -sSfL -o $t $B/$1 && [ -s $t ] && { rm -f $out; mv $t $out; return 0; }; sleep $((i*3)); done
   echo "WARN: could not refresh $(basename $1); using the previous copy"; rm -f $t; [ -s $out ]; }
-for f in pbp/play_by_play_$S.csv.gz snap_counts/snap_counts_$S.csv injuries/injuries_$S.csv rosters/roster_$S.csv weekly_rosters/roster_weekly_$S.csv; do
+for f in pbp/play_by_play_$S.csv.gz snap_counts/snap_counts_$S.csv injuries/injuries_$S.csv rosters/roster_$S.csv weekly_rosters/roster_weekly_$S.csv ftn_charting/ftn_charting_$S.parquet depth_charts/depth_charts_$S.csv; do
   fetch $f || { echo "missing $(basename $f) and no previous copy; stopping"; exit 1; }; done
 for r in jaredpatchett_NFL-Model nfl-player-prop-opportunity mogden16_NFL-Wizard-Analysis; do git -C /home/user/ext/$r pull -q --depth 1 || echo "warn: $r not updated"; done
 ln -sf /home/user/ext/nfl-player-prop-opportunity/data/snapshots/$S-W*/*.csv $D/snap26/ 2>/dev/null || true
@@ -29,6 +29,7 @@ echo "== calibrate";     node precompute.js slate_nfl.json > /dev/null
 echo "== public";        python3 fetch_public.py || true
 echo "== game model";    (cd gm && python3 team_games.py > /dev/null && python3 st_games.py > /dev/null && python3 game_live.py ../slate_nfl.json | grep -E "^[A-Z]+@")
 echo "== matchups";      node matchups.js slate_nfl.json | head -1
+echo "== data check";    python3 data_check.py slate_nfl.json
 echo "== page";          python3 build.py
 python3 - <<'PY'
 import json; s = json.load(open('slate_nfl.json'))
