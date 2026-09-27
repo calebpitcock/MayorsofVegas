@@ -73,6 +73,8 @@ for g in old['data']['games'] if 'data' in old else old['games']:
 
 L = nb.lines_for(SEASON, WEEK)
 AGG = nb.coach_agg(SEASON, WEEK)          # head coach fourth-down aggressiveness (log-odds shift)
+import scheme_match as sm
+COV = sm.week_tables(SEASON, WEEK)        # coverage/blitz matchups (charting data)
 games = []
 for r in L.itertuples():
     if pd.notna(r.home_score): continue          # already played
@@ -87,6 +89,7 @@ for r in L.itertuples():
              soft=dict(away=dict(run=.5, pass_=.5), home=dict(run=.5, pass_=.5)),
              passRate={}, pace={}, qb={}, players=[], live=dict(status='pre', hs=0, as_=0, secs=3600, scored=[]))
     g['agg'] = dict(away=AGG.get(a, 0.0), home=AGG.get(h, 0.0))
+    g['defScheme'] = dict(away={k: round(COV[k]['d'].get(h, COV[k]['lg']), 3) for k in ('man', 'blitz')}, home={k: round(COV[k]['d'].get(a, COV[k]['lg']), 3) for k in ('man', 'blitz')}, lg={k: round(COV[k]['lg'], 3) for k in ('man', 'blitz')})
     if pd.notna(r.wind): g['wind'] = float(r.wind)
     notes = []
     g['defp'] = dict(away=dbk.profile(h, WEEK), home=dbk.profile(a, WEEK))   # the defense each offense faces
@@ -109,6 +112,9 @@ for r in L.itertuples():
         for p in rows:
             if p['n'] in oldp: p.update(oldp[p['n']])
             if p['n'] in QUESTIONABLE: p['flag'] = QUESTIONABLE[p['n']]
+            if p['pos'] in ('WR', 'TE', 'RB'):
+                opp = h if side == 'away' else a
+                mult, parts = sm.multiplier(COV, p['id'], opp); p['cov'] = round(float(mult), 4); p['covParts'] = parts
         outs = [n for n in OUT if (R.full_name == n).any() and R.loc[pid_of(n), 'team'] == team]
         for n in outs:
             notes.append(f"{team} without {n} ({OUT[n].split(' —')[0]}).")

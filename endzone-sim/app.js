@@ -207,10 +207,11 @@ function renderGames(){
         ${mk||'<p class="empty">No line posted yet.</p>'}
       </div>
       ${g.gm?`<div class="fairrow">DraftKings <b>${tm(L)}</b> · team values <b>${tm(m)}</b>${flagOf(g)?` <span class="lineflag">${flagOf(g).gap.toFixed(1)} pts apart</span>`:` <span class="tiny">${Math.abs(lineGap(g)).toFixed(1)} pts apart</span>`}</div><p class="tiny gmwhy">${g.gm.why?esc(g.gm.why):"no single factor stands out"}</p>`:""}
+      ${g.defScheme?`<p class="tiny gmwhy">Coverage · ${[[g.home,g.defScheme.away],[g.away,g.defScheme.home]].map(([t,d])=>`${esc(t)} D: man ${Math.round(100*d.man)}%, blitz ${Math.round(100*d.blitz)}%`).join(" · ")} <span class="tiny">(league ${Math.round(100*g.defScheme.lg.man)}% / ${Math.round(100*g.defScheme.lg.blitz)}%)</span></p>`:""}
       ${r?`<div class="plist">${r.players.filter(p=>!p.field&&!p.hidden).sort((a,b)=>tdFinal(b)-tdFinal(a)).slice(0,8).map(p=>{
         const main=p.mean.RA>=6?`${Math.round(fairLine(p,"rushYds"))} rush yds`:(p.isQB?`${Math.round(fairLine(p,"rushYds"))} rush yds`:`${fairLine(p,"rec")} catches · ${Math.round(fairLine(p,"recYds"))} yds`);
         return `<button class="prow ${isOut(p)?"out":""}" data-goprops="${g.id}|${esc(p.n)}">${avatar(p,1)}
-          <span><span class="pn">${esc(p.n)}</span><span class="ps">${esc(p.t)} ${esc(p.pos)} · ${main}${p.flag?` · <b class="warnc">${esc(p.flag)}</b>`:""}</span></span>
+          <span><span class="pn">${esc(p.n)}</span><span class="ps">${esc(p.t)} ${esc(p.pos)} · ${main}${p.cov&&Math.abs(p.cov-1)>=.02?` · coverage matchup ${p.cov>1?"+":"−"}${Math.abs(100*(p.cov-1)).toFixed(0)}% targets`:""}${p.flag?` · <b class="warnc">${esc(p.flag)}</b>`:""}</span></span>
           <span class="pv">${pct(tdFinal(p),0)}</span><span class="pe">TD</span></button>`;}).join("")}</div>`:`<p class="empty">simulating players…</p>`}
       <details class="sp"><summary>Scratch or restore a player</summary><div class="scratch">${
         g.players.filter(p=>p.pos==="QB"||p.rush>=.08||p.rec>=.08||p.out).map(p=>`<label><input type="checkbox" data-out="${esc(p.n)}" ${isOut(p)?"checked":""}>

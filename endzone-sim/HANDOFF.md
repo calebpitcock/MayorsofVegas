@@ -57,6 +57,12 @@ backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
   At refresh, `fetch_public.py` (run by pregame.sh) downloads the week's NFL.com ranking with curl (WebFetch stays blocked
   even when the session network allows the host) and writes `public_rank.json`; rerun `cd gm && python3 game_live.py
   ../slate_nfl.json`, then build and publish.
+- Scheme/coverage (user asked to weight it much more; data says it's small): `scheme_match.py` builds receiver
+  man/zone + blitz target splits and defense man/blitz rates from nflverse participation (2022–25) + FTN (2022–26);
+  multiplier damped to 60% (held-out fit), `p.cov` on WR/TE/RB, `covM` in `engine.js`; `g.defScheme` shown on game
+  cards. Held-out: target-share MSE −0.1%; TD vs DK gain 2024 0.00133→0.00143, 2023 0.00102→0.00112; props flat.
+  Run/pass funnel: pass-rate error −0.3% (8/10 seasons), no effect on rush-vs-pass TD share: not used.
+  `EZCOV=0` turns it off in backtests. Scripts: /audit/scheme_*.
 - A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
 
 ## Rules the user set (keep them)

@@ -2,6 +2,7 @@ import json, sys, os, pandas as pd, numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 import nfl_build as nb
 import props_hist
+import scheme_match as sm
 MODE = os.environ.get('EZMODE', 'actual')
 SEASON = int(os.environ.get('EZSEASON', 2025)); W0, W1 = int(sys.argv[1]) if len(sys.argv) > 1 else 4, int(sys.argv[2]) if len(sys.argv) > 2 else 18
 b = nb.Builder(SEASON)
@@ -16,6 +17,7 @@ G = pd.read_csv(f'{nb.D}/games.csv'); G = G[(G.season == SEASON) & (G.game_type 
 out = []
 for w in range(W0, W1 + 1):
     AGG = nb.coach_agg(SEASON, w)
+    COV = sm.week_tables(SEASON, w) if os.environ.get('EZCOV', '1') == '1' else None
     for r in G[G.week == w].itertuples():
         gid = r.game_id
         if pd.isna(r.spread_line) or pd.isna(r.home_score): continue
@@ -47,6 +49,10 @@ for w in range(W0, W1 + 1):
             n_s = len(tot); prior = float((mine.reindex(tot.index).fillna(0) / tot).sum()) if n_s else 0
             if n_s and prior < n_s - 0.5:
                 g['qb'][side] = dict(change=True, priorGames=min(2, prior), tier=0)
+            if COV is not None:
+                opp = r.home_team if side == 'away' else r.away_team
+                for x in rows:
+                    if x['pos'] in ('WR', 'TE', 'RB'): x['cov'] = round(float(sm.multiplier(COV, x['id'], opp)[0]), 4)
             g['players'] += rows
             u = b.U[(b.U.game_id == gid) & (b.U.posteam == team)].set_index('pid')
             for x in rows:

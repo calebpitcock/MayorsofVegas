@@ -190,6 +190,9 @@ function simGameV3(g,opts,ctx){
   if(OPP) ROS.forEach((p,i)=>{ const d=dp[p.side===g.home?1:0]; if(!d||p.field||p.pos==="QB") return;
     oppT[i]=Math.pow(d.tgt[p.pos]??1,.7); if(TDLOC) oppRZ[i]=Math.pow(d.tdpos[p.pos]??1,.5); });
   const rzRunLean=[OPP&&TDLOC&&dp[0]?(1-dp[0].rtd)*.25:0, OPP&&TDLOC&&dp[1]?(1-dp[1].rtd)*.25:0];
+  /* coverage and pressure matchup (scheme_match.py): each receiver's man/zone and blitz target split against this
+     defense's rates, damped to the share of it that held up out of sample. p.cov = 1 when unknown. */
+  const covM=Float64Array.from(ROS,p=>(p.cov>0&&!p.field)?p.cov:1);
   /* coaching: each head coach's fourth-down aggressiveness as a log-odds shift on the discretionary go rates
      (g.agg, from nfl_build.coach_agg), and wind, which trims passing at outdoor games (g.wind mph; audit: about
      -2 points of pass rate at 15-20 mph and -3 above 20, beyond what the lower total already says) */
@@ -348,7 +351,7 @@ function simGameV3(g,opts,ctx){
     for(let i=0;i<n;i++){
       const p=ROS[i], sh=Math.exp(sig[i]*R.n()-sig[i]*sig[i]/2);
       wRun[i]=p.wRun*sh; wRZRun[i]=p.wRun*p.gl*sh;
-      wTgt[i]=p.wTgt*sh*smB[i]*oppT[i]; wRZTgt[i]=p.wTgt*p.gl*sh*smRZ[i]*oppT[i]*oppRZ[i];
+      wTgt[i]=p.wTgt*sh*smB[i]*oppT[i]*covM[i]; wRZTgt[i]=p.wTgt*p.gl*sh*smRZ[i]*oppT[i]*oppRZ[i]*covM[i];
     }
     t=t0; half=t>1800?1:2; sc=[sc0[0],sc0[1]]; h1=null;
     gameOver=post; firstDone=inPlay||post; firstPick=-1; inOT=false; otDone=[0,0]; otPeriod=0;
