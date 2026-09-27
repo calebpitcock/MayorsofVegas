@@ -91,6 +91,10 @@ davidcantugtr snapshot (Thursday, yards only, some games missing); TD prices fro
 fix is a DraftKings odds feed (e.g. The Odds API key as an environment variable `ODDS_API_KEY`, with api.the-odds-api.com
 allowed in the network settings).
 
+## nflfastR stats / TD data (2026-09-27): tested, none adopted — see `audit/tdfeat/RESULTS.md`
+xpass, xYAC, end-zone targets, inside-5 carries and red-zone snap share add nothing beyond the model + DraftKings.
+The TD bottleneck is prices (fresh DK anytime-TD quotes), not football data.
+
 ## Rules the user set (keep them)
 1. **Only DraftKings prices.** Don't line-shop or show other books. TD prices from best-across-books sources are converted to an estimated DK price and marked ≈.
 2. **Only the five bet types, and they stay separate.** The game model (moneyline/spread) never feeds the player simulation. The player simulation uses DK's spread and total only to set each team's scoring level. Scratching a player never changes a moneyline or spread. No parlays.
