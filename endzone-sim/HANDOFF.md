@@ -185,3 +185,33 @@ Other findings:
 - **Spread pricing on 3 and 7:** use an empirical margin distribution around key numbers instead of a linear per-point slope.
 - **Early season:** 2026 Weeks 1–2 were the weakest for every model because early usage leans on last season. Consider weighting preseason depth charts (nflverse `depth_charts_2026.csv`, ESPN format, untested).
 - **Late games:** the prop snapshot covers ~72h, so Sunday-late and Monday props fill in later.
+
+## TEST RESULTS for v3.6–3.7c (2026-09-28 evening, Claude Code, real nflverse + DraftKings data)
+Method: four code trees on the same games (`audit/cmp_trees.py`, paired, 95% bootstrap over games): t0 = EZEXIT=0,
+t1 = EZEXIT=1 (each refits its own held-out role correction), t3 = t1 + walk-forward `g.form` from nflverse
+participation (`audit/formation/attach_bt.py`). Full output: `audit/ab_results.txt`, `audit/early_exit/*.txt`,
+`audit/formation/test.txt`. The t0 baseline reproduced the v3.5 numbers (TD gain vs DK 2024 0.00148, 2023 0.00103).
+
+| Change | Test | Result | Verdict |
+|---|---|---|---|
+| Early injury exits (v3.6) | RB carry share, player's next 2 games after an exit (n=68) | MSE 29.9 → 23.6 (×10⁻³, role-corrected), 95% −11.6 to −1.5 | **kept (EZEXIT=1)** |
+| | targets after exit (n=257) / teammates / all rows | −0.3 (n.s.) / no change / no change | |
+| | TD vs DK, held-out log loss 2023–24 (n=8,683) | −0.00011 (95% −0.00037 to +0.00015): neutral | |
+| | DK props 80/20 log loss (n=940) | −0.00032 (95% −0.00095 to +0.00028): neutral/slightly better | |
+| | Flags 2022–26 (`flags.txt`): ~3.4 per team-season. Checked against participation (who was on the field each snap, 2022–25): pbp-text flags were real exits 93%, report-only flags 49% (the rest were reduced-role games). | | |
+| | Stricter report rule (only Out/Doubtful/DNP next week; 84% precise) | RB carry gain halves (−2.9 vs −6.4) | rejected |
+| Formation run term (v3.7) | box mix (2a) | heavy personnel draws FEWER light boxes even vs nickel teams (implied C −0.40, 95% −0.48 to −0.31; model assumes +); stacked half OK (+0.44) | **off** |
+| | RB ypc (2b, 1,911 team-games) | undamped term moves ypc only ±1.3%; fitted damp +0.24 (95% −0.85 to +1.34), sign flips by season | no signal |
+| TE/RB position shifts (v3.7b) | held-out target-share MSE | TE: shipped coefs WORSE than no shift (81.8 vs 78.9 ×10⁻⁴); nh sign backwards (fit +0.31 vs −0.4); refit doesn't beat no-shift. RB: ~no change | **off** |
+| Formation + shifts together | TD vs DK / props (2023–25) | +0.00015 (95% −0.00009 to +0.00037), 2023 +0.00021 / 0.00000 | **off** |
+| Slot (v3.7c) | — | untestable: nflverse has no alignment data; statrankings.com and sharpfootballanalysis.com are blocked by this environment's network (403) | inert (formation off, file empty) |
+| TD tab without EV (app.js) | page built from slate v40, Chromium | renders "X% to score" + "DK says Y%" + reasons, no EV, no page errors; slip hides EV on TD legs | kept |
+
+Also found: nflverse box counts are on a different scale from Sharp's (≤6 in box on 59–72% of plays vs Sharp's 43%;
+8+ on 5–13% vs 25%, with a definition jump in 2024), and ypc by box outside short yardage/red zone is 4.86/4.47/4.18,
+not 5.2/4.5/3.8. So `formation_2026.json` (Sharp) isn't on nflverse's scale if the idea is revisited.
+Code changes from testing: `injury_exits` ~4.5× faster (identical output); `role_data.py` uses the same exit-aware
+history as `role_adjust`; `formation.py` math in `attach()`; engine `ctx.fw` default 0; `pregame.sh` no longer runs
+formation.py. **Live page still runs the formation terms** (published code has `ctx.fw??1`, slate v40 has `g.form`);
+tonight's effect is small (CHI run +0.5%, PHI TE targets +5%, CHI TE −4%) until the page is republished.
+Week 3 pick results re-verified against nflverse play-by-play (all 13 match the claude.ai grades).

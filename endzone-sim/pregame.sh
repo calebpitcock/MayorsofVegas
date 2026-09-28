@@ -25,7 +25,7 @@ echo "== slate";         python3 gen_nfl.py | grep -E "official|games;"
 python3 -c "import json,sys; s=json.load(open('slate_nfl.json')); n=sum(len(g['players']) for g in s['games']); sys.exit(0 if n>=12*len(s['games']) else 'slate has only %d players for %d games: data problem, stopping' % (n, len(s['games'])))"
 echo "== DK props";      python3 live_props.py
 echo "== DK TD prices";  python3 attach_td.py slate_nfl.json /home/user/ext/jaredpatchett_NFL-Model/data/player_td.json
-python3 formation.py slate_nfl.json formation_2026.json   # v3.7 formation matchup (update formation_2026.json from Sharp Football each week)
+# python3 formation.py slate_nfl.json formation_2026.json   # v3.7 formation matchup: OFF, failed its 2026-09-28 tests (audit/formation)
 echo "== calibrate";     node precompute.js slate_nfl.json > /dev/null
 echo "== public";        python3 fetch_public.py || true
 echo "== game model";    (cd gm && python3 team_games.py > /dev/null && python3 st_games.py > /dev/null && python3 game_live.py ../slate_nfl.json | grep -E "^[A-Z]+@")

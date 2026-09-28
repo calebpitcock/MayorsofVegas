@@ -84,7 +84,7 @@ for pos, lgp, guess in (('TE', lgTE, (0.6, -0.4)), ('RB', lgRB, (0.5, 0.0))):
             ho[k].append((np.sum(wt[te] * (r[te] - Z[te] @ np.array(cc)) ** 2), wt[te].sum()))
     call = fit(np.ones(len(X), bool)); rng = np.random.default_rng(3); bs = []
     for _ in range(500):
-        i = np.concatenate([gi2 for gi2 in [np.where(X.game_id.values == k)[0] for k in []]] or [rng.integers(0, len(X), len(X))]); bs.append(fit(i))
+        bs.append(fit(rng.integers(0, len(X), len(X))))   # row bootstrap
     bs = np.array(bs); mse = {k: sum(a for a, _ in v) / sum(n for _, n in v) for k, v in ho.items()}
     print(f'   {pos} target share: fitted bv {call[0]:+.2f} (95% {np.percentile(bs[:,0],2.5):+.2f} to {np.percentile(bs[:,0],97.5):+.2f}), nh {call[1]:+.2f} (95% {np.percentile(bs[:,1],2.5):+.2f} to {np.percentile(bs[:,1],97.5):+.2f}); shipped {guess}')
     print(f'      held-out weighted MSE x1e4: no shift {1e4*mse["none"]:.4f}  shipped {1e4*mse["shipped"]:.4f}  fitted {1e4*mse["fitted"]:.4f}   per-season fits bv ' + ' '.join(f'{c[0]:+.2f}' for c in coefs))

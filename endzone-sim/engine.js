@@ -182,9 +182,10 @@ function simGameV3(g,opts,ctx){
   const K=opts.k||[1,1];
   const pace=[(g.pace&&g.pace.away)||1,(g.pace&&g.pace.home)||1];
   const pBase=[(g.passRate&&g.passRate.away)??L.passBase,(g.passRate&&g.passRate.home)??L.passBase];
-  /* formation matchup (v3.7, formation.py; UNTESTED vs DraftKings): offense personnel vs the defense's box and
-     nickel/dime tendencies -> run-efficiency multiplier g.form[side].run. ctx.fw = weight (1 default, 0 = off). */
-  const FW=opts.neutral?0:(ctx.fw??1), fm=[(g.form&&g.form.away&&g.form.away.run)||1,(g.form&&g.form.home&&g.form.home.run)||1];
+  /* formation matchup (v3.7, formation.py): offense personnel vs the defense's box and nickel/dime tendencies ->
+     run-efficiency multiplier g.form[side].run. ctx.fw = weight. OFF by default (0): tested 2026-09-28 on 2022-25
+     (audit/formation, audit/ab_results.txt), it didn't help vs DraftKings and the TE shift made target shares worse. */
+  const FW=opts.neutral?0:(ctx.fw??0), fm=[(g.form&&g.form.away&&g.form.away.run)||1,(g.form&&g.form.home&&g.form.home.run)||1];
   const runEff=[1+(sf[0].run-.5)*.35, 1+(sf[1].run-.5)*.35].map((x,i)=>x*Math.sqrt(mix[i].rush)*(OPP&&dp[i]?Math.pow(dp[i].ypc,.6*MW):1)*Math.pow(fm[i],FW));
   const passEff=[1+(sf[0].pass-.5)*.35, 1+(sf[1].pass-.5)*.35].map((x,i)=>x*(OPP&&dp[i]?Math.pow(dp[i].ypt,.6*MW):1));
   /* where this defense lets targets and receiving touchdowns go, by position */

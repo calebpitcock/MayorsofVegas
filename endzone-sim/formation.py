@@ -1,4 +1,4 @@
-"""Formation matchup (v3.7, UNTESTED against DraftKings — see HANDOFF addendum). Writes g.form onto each game.
+"""Formation matchup (v3.7). OFF by default: failed its 2026-09-28 tests (HANDOFF.md, audit/formation). Writes g.form onto each game.
 
 Offense personnel (share of plays with 3+ WR; the rest is heavy: 2+ TE or 2+ RB) meets the defense's box and package
 tendencies (light box <= 6, heavy box 8+, sub-package = nickel/dime rate).
