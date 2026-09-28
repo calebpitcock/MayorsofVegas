@@ -14,8 +14,8 @@ const N=20000;   // enough that simulation noise in the difference (~0.4 TD poin
 for(const g of S.games){
   const base={tuning:{},out:new Set(),tune:E.TUNE,opp:1,scheme:'off'};
   const on=E.simGameV3(g,{N,trust:1,k:g.k,seed:E.hashStr(g.id+'|mx')},{...base,mw:1});
-  const k0=E.calibrateV3(g,{...base,mw:0},{N:3000,trust:1});
-  const off=E.simGameV3(g,{N,trust:1,k:k0,seed:E.hashStr(g.id+'|mx')},{...base,mw:0});
+  const k0=E.calibrateV3(g,{...base,mw:0,fw:0},{N:3000,trust:1});
+  const off=E.simGameV3(g,{N,trust:1,k:k0,seed:E.hashStr(g.id+'|mx')},{...base,mw:0,fw:0});
   const mx={players:{},teams:{}};
   for(const side of ['away','home']){
     const team=g[side], dfn=side==='away'?g.home:g.away, dp=(g.defp||{})[side]||{}, ds=(g.defScheme||{})[side], L=(g.defScheme||{}).lg;
@@ -23,6 +23,7 @@ for(const g of S.games){
     const ypc=dp.ypc||1, ypt=dp.ypt||1, t=[];
     if(Math.abs(ypc-1)>=.04||Math.abs(ypt-1)>=.04) t.push(`${dfn} allows ${pct(ypc-1)} yards per carry and ${pct(ypt-1)} per target vs average`+(ypc-ypt>=.05?`: a run-friendly matchup for ${team}.`:ypt-ypc>=.05?`: a pass-friendly matchup for ${team}.`:'.'));
     if(ds&&L) t.push(`${dfn} plays man on ${P(ds.man)} of charted snaps (league ${P(L.man)}) and blitzes ${P(ds.blitz)} (league ${P(L.blitz)}).`);
+    const fmx=(g.form||{})[side]; if(fmx&&fmx.text) t.push('Formations: '+fmx.text);
     mx.teams[team]=t.join(' ');
     for(const p of on.players){ if(p.side!==team||p.field||p.hidden||p.pos==='QB') continue;
       const q=off.players.find(x=>x.n===p.n); if(!q) continue; const src=g.players.find(x=>x.n===p.n)||{};

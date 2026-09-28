@@ -182,7 +182,10 @@ function simGameV3(g,opts,ctx){
   const K=opts.k||[1,1];
   const pace=[(g.pace&&g.pace.away)||1,(g.pace&&g.pace.home)||1];
   const pBase=[(g.passRate&&g.passRate.away)??L.passBase,(g.passRate&&g.passRate.home)??L.passBase];
-  const runEff=[1+(sf[0].run-.5)*.35, 1+(sf[1].run-.5)*.35].map((x,i)=>x*Math.sqrt(mix[i].rush)*(OPP&&dp[i]?Math.pow(dp[i].ypc,.6*MW):1));
+  /* formation matchup (v3.7, formation.py; UNTESTED vs DraftKings): offense personnel vs the defense's box and
+     nickel/dime tendencies -> run-efficiency multiplier g.form[side].run. ctx.fw = weight (1 default, 0 = off). */
+  const FW=opts.neutral?0:(ctx.fw??1), fm=[(g.form&&g.form.away&&g.form.away.run)||1,(g.form&&g.form.home&&g.form.home.run)||1];
+  const runEff=[1+(sf[0].run-.5)*.35, 1+(sf[1].run-.5)*.35].map((x,i)=>x*Math.sqrt(mix[i].rush)*(OPP&&dp[i]?Math.pow(dp[i].ypc,.6*MW):1)*Math.pow(fm[i],FW));
   const passEff=[1+(sf[0].pass-.5)*.35, 1+(sf[1].pass-.5)*.35].map((x,i)=>x*(OPP&&dp[i]?Math.pow(dp[i].ypt,.6*MW):1));
   /* where this defense lets targets and receiving touchdowns go, by position */
   /* Where a defense allowed its touchdowns (by position, run vs pass) is not used: split-half reliability over
@@ -195,6 +198,11 @@ function simGameV3(g,opts,ctx){
   /* coverage and pressure matchup (scheme_match.py): each receiver's man/zone and blitz target split against this
      defense's rates, damped to the share of it that held up out of sample. p.cov = 1 when unknown. */
   const covM=Float64Array.from(ROS,p=>(p.cov>0&&!p.field)?Math.max(.5,1+MW*(p.cov-1)):1);
+  /* formation position shifts (formation.py g.form[side].pos): personnel mismatches move targets and yards per target
+     for TEs and RBs; WRs absorb the difference through the shared target weights. Weighted by ctx.fw like the run term. */
+  const fPos=(p,k)=>{ if(p.field||!g.form) return 1; const f=g.form[p.side===g.home?"home":"away"]; if(!f) return 1;
+    const v=(f.players&&f.players[p.n])||(f.pos&&f.pos[p.pos]); return v&&v[k]?Math.pow(v[k],FW):1; };   // per-player (slot) first, then position
+  const fT=Float64Array.from(ROS,p=>fPos(p,"tgt")), fY=Float64Array.from(ROS,p=>fPos(p,"ypt"));
   /* coaching: each head coach's fourth-down aggressiveness as a log-odds shift on the discretionary go rates
      (g.agg, from nfl_build.coach_agg), and wind, which trims passing at outdoor games (g.wind mph; audit: about
      -2 points of pass rate at 15-20 mph and -3 above 20, beyond what the lower total already says) */
@@ -311,7 +319,7 @@ function simGameV3(g,opts,ctx){
     const cp=Math.min(.93,p.cat*q.qacc*L.acc*(1+(k*passEff[ball]-1)*.45)*rzc*(late?(togo<=6?1.07:1-.006*Math.min(9,togo-6)):1));
     if(R.u()>=cp) return {inc:true,ti};
     const kk=p.kRec/Math.pow(p.deep*(smEX[ti]/Math.max(.5,smB[ti]))*Math.sqrt(mix[ball].explosive),.7);
-    const m=p.ypr*k*passEff[ball]+p.shift+(late?.62*Math.min(15,togo):0);
+    const m=p.ypr*fY[ti]*k*passEff[ball]+p.shift+(late?.62*Math.min(15,togo):0);
     let y=Math.round(R.gamma(kk)*m/kk-p.shift);
     if(late&&y<togo&&R.u()<.30) y=togo;      // the sticks: receivers are coached to them
     if(y>=yl) y=yl;
@@ -353,7 +361,7 @@ function simGameV3(g,opts,ctx){
     for(let i=0;i<n;i++){
       const p=ROS[i], sh=Math.exp(sig[i]*R.n()-sig[i]*sig[i]/2);
       wRun[i]=p.wRun*sh; wRZRun[i]=p.wRun*p.gl*sh;
-      wTgt[i]=p.wTgt*sh*smB[i]*oppT[i]*covM[i]; wRZTgt[i]=p.wTgt*p.gl*sh*smRZ[i]*oppT[i]*oppRZ[i]*covM[i];
+      wTgt[i]=p.wTgt*sh*smB[i]*oppT[i]*covM[i]*fT[i]; wRZTgt[i]=p.wTgt*p.gl*sh*smRZ[i]*oppT[i]*oppRZ[i]*covM[i]*fT[i];
     }
     t=t0; half=t>1800?1:2; sc=[sc0[0],sc0[1]]; h1=null;
     gameOver=post; firstDone=inPlay||post; firstPick=-1; inOT=false; otDone=[0,0]; otPeriod=0;

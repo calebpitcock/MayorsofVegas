@@ -254,7 +254,7 @@ function renderProps(){
   if(mk==="td"){
     rows.sort((a,b)=>tdFinal(b.p)-tdFinal(a.p));
     body=rows.slice(0,60).map(({g,p})=>{
-      const f=tdFinal(p), fair=tdMarket(p), price=tdPrice(p), e=price!=null?ev(f,price):null;
+      const f=tdFinal(p), dk=tdMarket(p), price=tdPrice(p);
       const spec={kind:"td",gid:g.id,pn:p.n,price};
       const inS=LEGS.some(l=>l.key===legKey(spec));
       return `<li><button class="row" data-leg='${esc(JSON.stringify(spec))}'>${avatar(p)}
@@ -262,7 +262,7 @@ function renderProps(){
           <span class="sub">${esc(p.t)} vs ${esc(p.t===g.home?g.away:g.home)} · ${esc(g.kick||"")}${price!=null?` · DK ${p.mktSrc==="est"?"≈":""}${fmtOdds(price)}`:" · no price on file"}${p.flag?` · <b class="warnc">${esc(p.flag)}</b>`:""}</span>
           <span class="bar"><i style="width:${(100*f).toFixed(1)}%;background:${POSCOLOR[p.pos]}"></i></span>
           <span class="sub">${tdWhy(p,g)} ${inS?'<span class="tagpill up">✓ in slip</span>':""}</span>${mxHTML(g,p)}</span>
-        <span class="rt"><span class="big">${(100*f).toFixed(0)}<i>%</i></span><span class="sub">fair ${fmtOdds(fairAm(f))}</span>${evTag(e)}</span>
+        <span class="rt"><span class="big">${(100*f).toFixed(0)}<i>%</i></span><span class="sub">to score</span>${dk!=null?`<span class="sub">DK says ${(100*dk).toFixed(0)}%</span>`:""}</span>
       </button></li>`;}).join("");
   } else if(mk==="value"){
     const vr=valueRows();
@@ -273,7 +273,7 @@ function renderProps(){
   }
   $("#tab-props").innerHTML=`<div class="chips" role="group" aria-label="Market">${chips}</div>
     <div class="pfbar">${gsel}<span class="tiny">${mk==="value"?"DraftKings prices as of "+esc(((games().find(g=>g.propsAsOf)||{}).propsAsOf||"—").slice(0,16).replace("T"," "))+" UTC":rows.length+" players"}</span></div>
-    <p class="lead">${mk==="value"?`Every DraftKings prop on file, sorted by expected value at DraftKings' price. The chance shown is ${Math.round(100*LAMP)}% DraftKings' no-vig price and ${Math.round(100-100*LAMP)}% simulation. Across 938 graded DraftKings props (2024–26), bets this list would have made returned +7.5% ± 6%, but they're losing so far in 2026 (−7%). Unproven: small stakes only. Props where the simulation and DraftKings disagree by more than 22 points are left off, because that's usually news. So are questionable players.`:mk==="td"?`The chance he scores a rushing or receiving touchdown. Where a DraftKings price is on file, it's combined with the simulation using weights fitted on 8,422 real DraftKings prices. ≈ means the price is estimated from the best price across books, so tap the player and type DraftKings' real price in the slip. At kickoff prices, fewer than 1 in 20 players clear DraftKings' hold.`:
+    <p class="lead">${mk==="value"?`Every DraftKings prop on file, sorted by expected value at DraftKings' price. The chance shown is ${Math.round(100*LAMP)}% DraftKings' no-vig price and ${Math.round(100-100*LAMP)}% simulation. Across 938 graded DraftKings props (2024–26), bets this list would have made returned +7.5% ± 6%, but they're losing so far in 2026 (−7%). Unproven: small stakes only. Props where the simulation and DraftKings disagree by more than 22 points are left off, because that's usually news. So are questionable players.`:mk==="td"?`How likely each player is to score a rushing or receiving touchdown, and why: expected carries and targets, red-zone role, how many points his team is projected to score, and this week's matchup. Where DraftKings has a price, it is blended with the simulation (weights fitted on 8,422 real DraftKings prices). "DK says" is DraftKings' own chance with its cut removed. No EV on touchdowns: DraftKings keeps about 15% on them, so almost every price is negative EV at kickoff.`:
       `Fair line is where the simulation has over and under at 50/50. DraftKings' line and prices are filled in where the snapshot has them; type them yourself for anything missing. The chance shown is ${Math.round(100*LAMP)}% DraftKings' no-vig price and ${Math.round(100-100*LAMP)}% simulation. Lines you type are saved and shared.`}</p>
     <ol class="board">${body||'<li class="empty">No players for this market.</li>'}</ol>`;
   const tp=$("#tab-props");
@@ -288,14 +288,17 @@ function mxBadge(v){ if(!v) return ""; const c={"Edge":"up","Slight edge":"up","
 function mxHTML(g,p){ const v=mxOf(g,p); if(!v) return "";
   return `<details class="mine mx"><summary class="tiny">Matchup ${mxBadge(v)}</summary><span class="tiny mxtext">${esc(v.text)}</span></details>`; }
 function tdWhy(p,g){
-  const r=RES[leagueOf(g.id)][g.id], m=p.mean;
-  const bits=[];
-  if(m.RA>=4) bits.push(`${m.RA.toFixed(0)} carries`);
-  if(m.TGT>=2) bits.push(`${m.TGT.toFixed(1)} targets`);
-  if(p.gl>=1.25) bits.push("heavy red-zone role");
-  else if(p.gl<=.75&&!p.isQB) bits.push("light red-zone role");
-  if(p.isQB&&p.gl>=1.4) bits.push("goal-line runner");
-  const imp=p.side===g.home?r.ptsH:r.ptsA; bits.push(`team ~${imp.toFixed(0)} pts`);
+  const r=RES[leagueOf(g.id)][g.id], m=p.mean, bits=[];
+  const imp=p.side===g.home?r.ptsH:r.ptsA;
+  if(m.RA>=4) bits.push(`~${m.RA.toFixed(0)} carries`);
+  if(m.TGT>=2) bits.push(`~${m.TGT.toFixed(1)} targets`);
+  if(p.isQB&&p.gl>=1.4) bits.push("runs it in at the goal line");
+  else if(p.gl>=1.25) bits.push("gets more than his share of red-zone touches");
+  else if(p.gl<=.75&&!p.isQB) bits.push("gets few red-zone touches");
+  bits.push(`${p.t} projected ~${imp.toFixed(0)} pts`);
+  const v=mxOf(g,p); if(v&&v.verdict!=="No edge") bits.push(`matchup: ${v.verdict.toLowerCase()} (${v.dTD>=0?"+":"−"}${Math.abs(100*v.dTD).toFixed(1)} pts)`);
+  const dk=tdMarket(p); if(dk!=null){ const d=tdFinal(p)-dk; if(Math.abs(d)>=.03) bits.push(`model ${d>0?"higher":"lower"} than DK by ${Math.round(100*Math.abs(d))} pts`); }
+  if(p.flag) bits.push(`injury: ${p.flag}`);
   if(p.conf==="low") bits.push("thin sample");
   return esc(bits.join(" · "));
 }
@@ -425,7 +428,7 @@ function renderSlip(){
       <div class="ra"><div class="slipnum">${pct(p,1)}</div><div class="sub n">chance · fair ${fmtOdds(fairAm(p))}</div></div></div>
     <div class="stakebox"><label class="tiny" for="sgp">DraftKings price</label>
       <input type="number" id="sgp" value="${esc(typed)}" placeholder="${l.price!=null?fmtOdds(l.price):"type it"}">
-      ${evTag(e)}<button class="pill" id="clearSlip">clear</button></div>
+      ${l.kind==="td"?"":evTag(e)}<button class="pill" id="clearSlip">clear</button></div>
     <p class="empty">${l.kind==="td"?"Typing DraftKings' real price re-blends the chance at that price.":"Check the price in the DraftKings app before betting; the one shown is from the latest snapshot."}</p>
     <div class="stakebox"><label for="stake" class="tiny">UNITS</label><input type="number" id="stake" min="0.25" step="0.25" value="1">
       <button class="logbtn" id="logBet">Log this bet</button></div><p class="empty" id="logMsg"></p></div>`;

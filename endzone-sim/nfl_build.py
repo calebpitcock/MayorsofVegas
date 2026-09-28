@@ -13,7 +13,7 @@ PBP_COLS = ['play_id','game_id','season','season_type','week','posteam','defteam
   'qb_scramble','qb_kneel','qb_spike','sack','pass_attempt','complete_pass','rushing_yards','receiving_yards','passing_yards',
   'yards_gained','rush_touchdown','pass_touchdown','interception','qb_dropback','two_point_attempt','rusher_player_id',
   'receiver_player_id','passer_player_id','wp','half_seconds_remaining','game_seconds_remaining','drive','fumble_lost',
-  'air_yards','home_team','away_team','score_differential']
+  'air_yards','home_team','away_team','score_differential','desc']
 
 _cache = {}
 def pbp(season):
@@ -144,6 +144,61 @@ def coach_agg(season, week):
             out[t] = round(float(lgt(r) - lgt(lg_cur)), 3)
     return out
 
+# Early injury exits (EZEXIT=1, default). A player hurt early in a game (e.g. Barkley's first-play stinger, 2026 Week 2)
+# otherwise counts as a full game with a tiny share, and it is his most recent, heaviest-weighted game; his backups'
+# inflated shares in that game also count in full because he was "present". A game is an early injury exit when
+#   (a) his offensive snap share is under EXIT_FRAC of his own baseline (median of his other games for that team,
+#       baseline at least EXIT_BASE, so fringe players are never flagged), and
+#   (b) there is injury evidence: the play-by-play says he "was injured during the play", or he is on the official
+#       injury report within the next two weeks, or overrides.json EARLY_EXIT names him for that season and week.
+# (b) keeps benchings (Stevenson after a fumble, 2026 Week 2) counting as real role information.
+# Flagged games are removed from his snap rows, so the builder treats them exactly like a missed game: his shares skip
+# the game, teammates' shares in that game get the usual absent-starter down-weight, and the role correction reads his
+# next game as a return. Only information available at the build week is used (no look-ahead in backtests).
+EXIT = os.environ.get('EZEXIT', '1') != '0'
+EXIT_FRAC, EXIT_BASE = 0.5, 0.30
+_SUFFIX = {'jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv', 'v'}
+
+def pbp_abbrev(full_name):
+    """'Amon-Ra St. Brown' -> 'A.St. Brown', 'Kenneth Walker III' -> 'K.Walker' (the play-by-play style)."""
+    parts = [x for x in str(full_name).split() if x.lower() not in _SUFFIX]
+    return f"{parts[0][0]}.{' '.join(parts[1:])}" if len(parts) >= 2 else str(full_name)
+
+def injured_in_pbp(p):
+    """(game_id, team, abbreviated name) for every 'X was injured during the play' in the play descriptions."""
+    if 'desc' not in p: return pd.DataFrame(columns=['game_id', 'team', 'abbr'])
+    d = p[p.desc.fillna('').str.contains('was injured during the play', regex=False)]
+    rows = []
+    for g, pt, dt, txt in zip(d.game_id, d.posteam, d.defteam, d.desc):
+        for m in pd.Series([txt]).str.extractall(r"(?:\d+-)?([A-Z][A-Za-z'\-]*\.[A-Z][A-Za-z'.\- ]*?) was injured during the play").iloc[:, 0]:
+            rows += [(g, pt, m.strip()), (g, dt, m.strip())]
+    return pd.DataFrame(rows, columns=['game_id', 'team', 'abbr']).drop_duplicates()
+
+def injury_exits(sn, pinj, inj, names, season, week, manual=()):
+    """Set of (game_id, pid) early injury exits among snap rows `sn` (already limited to games before the build
+    week). pinj: injured_in_pbp output. inj: injury report rows (gsis_id, season, week). names: pid -> full name.
+    manual: iterable of (pid, season, week)."""
+    out = set()
+    if sn.empty: return out
+    man = {(a, int(b), int(c)) for a, b, c in manual}
+    pin = set(zip(pinj.game_id, pinj.team, pinj.abbr)) if len(pinj) else set()
+    rep = set(zip(inj.gsis_id, inj.season.astype(int), inj.week.astype(int))) if len(inj) else set()
+    for (pid, team), h in sn.groupby(['pid', 'team']):
+        if len(h) < 2 and not any(m[0] == pid for m in man): continue
+        for _, r in h.iterrows():
+            key = (pid, int(r.season), int(r.week))
+            if key in man: out.add((r.game_id, pid)); continue
+            others = h[h.game_id != r.game_id].offense_pct
+            if others.empty: continue
+            base = float(others.median())
+            if base < EXIT_BASE or r.offense_pct >= EXIT_FRAC * base: continue
+            ev = (r.game_id, team, pbp_abbrev(names.get(pid, ''))) in pin
+            if not ev:   # on the report in the following two weeks, only as far as the build week can see
+                lim = week if int(r.season) == season else 99
+                ev = any((pid, int(r.season), w) in rep for w in (int(r.week) + 1, int(r.week) + 2) if w <= lim)
+            if ev: out.add((r.game_id, pid))
+    return out
+
 def shrink(num, den, prior, m):
     return (num + prior * m) / (den + m)
 
@@ -162,6 +217,15 @@ class Builder:
         pfr2g = {v: k for k, v in self.R['pfr_id'].dropna().items()}
         sn = sn.assign(pid=sn.pfr_player_id.map(pfr2g)).dropna(subset=['pid'])
         self.SN = sn[['game_id','season','week','team','pid','offense_snaps','offense_pct']]
+        self.SN_ALL = self.SN
+        self.PINJ = injured_in_pbp(self.P) if EXIT else None
+        ij = [pd.read_csv(f'{D}/injuries_{s}.csv', low_memory=False) for s in (season - 1, season) if os.path.exists(f'{D}/injuries_{s}.csv')]
+        ij = pd.concat(ij) if ij else pd.DataFrame(columns=['gsis_id', 'season', 'week', 'game_type'])
+        self.INJ_ALL = (ij[ij.game_type == 'REG'] if 'game_type' in ij else ij)[['gsis_id', 'season', 'week']].dropna()
+        ov = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'overrides.json')
+        n2p = {v: k for k, v in self.R['full_name'].items()}
+        self.EXIT_MANUAL = [(n2p[n], s_, w_) for n, s_, w_ in (json.load(open(ov)).get('EARLY_EXIT', []) if os.path.exists(ov) else []) if n in n2p]
+        self._exits = {}
         lg = self.NP[self.NP.season == season - 1]
         self.lg_np = lg.np.sum() / max(1, lg.nn.sum())
         lp = self.PACE[self.PACE.season == season - 1]
@@ -192,6 +256,22 @@ class Builder:
                 if q in self.R.index and self.ACT_TEAM.get(q) == team and q not in out: return q
         return self.starter(team, week)
 
+    def exits(self, team, week):
+        """Early injury exits for this team's players, using only games before `week` (cached)."""
+        if not EXIT: return set()
+        if (team, week) not in self._exits:
+            sn = self.SN_ALL[(self.SN_ALL.team == team) & self.hist_mask(self.SN_ALL, week)]
+            names = self.R['full_name'].to_dict()
+            self._exits[(team, week)] = injury_exits(sn, self.PINJ, self.INJ_ALL, names, self.season, week, self.EXIT_MANUAL)
+        return self._exits[(team, week)]
+
+    def snaps_for(self, team, week):
+        """This team's snap rows before `week`, early injury exits removed (treated as missed games)."""
+        sn = self.SN_ALL[(self.SN_ALL.team == team) & self.hist_mask(self.SN_ALL, week)]
+        ex = self.exits(team, week)
+        if not ex: return sn
+        return sn[[(g, p) not in ex for g, p in zip(sn.game_id, sn.pid)]]
+
     def weight(self, season, week, cut_week):
         if season == self.season:
             return 1.0 + 0.04 * (week - cut_week)          # a little recency inside the season
@@ -211,15 +291,16 @@ class Builder:
     def team_players(self, team, week, active_pids=None, qb_pid=None, exclude=()):
         """active_pids: players available this week (None = anyone who played for the team in-season)."""
         S = self.season
-        SN = self.SN[(self.SN.team == team) & self.hist_mask(self.SN, week)]
+        SNA = self.SN_ALL[(self.SN_ALL.team == team) & self.hist_mask(self.SN_ALL, week)]
+        SN = self.snaps_for(team, week)
         if active_pids is None:
-            active = set(SN[SN.season == S].pid)
+            active = set(SNA[SNA.season == S].pid)
             if self.ACT is not None:
                 active &= self.ACT      # drop injured reserve, cuts, practice squad
                 # back from injury: on this team's active roster now, played for it last season, no snaps yet this
                 # season (e.g. Bowers). The backtest uses actual game actives, which always include these players.
-                played = set(self.SN[self.SN.season == S].pid)
-                active |= {p for p in SN[SN.season == S - 1].pid.unique() if self.ACT_TEAM.get(p) == team and p not in played}
+                played = set(self.SN_ALL[self.SN_ALL.season == S].pid)
+                active |= {p for p in SNA[SNA.season == S - 1].pid.unique() if self.ACT_TEAM.get(p) == team and p not in played}
         else:
             active = set(active_pids)
         active -= set(exclude)
@@ -321,8 +402,9 @@ class Builder:
             inj = pd.read_csv(f) if os.path.exists(f) else pd.DataFrame(columns=['gsis_id', 'week', 'report_status', 'practice_status', 'game_type'])
             inj = inj[inj.game_type == 'REG'] if 'game_type' in inj else inj
             self._inj = inj.drop_duplicates(['gsis_id', 'week'], keep='last').set_index(['gsis_id', 'week'])
-        hist = self.SN[(self.SN.team == team) & (self.SN.season == S) & (self.SN.week < week)]
-        lastw = hist.week.max() if len(hist) else None
+        hist = self.snaps_for(team, week); hist = hist[(hist.season == S) & (hist.week < week)]
+        allh = self.SN_ALL[(self.SN_ALL.team == team) & (self.SN_ALL.season == S) & (self.SN_ALL.week < week)]
+        lastw = allh.week.max() if len(allh) else None   # the team's last game, even if a player's was an early exit
         for key, grp in (('rush', [r for r in rows if r['pos'] == 'RB']), ('rec', [r for r in rows if r['pos'] in ('WR', 'TE', 'RB')])):
             if not grp: continue
             before = sum(r[key] for r in grp)

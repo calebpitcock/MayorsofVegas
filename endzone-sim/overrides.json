@@ -5,5 +5,12 @@
   "CHI": "Case Keenum",
   "NYG": "Jameis Winston",
   "MIN": "Kyler Murray"
- }
+ },
+ "EARLY_EXIT": [
+  [
+   "Saquon Barkley",
+   2026,
+   2
+  ]
+ ]
 }
