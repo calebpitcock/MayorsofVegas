@@ -1,0 +1,51 @@
+player rows 4099 games 224
+
+ANYTIME TD  n=4099  scored=825  mean model p=0.202  actual rate=0.201
+  Brier model 0.1433  vs constant 0.1608   logloss 0.4484 vs 0.5022
+  Brier position-average baseline 0.1577
+  QB: n=448 model 0.114 actual 0.096  ratio 0.85  Brier 0.0824
+  RB: n=1063 model 0.257 actual 0.283  ratio 1.10  Brier 0.1792
+  TE: n=850 model 0.160 actual 0.182  ratio 1.14  Brier 0.1357
+  WR: n=1738 model 0.213 actual 0.188  ratio 0.88  Brier 0.1408
+               n  model  actual
+bin                            
+(0.0, 0.05]  112  0.041   0.036
+(0.05, 0.1]  820  0.077   0.066
+(0.1, 0.15]  847  0.123   0.113
+(0.15, 0.2]  635  0.174   0.178
+(0.2, 0.3]   848  0.244   0.256
+(0.3, 0.4]   475  0.343   0.358
+(0.4, 0.5]   236  0.445   0.436
+(0.5, 0.6]    97  0.545   0.485
+(0.6, 1.0]    29  0.653   0.724
+
+QB passing yards: n=448  mean model 231.5 actual 220.1  bias -11.4  P(actual>model median) 0.460 (=.5 if calibrated, excl ties 0.002)  80% interval coverage 0.777
+  PIT deciles (each should be ~.100): 0.158 0.098 0.105 0.089 0.089 0.092 0.109 0.103 0.087 0.069
+  MAE of model median 56.2
+
+QB pass attempts: n=448  mean model 32.8 actual 33.1  bias +0.3  P(actual>model median) 0.504 (=.5 if calibrated, excl ties 0.000)
+  PIT deciles (each should be ~.100): 0.114 0.080 0.085 0.121 0.071 0.096 0.105 0.114 0.105 0.109
+  MAE of model median 6.8
+
+RB rushing yards (carry share >= .25): n=609  mean model 51.3 actual 57.1  bias +5.8  P(actual>model median) 0.593 (=.5 if calibrated, excl ties 0.015)  80% interval coverage 0.790
+  PIT deciles (each should be ~.100): 0.062 0.076 0.079 0.085 0.099 0.122 0.126 0.105 0.092 0.154
+  MAE of model median 27.7
+
+WR/TE receiving yards (target share >= .12): n=1200  mean model 45.0 actual 47.2  bias +2.3  P(actual>model median) 0.517 (=.5 if calibrated, excl ties 0.018)  80% interval coverage 0.828
+  PIT deciles (each should be ~.100): 0.091 0.080 0.087 0.105 0.111 0.102 0.106 0.110 0.100 0.108
+  MAE of model median 25.1
+
+WR/TE receptions (target share >= .12): n=1200  mean model 3.8 actual 3.9  bias +0.1  P(actual>model median) 0.438 (=.5 if calibrated, excl ties 0.186)
+  PIT deciles (each should be ~.100): 0.084 0.094 0.093 0.098 0.101 0.107 0.092 0.119 0.104 0.107
+  MAE of model median 1.8
+
+RB receiving yards (target share >= .08): n=341  mean model 23.1 actual 21.3  bias -1.7  P(actual>model median) 0.496 (=.5 if calibrated, excl ties 0.032)  80% interval coverage 0.877
+  PIT deciles (each should be ~.100): 0.085 0.117 0.100 0.103 0.079 0.141 0.120 0.100 0.079 0.076
+  MAE of model median 14.8
+  volume RB: carries model 8.11 actual 9.01 | targets model 2.15 actual 2.14
+  volume WR: carries model 0.24 actual 0.16 | targets model 4.18 actual 4.26
+  volume TE: carries model 0.04 actual 0.06 | targets model 3.41 actual 3.42
+
+GAMES n=224  Brier home win: model 0.2166   de-vigged moneyline 0.2151 (n=224)
+  mean |model - moneyline| 0.0206
+  home cover rate 0.500 push 0.004; over rate 0.536

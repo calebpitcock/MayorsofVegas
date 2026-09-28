@@ -1,0 +1,187 @@
+# Endzone Sim — handoff (v3.5, Sunday 2026-09-27 12:30 ET, NFL Week 3)
+
+## Start here (state at handoff)
+- **Week 3 is live.** Slate v35 is in the page DB (`slate/current` version 35; `tuning/current` v13). 1:00 ET games
+  kicked off at handoff; still to play: 4:05 ARI@SF, MIN@TB; 4:25 BAL@DAL (Brazil), LV@NO; SNF LA@DEN; MNF PHI@CHI.
+  `gen_nfl.py` skips games already final, so a refresh shows only what's left.
+- **Refresh = `cd endzone-sim && ./pregame.sh`** (~3 min), then `ArtifactData set slate/current file_path=slate_nfl.json`
+  with `if_version` (current + 1 after each write), then republish `endzone.html` to the page URL (source files go under
+  `src/` with contentType text/plain). **Picks = `node picks.js`** (TD board with EV at the estimated DK price, "no price"
+  list, props with EV>0). Flags come from `g.dk` vs `g.gm.m` (4+ pts).
+- **Open item:** CHI QB is a hand override (Case Keenum, `overrides.json` STARTER + `OUT` in `gen_nfl.py`). Caleb Williams
+  had no official game status yet and Tyson Bagent is officially Questionable. Confirm before MNF and rerun if it changes.
+- **Picks given Sunday 12:30 ET** (leans, not locks; TD prices are Friday best-price estimates): TD Walker III (−250 or
+  better), Chase Brown (−120), Cook (−210), Gibbs (−280), McBride (+150), Henry (−255); props JSN u92.5, DJ Moore u48.5,
+  Stevenson u37.5 rush, Nabers u53.5 (Thursday lines); flags KC@MIA (line KC −10 vs values KC by 4.1), CAR@CLE (CAR −2.5
+  vs CLE by 2.5), ARI@SF (SF −7.5 vs SF by 12). Grade these after the week with the two-source rule.
+- **Biggest known weakness: prices, not football data.** TD prices come from jaredpatchett/NFL-Model (best US price →
+  DK estimate, refreshed ~Friday, whole teams missing: DEN, LA, NE, PIT, TB this week); DK props from davidcantugtr
+  (Thursday snapshot, yards only, 9/15 games). The fix is a live odds feed: the user was told to add an Odds API key as
+  env var `ODDS_API_KEY` and allow `api.the-odds-api.com`. If a new session has that variable, write a fetcher
+  (DK only: game lines, player_anytime_td, player_receptions, player_reception_yds, player_rush_yds), save every pull as
+  a timestamped snapshot (price history for CLV/early-week tests), and replace `attach_td.py`'s estimate with real DK prices.
+- **Honest records** (keep telling the user): TD blend beats DK log loss but EV>0 TD bets lost at kickoff historically;
+  props +13.3% ± 5.6% 2024–25, ~flat 2026; game model no proven spread edge; 4+ pt flags 55.1% (2016–25), 53.1% held-out.
+- **Tested and rejected 2026-09-27** (`audit/tdfeat/RESULTS.md`): nflfastR xpass and xYAC, end-zone targets, inside-5
+  carries, red-zone snap share. Don't redo them.
+
+## What this is
+An NFL betting model for one user who bets **only on DraftKings** and **only on six bet types: anytime TD (their favorite
+— "the point of this whole model"), receiving yards, rushing yards, catches, moneyline, spread.** Singles only.
+
+- **Page:** https://claude.ai/artifact/GdsYysQkGu9mq7NycSyCSr (private). Read and publish it with the Artifact tool. The artifact also stores the source under `src/`.
+- **Database** (ArtifactData on that URL; always pass `if_version`):
+  - `slate/current` — this week's slate (v35). It replaces the page's built-in copy.
+  - `tuning/current` — notes, weights, fits (v13).
+  - `ledger/current` — the user's logged bets, with closing prices for CLV.
+  - `lines/current` — lines the user typed.
+  - `grades/current` — graded results.
+  - `slip/suggested` — legacy; the slip no longer shows it.
+- **Source:** `endzone-sim/` in `calebpitcock/MayorsofVegas`, branch `claude/sports-model-accuracy-9mhl6y` (pushed).
+- **Data is not committed.** `README.md` lists every download URL. All of it is reachable through GitHub (nflverse releases, raw.githubusercontent, git clone). Network is Custom: `www.nfl.com` (power rankings) + default package list; other sports/odds sites are blocked (curl works, WebFetch doesn't).
+
+## v3.4 in one paragraph (2026-09-25)
+Built for use **right before kickoff**. `./pregame.sh` refreshes everything in about 2 minutes: this season's data,
+the official injury report (Out/Doubtful removed, Questionable flagged), the newest DraftKings props and TD prices, the
+calibration, the game model and the page. Then write `slate_nfl.json` to `slate/current` and republish. Changes, each
+backtested against DraftKings (`audit/AUDIT-2026-09-25.md`, "v3.4 results"):
+- Game model registers team strength: market rating from past closing lines (`gm/market.py`, `gm/model3.py`) plus a
+  second-year-QB term. 2021–25 MAE 10.30 → 10.03; lean k 0.15 → 0.10 (fit vs closing lines 0.17 ± 0.08). Still no
+  proven edge at closing prices.
+- Removed the touchdown-location defense inputs (pure noise); modern 4th-down rates; head-coach 4th-down
+  aggressiveness (`nfl_build.coach_agg`, `g.agg`). Wind: the user won't type it, so the page box was removed; the
+  engine still applies `g.wind` if a slate carries it (only historical games do).
+- TD calibration and DK blend refit on the new engine (`td_cal_nfl.json`, `td_dk_fit.json`, via `audit/cmp_td.py`).
+- Tested and rejected: new-head-coach usage/pass-rate discount (`EZNEWHC=1`), per-market prop recalibration,
+  matchup history of any kind.
+- Spread/moneyline: every attempt to make picks significantly better at closing prices failed (off-market DK prices,
+  situational factors, line movement, fitting to the close); see the audit's last section. Don't repeat them.
+- Team ratings + line flags (the user's ask): `game_live.py` writes `slate.teams` (value/rank, parts: strength, QB,
+  efficiency; sums exactly to the game model's margin) and `gmfit.flags` from `gm/flag_record.py`. The page flags DK
+  spreads 3+ pts from the fair line (record since 2016: 52.7% cover, +2.4% ± 3.5%; moneylines −4%, so spreads only).
+  Found and fixed while building it: `model2.build` and `game_live.py` counted defense backwards (defense ratings are EPA
+  allowed); pure-efficiency MAE 10.30 → 10.18, combined model unchanged (10.04).
+- Team values v2 (user's spec): `gm/model4.py` splits opponent-adjusted offense and defense, adds special teams
+  (`gm/st_games.py`, split-half r 0.16, shrunk) and keeps the books' rating and QB terms. `game_live.py` writes
+  `slate.teams` (value, books, stats with off/def/st, QB, public rank) and two fair lines per game: `g.gm.m` (ratings) and
+  `g.gm.ms` (stats only, no books). Flags: stats 5+ pts off (2016–25: 57.0%, 9/10 seasons), ratings 3+ (53.0%, 8/10);
+  records in `gm/flag_record.json` (`gm/flag_record.py`). Flags are shown as mismatches, not picks (user's ask).
+- Team-specific home field: tested and rejected as a free-fitted term (r −0.04); later added at the user's request as a shrunk half-weight edge (see ONE combined value below).
+- Public opinion: `public_rank.json` = {season, week, source, asOf, ranks: {TEAM: rank}}, 10% of value, only used when
+  its week matches. The rankings sites (nfl.com, espn.com, walterfootball.com, sharpfootballanalysis.com) are blocked by
+  this environment's network policy; once the user allows one, fetch this week's ranking with WebFetch during the
+  refresh, write the file, rerun `gm/game_live.py`. Not backtestable (no history), so its weight is fixed, not fitted.
+- ONE combined value + ONE flag (user's latest spec, replaces the two-flag version): value = 0.25 × ratings view (books +
+  stats + QB) + 0.75 × stats view (off/def/ST + QB, no books), then 10% public power ranking when available; each home
+  team's home field = league + 0.5 × its own edge (cap ±1). Flag at 4+ pts. Blend and threshold chosen on 2016–20
+  (`gm/blend_select.py`); record in `gm/flag_record.json`: 2016–25 55.1% (532), 2021–25 53.1% (241).
+- Sources: public = CONSENSUS (average rank) of every readable weekly list: NFL.com Nick Shook + Neil Reynolds now
+  (`fetch_public.py` SOURCES; one writer alone was too idiosyncratic). `public_rank.json` keeps each list,
+  e.g. https://www.nfl.com/news/nfl-power-rankings-week-3-2026-nfl-season. Home field = nflverse results
+  (`model4.home_edges`); the user chose not to use nfelo. Network: the environment needs Custom access with
+  `www.nfl.com` plus the default package-manager list (GitHub, raw/release-assets, PyPI, npm cover everything else).
+  At refresh, `fetch_public.py` (run by pregame.sh) downloads the week's NFL.com ranking with curl (WebFetch stays blocked
+  even when the session network allows the host) and writes `public_rank.json`; rerun `cd gm && python3 game_live.py
+  ../slate_nfl.json`, then build and publish.
+- Scheme/coverage (user asked to weight it much more; data says it's small): `scheme_match.py` builds receiver
+  man/zone + blitz target splits and defense man/blitz rates from nflverse participation (2022–25) + FTN (2022–26);
+  multiplier damped to 60% (held-out fit), `p.cov` on WR/TE/RB, `covM` in `engine.js`; `g.defScheme` shown on game
+  cards. Held-out: target-share MSE −0.1%; TD vs DK gain 2024 0.00133→0.00143, 2023 0.00102→0.00112; props flat.
+  Run/pass funnel: pass-rate error −0.3% (8/10 seasons), no effect on rush-vs-pass TD share: not used.
+  `EZCOV=0` turns it off in backtests. Scripts: /audit/scheme_*.
+- Matchups v2 (user: make scheme/coverage a big factor and explain edges): coverage splits now shrink toward each
+  POSITION's league pattern (RBs get ~60% more of targets vs zone than man) instead of 1. `ctx.mw` matchup weight
+  (engine: coverage, DvP targets, ypc/ypt); page slider on the Model tab (default 100%). Backtest vs DK: weight 1 =
+  TD log-loss gain 2024 0.00155 (95% CI clear of 0), 2023 0.00106, props +13.3%; weight 2 = 0.00145 / 0.00096 / +9.9%;
+  none (v3.4) = 0.00133 / 0.00102 / +11.8%. `matchups.js` (run by pregame.sh after the game model) simulates each game
+  vs this week's defense and vs a league-average one (both anchored to DK) and writes `g.mx` = per-player verdict
+  (Edge / Slight edge / No edge / Slight disadvantage / Disadvantage: |ΔTD| ≥ 2 pts or |Δyds| ≥ 6% = Edge; ≥ 1 pt/3% = slight)
+  with plain-English reasons; shown on game cards (Matchups section), TD rows and prop rows.
+- A fresh session runs `./setup_data.sh` once (all data, about 5 minutes). `bt_all.sh <tree>` reruns every backtest.
+
+## Data check (2026-09-27)
+`data_check.py` runs at the end of `pregame.sh` and puts a "Data check" panel at the top of the Games tab (gap / partial / ok).
+It compares this season's play-by-play, snap counts and FTN charting with the games played, the injury report with the
+slate's teams, each team's slate QB with the depth chart's QB1, depth-chart starters with the slate, and TD/prop price
+coverage and age. Fixes made from the first run:
+- **Starting QB**: `Builder.live_starter` takes the latest depth chart's QB1 when he is active and not Out/Doubtful, and
+  only then falls back to "most dropbacks last week". The fallback had Drew Lock starting for Seattle after Darnold returned.
+- **Returning players**: players on the team's active roster with snaps for it last season but none yet this season
+  (Bowers, Flowers) are now in the slate. The backtest always included them (it uses real game actives).
+- **Official Questionable beats an older hand "out"** in `gen_nfl.py` (the official report is newer than Friday-morning news).
+- **Stale DraftKings lines**: when the DK game-line snapshot is over a day old and the nflverse line has moved, the flags and
+  win/cover chances use the current line and the card says the DK snapshot is stale.
+- `pregame.sh` now also refreshes FTN charting and depth charts; `setup_data.sh` fetches FTN, participation, depth charts.
+Gaps that can't be fixed from free data: 2026 man/zone charting (published after the season); DK props only from the
+davidcantugtr snapshot (Thursday, yards only, some games missing); TD prices from jaredpatchett (some teams absent). The
+fix is a DraftKings odds feed (e.g. The Odds API key as an environment variable `ODDS_API_KEY`, with api.the-odds-api.com
+allowed in the network settings).
+
+## nflfastR stats / TD data (2026-09-27): tested, none adopted — see `audit/tdfeat/RESULTS.md`
+xpass, xYAC, end-zone targets, inside-5 carries and red-zone snap share add nothing beyond the model + DraftKings.
+The TD bottleneck is prices (fresh DK anytime-TD quotes), not football data.
+
+## Rules the user set (keep them)
+1. **Only DraftKings prices.** Don't line-shop or show other books. TD prices from best-across-books sources are converted to an estimated DK price and marked ≈.
+2. **Only the five bet types, and they stay separate.** The game model (moneyline/spread) never feeds the player simulation. The player simulation uses DK's spread and total only to set each team's scoring level. Scratching a player never changes a moneyline or spread. No parlays.
+3. **Be honest and harsh** about what works. Report numbers with uncertainty, and say when something doesn't beat DK.
+4. **No scheduled jobs.** The user refreshes by asking, usually right before kickoff (`./pregame.sh`).
+5. **Carried from the original handoff:** mark a player as scored only when a primary source or two independent sources agree. QB and scheme changes redistribute team scoring, never inflate it. Player weights are shares, and the Field takes the remainder.
+
+## How it works
+- **Player simulation** (`engine.js`, play-by-play with seeded RNG) produces anytime TD, yards and catches.
+  - Usage shares come from nflverse play-by-play (`nfl_build.py`, empirical-Bayes, recency half-life 2 games).
+  - A **role correction** then adjusts shares (`role_fit.py` → `role_coef_all.json`, applied in `Builder.role_adjust`). Signals: snap-share trend, practice status (limited/DNP), official Questionable, returning from a missed game, one-game samples.
+  - Each offense's efficiency is solved so DK's spread and total are the simulation's 50/50 point (`precompute.js`).
+- **TD pricing:** `logit p = a + bk·logit(DK implied) + bm·logit(calibrated model)`, from `td_dk_fit.json` (a≈0.015, bk≈0.82, bm≈0.32). The calibration is in `td_cal_nfl.json` (QB offset +0.48 now that scramble TDs count).
+- **Yards/catches pricing:** chance = 80% DK no-vig + 20% simulation (the `LAMP` slider on the page).
+- **Game model** (`gm/`): opponent-adjusted EPA/success team ratings plus starting-QB EPA/dropback vs the team's recent QBs, rest, home field, division and neutral site.
+  - Walk-forward regression, trained on 2013+ and tuned on 2016–20 only. Tuned values: team half-life 14 games, carryover 0.85, QB half-life 1500 dropbacks, QB carryover 0.8, QB prior 100 dropbacks.
+  - v3.4: adds market team strength (`market.py`: ridge ratings on past closing spreads, half-life 4 weeks, season carry 0.5) and a second-year-QB term (`model3.py`); tuned on 2016–20 only.
+  - Prices start from DK's own no-vig odds and move by k=0.10 × (model margin − DK spread). Win rate per point b=0.1439, cover rate per point 0.044 (`anchor.json`).
+  - `game_live.py` writes `g.gm` and `g.dk` onto the slate.
+
+## Honest grades (all against real DraftKings prices)
+| Bet type | Grade | Evidence |
+|---|---|---|
+| **Anytime TD** | real but small edge; not profitable at kickoff | 8,697 DK prices 2023–24 (~5 min pre-kick, mogden16/NFL-Wizard-Analysis). DK + model beat DK alone in every test: 2024 log loss 0.4701 vs 0.4715 (95% interval clear of zero), 2023 0.4304 vs 0.4314, 2026 Weeks 1–2 0.4310 vs 0.4330. DK hold is ~15%; betting positive-EV spots at kickoff lost 2% (2023) and 11% (2024). |
+| **Yards and catches** | promising, unproven | 937 graded DK props 2024–26. 80/20 blend log loss 0.6877 vs DK 0.6929. Model-picked bets +13% ± 6% (288 bets): 2024 +46%, 2025 +17%, 2026 −0.5%. |
+| **Moneyline / spread** | better model, no edge | v3.4 MAE 2021–25 10.03 (was 10.30; close 9.75). Predicts Tuesday→close movement 46% vs 27% against (was 40/33). At closing prices, 3+ pt disagreements covered 52.5%, ROI +1.9% ± 3.5% (2021–25 −2.3%). Moneylines lose. |
+| **TD calibration** | calibrated | 2025 held-out weeks 12–18: Brier 0.1430 vs constant 0.1585. |
+
+Other findings:
+- DK prop overs hit 44.5% at a 50% price, but that edge is fading: +13% (2024), +7% (2025), −1% (2026).
+- QB rushing unders lost 24% (DK underprices scrambling).
+- Blind TD bets longer than +600 lost 21–29%.
+
+## Bugs found this session (don't repeat them)
+- **Grading bug:** the usage frames count designed runs only, so QB scrambles were missing from actual rushing yards and TDs. `fix_ry.py` and `fix_td.py` correct graded rows. Any new backtest must run them.
+- **Moneyline pricing:** a normal bell curve from margin to win% overrated underdogs. Always anchor to DK's own odds.
+- **Team codes:** OAK/SD/STL in games.csv → LV/LAC/LA in play-by-play.
+- **Storage:** blocked browser storage broke the slip; `store` now has an in-memory fallback.
+- **Shell:** `pkill -f` / `pgrep -f` kill your own shell (exit 144). `git ls-tree -l` on blobless clones hangs.
+- **2026 data gaps:** nflverse has no 2026 route participation. Week-of `report_status` (Questionable/Out) posts Friday afternoon; until then `gen_nfl.py` feeds its hand QUESTIONABLE list into the role correction.
+
+## Weekly refresh (when the user asks) — v3.4: `./pregame.sh` does steps 1–2 and 4–6; set `overrides.json` week/QBs first
+1. Re-download from nflverse: `play_by_play_2026.csv.gz`, `snap_counts_2026.csv`, `injuries_2026.csv`, `roster_weekly_2026.csv`, and `games.csv` (nfldata).
+2. `git fetch` the data repos:
+   - davidcantugtr/nfl-player-prop-opportunity: `data/latest/player_props.csv` and `game_lines.csv`
+   - jaredpatchett/NFL-Model: `data/player_td.json`
+3. Edit `overrides.json` (week, starting-QB overrides) and the OUT/QUESTIONABLE dicts in `gen_nfl.py`, from news. Use the two-source rule for injuries.
+4. Build and attach, in order:
+   - `python3 gen_nfl.py`
+   - `python3 live_props.py`
+   - `python3 attach_td.py slate_nfl.json ../data/nflmodel_player_td_w3.json`
+   - `node precompute.js slate_nfl.json`
+   - `cd gm && python3 team_games.py && python3 game_live.py ../slate_nfl.json`
+5. Write the slate to the DB: `ArtifactData set slate/current file_path=slate_nfl.json` with `if_version`.
+6. `python3 build.py`, then smoke-test in Chromium (Playwright; see `shot2.js`/`shot3.js` patterns). Read the artifact, then publish.
+7. Add a note to `tuning/current.notes`. Grade last week's bets and TDs with the two-source rule.
+
+## Open work / best next steps
+- **Track CLV** from the user's ledger. It's the fastest real signal. Ask them to log DK closing prices.
+- **Collect early-week DK TD prices.** Every TD test used kickoff prices; the edge may live earlier in the week, around news.
+- **Unused data:** DK line history 2022–24 is in [Risky-Scout/nfl-predictions-pricing](https://github.com/Risky-Scout/nfl-predictions-pricing) (`data/purchased/odds_closing_dev_2022_2024.parquet`, ~10 snapshots per game). Use it to test the game model against opening lines.
+- **Spread pricing on 3 and 7:** use an empirical margin distribution around key numbers instead of a linear per-point slope.
+- **Early season:** 2026 Weeks 1–2 were the weakest for every model because early usage leans on last season. Consider weighting preseason depth charts (nflverse `depth_charts_2026.csv`, ESPN format, untested).
+- **Late games:** the prop snapshot covers ~72h, so Sunday-late and Monday props fill in later.
