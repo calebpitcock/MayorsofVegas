@@ -20,11 +20,11 @@ for w in range(3, 19):
             pl = b.team_players(team, w, active_pids=set(sn.pid), qb_pid=qb)
             u = b.U[(b.U.game_id == r.game_id) & (b.U.posteam == team)].set_index('pid')
             tc, tt = T.loc[(r.game_id, team), 'tcar'], T.loc[(r.game_id, team), 'ttgt']
-            hist = SNf[(SNf.team == team) & (SNf.week < w)]
+            hist = b.snaps_for(team, w); hist = hist[hist.season == S]   # same history role_adjust sees (early exits removed when EZEXIT=1)
             for x in pl:
                 if x['pos'] == 'QB': continue
                 h = hist[hist.pid == x['id']].sort_values('week')
-                lastw = hist.week.max()
+                lastw = b.SN_ALL[(b.SN_ALL.team == team) & (b.SN_ALL.season == S) & (b.SN_ALL.week < w)].week.max()   # team's last game
                 s_last = float(h[h.week == lastw].offense_pct.sum()) if len(h) else 0.0
                 s_prev = float(h[h.week < lastw].offense_pct.tail(3).mean()) if (h.week < lastw).any() else np.nan
                 s_all = float(h.offense_pct.mean()) if len(h) else 0.0

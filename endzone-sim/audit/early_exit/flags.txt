@@ -1,0 +1,59 @@
+Early injury exits flagged, by season and rule (a flag can have more than one kind of evidence)
+rule    pbp only  pbp+report  report only
+season                                   
+2022           6          17          102
+2023           8          20           80
+2024          10          19           64
+2025          11          24           78
+2026           5           6           10
+
+by position: {'QB': 53, 'RB': 101, 'TE': 83, 'WR': 223} | per team-season: 3.43
+
+snap share in the flagged game: median 0.16; his baseline median 0.59
+
+Random sample of 20 (seed 7) to eyeball:
+ season  week team                  n pos  pct base   pbp   rep   man        rule
+   2022     9   KC      Isiah Pacheco  RB 0.22 0.48 False  True False report only
+   2022    17  MIA Cedrick Wilson Jr.  WR 0.15 0.39  True  True False  pbp+report
+   2023     2  CLE         Nick Chubb  RB 0.21 0.55  True False False    pbp only
+   2023     4  NYJ      Xavier Gipson  WR 0.19 0.60 False  True False report only
+   2023     9  MIN        K.J. Osborn  WR 0.27 0.80  True  True False  pbp+report
+   2023    15  DET       Brock Wright  TE 0.18 0.44 False  True False report only
+   2024     4   NO Cedrick Wilson Jr.  WR 0.19 0.45 False  True False report only
+   2024     5  SEA      Pharaoh Brown  TE 0.14 0.30 False  True False report only
+   2024     7  NYG        Jalin Hyatt  WR 0.05 0.35  True  True False  pbp+report
+   2024    11  MIA     Raheem Mostert  RB 0.15 0.46 False  True False report only
+   2024    13  CHI    Roschon Johnson  RB 0.03 0.37 False  True False report only
+   2025     2  CIN         Joe Burrow  QB 0.30 1.00  True False False    pbp only
+   2025     3  NYG   Tyrone Tracy Jr.  RB 0.17 0.63  True  True False  pbp+report
+   2025     7  CHI          Cole Kmet  TE 0.41 0.85 False  True False report only
+   2025     9  CHI          Cole Kmet  TE 0.26 0.85  True  True False  pbp+report
+   2025    14   GB   Dontayvion Wicks  WR 0.11 0.48 False  True False report only
+   2025    16   GB        Jordan Love  QB 0.36 1.00  True  True False  pbp+report
+   2026     1   LA       Tyler Higbee  TE 0.20 0.55 False  True False report only
+   2026     1  DEN      Jonah Coleman  RB 0.06 0.40 False  True False report only
+   2026     2  WAS        Jaylin Lane  WR 0.15 0.34 False  True False report only
+
+All 2026 flags:
+ season  week team                n pos  pct base   pbp   rep   man        rule
+   2026     1  BAL      Zay Flowers  WR 0.29 0.86 False  True False report only
+   2026     1  DEN    Jonah Coleman  RB 0.06 0.40 False  True False report only
+   2026     1  JAX Brian Thomas Jr.  WR 0.35 0.78 False  True False report only
+   2026     1   LA     Tyler Higbee  TE 0.20 0.55 False  True False report only
+   2026     1  MIN     Kyler Murray  QB 0.17 1.00  True  True False  pbp+report
+   2026     1  SEA      Sam Darnold  QB 0.10 1.00  True  True False  pbp+report
+   2026     1  TEN     Chimere Dike  WR 0.08 0.57  True False False    pbp only
+   2026     2  BUF         DJ Moore  WR 0.31 0.70  True  True False  pbp+report
+   2026     2   GB      Jayden Reed  WR 0.03 0.49  True  True False  pbp+report
+   2026     2  IND      Alec Pierce  WR 0.26 0.89 False  True False report only
+   2026     2  LAC      David Njoku  TE 0.16 0.55  True False False    pbp only
+   2026     2   NE      Eli Raridon  TE 0.20 0.54 False  True False report only
+   2026     2  NYG      Jaxson Dart  QB 0.12 1.00  True  True False  pbp+report
+   2026     2  NYJ      Arian Smith  WR 0.01 0.33  True False False    pbp only
+   2026     2  PHI   Saquon Barkley  RB 0.16 0.80  True  True  True  pbp+report
+   2026     2  PHI   Dallas Goedert  TE 0.25 0.88 False  True False report only
+   2026     2  PIT      Rico Dowdle  RB 0.26 0.58 False  True False report only
+   2026     2   TB   Jalen McMillan  WR 0.11 0.52 False  True False report only
+   2026     2  WAS      Jaylin Lane  WR 0.15 0.34 False  True False report only
+   2026     3  MIA    De'Von Achane  RB 0.05 0.77  True False False    pbp only
+   2026     3   TB   Jalen McMillan  WR 0.03 0.52  True False False    pbp only

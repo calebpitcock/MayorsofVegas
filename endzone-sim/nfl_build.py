@@ -177,27 +177,35 @@ def injured_in_pbp(p):
 def injury_exits(sn, pinj, inj, names, season, week, manual=()):
     """Set of (game_id, pid) early injury exits among snap rows `sn` (already limited to games before the build
     week). pinj: injured_in_pbp output. inj: injury report rows (gsis_id, season, week). names: pid -> full name.
-    manual: iterable of (pid, season, week)."""
+    manual: iterable of (pid, season, week). pinj/inj may also be passed as the prebuilt tuple sets (exit_sets)."""
     out = set()
     if sn.empty: return out
     man = {(a, int(b), int(c)) for a, b, c in manual}
-    pin = set(zip(pinj.game_id, pinj.team, pinj.abbr)) if len(pinj) else set()
-    rep = set(zip(inj.gsis_id, inj.season.astype(int), inj.week.astype(int))) if len(inj) else set()
+    pin, rep = exit_sets(pinj, inj)
+    manp = {m[0] for m in man}
     for (pid, team), h in sn.groupby(['pid', 'team']):
-        if len(h) < 2 and not any(m[0] == pid for m in man): continue
-        for _, r in h.iterrows():
-            key = (pid, int(r.season), int(r.week))
-            if key in man: out.add((r.game_id, pid)); continue
-            others = h[h.game_id != r.game_id].offense_pct
-            if others.empty: continue
-            base = float(others.median())
-            if base < EXIT_BASE or r.offense_pct >= EXIT_FRAC * base: continue
-            ev = (r.game_id, team, pbp_abbrev(names.get(pid, ''))) in pin
+        if len(h) < 2 and pid not in manp: continue
+        gids, ss, ws, pct = h.game_id.values, h.season.values.astype(int), h.week.values.astype(int), h.offense_pct.values.astype(float)
+        abbr = None
+        for i in range(len(h)):
+            if (pid, ss[i], ws[i]) in man: out.add((gids[i], pid)); continue
+            others = pct[gids != gids[i]]
+            if not len(others): continue
+            base = float(np.median(others))
+            if base < EXIT_BASE or pct[i] >= EXIT_FRAC * base: continue
+            if abbr is None: abbr = pbp_abbrev(names.get(pid, ''))
+            ev = (gids[i], team, abbr) in pin
             if not ev:   # on the report in the following two weeks, only as far as the build week can see
-                lim = week if int(r.season) == season else 99
-                ev = any((pid, int(r.season), w) in rep for w in (int(r.week) + 1, int(r.week) + 2) if w <= lim)
-            if ev: out.add((r.game_id, pid))
+                lim = week if ss[i] == season else 99
+                ev = any((pid, ss[i], w) in rep for w in (ws[i] + 1, ws[i] + 2) if w <= lim)
+            if ev: out.add((gids[i], pid))
     return out
+
+def exit_sets(pinj, inj):
+    """(pbp evidence, injury report) as tuple sets; passes through sets that are already built."""
+    pin = pinj if isinstance(pinj, set) else (set(zip(pinj.game_id, pinj.team, pinj.abbr)) if len(pinj) else set())
+    rep = inj if isinstance(inj, set) else (set(zip(inj.gsis_id, inj.season.astype(int), inj.week.astype(int))) if len(inj) else set())
+    return pin, rep
 
 def shrink(num, den, prior, m):
     return (num + prior * m) / (den + m)
@@ -262,7 +270,8 @@ class Builder:
         if (team, week) not in self._exits:
             sn = self.SN_ALL[(self.SN_ALL.team == team) & self.hist_mask(self.SN_ALL, week)]
             names = self.R['full_name'].to_dict()
-            self._exits[(team, week)] = injury_exits(sn, self.PINJ, self.INJ_ALL, names, self.season, week, self.EXIT_MANUAL)
+            if not hasattr(self, "_exit_sets"): self._exit_sets = exit_sets(self.PINJ, self.INJ_ALL)
+            self._exits[(team, week)] = injury_exits(sn, *self._exit_sets, names, self.season, week, self.EXIT_MANUAL)
         return self._exits[(team, week)]
 
     def snaps_for(self, team, week):

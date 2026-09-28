@@ -25,12 +25,9 @@ PCAP = 0.08
 SLOT = dict(tgt=0.6, ypt=0.3)
 K_OFF, N_DEF, K_DEF = 150, 120, 150        # shrinkage pseudo-plays; defensive sample size not published, assumed ~2 games
 
-def run():
-    f = sys.argv[1] if len(sys.argv) > 1 else 'slate_nfl.json'
-    import os
-    sp = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'slot_2026.json')
-    SL = json.load(open(sp)).get('players', {}) if os.path.exists(sp) else {}
-    F = json.load(open(sys.argv[2] if len(sys.argv) > 2 else 'formation_2026.json'))
+def attach(games, F, SL):
+    """Write g['form'] onto each game. F = {'off': {team: [p3wr, plays]}, 'def': {team: [blitz, light, heavy, sub(, plays)]}}
+    (a defense's play count is optional; without it N_DEF is assumed). SL = {player name: slot rate}."""
     off = {k: v for k, v in F['off'].items() if not k.startswith('_')}
     dfn = {k: v for k, v in F['def'].items() if not k.startswith('_')}
     mean = lambda xs: sum(xs) / len(xs)
@@ -38,15 +35,14 @@ def run():
               hbox=mean([v[2] for v in dfn.values()]), sub=mean([v[3] for v in dfn.values()]))
     ypc = lambda L, H: L * YPC['light'] + H * YPC['heavy'] + (1 - L - H) * YPC['base']
     base = ypc(lg['light'], lg['hbox'])
-    S = json.load(open(f))
-    for g in S['games']:
+    for g in games:
         g['form'] = {}
         for side, team, opp in (('away', g['away'], g['home']), ('home', g['home'], g['away'])):
             if team not in off or opp not in dfn: continue
             p3, n = off[team]; w = n / (n + K_OFF)
             heavy = w * (1 - p3) + (1 - w) * lg['heavy']
-            wd = N_DEF / (N_DEF + K_DEF)
-            _, L0, H0, sub = dfn[opp]
+            nd = dfn[opp][4] if len(dfn[opp]) > 4 else N_DEF; wd = nd / (nd + K_DEF)
+            _, L0, H0, sub = dfn[opp][:4]
             L0, H0, sub = (wd * L0 + (1 - wd) * lg['light'], wd * H0 + (1 - wd) * lg['hbox'], wd * sub + (1 - wd) * lg['sub'])
             d = C * (heavy - lg['heavy'])
             L = min(.9, max(0, L0 + d * sub)); H = min(.9, max(0, H0 + d * (1 - sub)))
@@ -85,6 +81,14 @@ def run():
                 slots.sort(key=lambda x: -x[1])
                 txt += " Slot: " + ", ".join(f"{n} ({round(100*sr)}% slot) targets {'+' if t >= 1 else '−'}{abs(100*(t-1)):.1f}%" for n, sr, t in slots[:3]) + "."
             g['form'][side] = dict(run=round(m, 4), light=round(L, 3), heavy=round(H, 3), heavyPers=round(heavy, 3), pos=pos, players=players, text=txt)
+
+def run():
+    import os
+    f = sys.argv[1] if len(sys.argv) > 1 else 'slate_nfl.json'
+    sp = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'slot_2026.json')
+    SL = json.load(open(sp)).get('players', {}) if os.path.exists(sp) else {}
+    F = json.load(open(sys.argv[2] if len(sys.argv) > 2 else 'formation_2026.json'))
+    S = json.load(open(f)); attach(S['games'], F, SL)
     json.dump(S, open(f, 'w'))
     for g in S['games']:
         for s in ('away', 'home'):

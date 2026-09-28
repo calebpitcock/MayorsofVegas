@@ -1,0 +1,461 @@
+season,week,team,n,pos,pct,base,pbp,rep,man,rule
+2022,1,CIN,Tee Higgins,WR,0.26,0.81,True,True,False,pbp+report
+2022,1,DEN,Tyrie Cleveland,WR,0.12,0.34,False,True,False,report only
+2022,1,KC,Justin Watson,WR,0.23,0.485,False,True,False,report only
+2022,1,LAC,Keenan Allen,WR,0.33,0.89,False,True,False,report only
+2022,1,NYG,Wan'Dale Robinson,WR,0.15,0.69,False,True,False,report only
+2022,1,NYG,Kadarius Toney,WR,0.12,0.38,False,True,False,report only
+2022,1,TB,Chris Godwin Jr.,WR,0.31,0.85,False,True,False,report only
+2022,2,ARI,James Conner,RB,0.21,0.69,False,True,False,report only
+2022,2,ARI,Trey McBride,TE,0.01,0.725,False,True,False,report only
+2022,2,CIN,Drew Sample,TE,0.14,0.375,False,True,False,report only
+2022,2,DEN,Jerry Jeudy,WR,0.14,0.705,True,True,False,pbp+report
+2022,2,GB,Christian Watson,WR,0.32,0.78,False,True,False,report only
+2022,2,NO,Taysom Hill,QB,0.09,0.39,False,True,False,report only
+2022,2,SEA,Kenneth Walker III,RB,0.25,0.58,False,True,False,report only
+2022,2,SF,Trey Lance,QB,0.21,1.0,True,False,False,pbp only
+2022,3,CHI,David Montgomery,RB,0.17,0.68,True,True,False,pbp+report
+2022,3,KC,Skyy Moore,WR,0.13,0.4,False,True,False,report only
+2022,3,MIA,Cedrick Wilson Jr.,WR,0.12,0.39,False,True,False,report only
+2022,3,SEA,Kenneth Walker III,RB,0.13,0.58,False,True,False,report only
+2022,4,DAL,Jake Ferguson,TE,0.28,0.655,False,True,False,report only
+2022,4,DEN,Melvin Gordon,RB,0.19,0.45,False,True,False,report only
+2022,4,GB,Christian Watson,WR,0.25,0.78,False,True,False,report only
+2022,4,MIA,Tua Tagovailoa,QB,0.39,1.0,True,True,False,pbp+report
+2022,5,CIN,Tee Higgins,WR,0.16,0.81,False,True,False,report only
+2022,5,DAL,Dalton Schultz,TE,0.18,0.85,False,True,False,report only
+2022,5,DEN,Tyrie Cleveland,WR,0.14,0.34,False,True,False,report only
+2022,5,DET,Amon-Ra St. Brown,WR,0.32,0.88,False,True,False,report only
+2022,5,GB,Christian Watson,WR,0.29,0.78,False,True,False,report only
+2022,5,IND,Nyheim Hines,RB,0.04,0.33999999999999997,True,True,False,pbp+report
+2022,5,LV,Darren Waller,TE,0.13,0.62,False,True,False,report only
+2022,5,MIA,Teddy Bridgewater,QB,0.01,0.615,False,True,False,report only
+2022,5,NE,Damien Harris,RB,0.1,0.395,False,True,False,report only
+2022,5,NE,Nelson Agholor,WR,0.12,0.56,False,True,False,report only
+2022,5,PIT,Steven Sims,WR,0.04,0.41,False,True,False,report only
+2022,5,SEA,Rashaad Penny,RB,0.29,0.685,True,True,False,pbp+report
+2022,6,CAR,Chuba Hubbard,RB,0.09,0.49,False,True,False,report only
+2022,6,DEN,Melvin Gordon,RB,0.16,0.45,False,True,False,report only
+2022,6,DEN,Eric Saubert,TE,0.02,0.34,False,True,False,report only
+2022,6,LAC,Joshua Kelley,RB,0.02,0.31,False,True,False,report only
+2022,6,LAC,Donald Parham,TE,0.2,0.44,False,True,False,report only
+2022,6,NE,Kendrick Bourne,WR,0.06,0.56,False,True,False,report only
+2022,6,NO,Adam Trautman,TE,0.22,0.645,False,True,False,report only
+2022,6,PIT,Steven Sims,WR,0.09,0.41,False,True,False,report only
+2022,7,BAL,Demarcus Robinson,WR,0.23,0.605,False,True,False,report only
+2022,7,DET,Amon-Ra St. Brown,WR,0.17,0.88,False,True,False,report only
+2022,7,JAX,James Robinson,RB,0.17,0.48,False,True,False,report only
+2022,7,LAC,Keenan Allen,WR,0.32,0.89,False,True,False,report only
+2022,7,NE,Damien Harris,RB,0.17,0.395,False,True,False,report only
+2022,7,NE,Nelson Agholor,WR,0.06,0.56,False,True,False,report only
+2022,7,NYJ,Corey Davis,WR,0.22,0.78,False,True,False,report only
+2022,7,SEA,DK Metcalf,WR,0.28,0.865,False,True,False,report only
+2022,7,WAS,J.D. McKissic,RB,0.16,0.41,False,True,False,report only
+2022,8,ARI,Greg Dortch,WR,0.26,0.5900000000000001,False,True,False,report only
+2022,8,BAL,Mark Andrews,TE,0.13,0.85,False,True,False,report only
+2022,8,BAL,Rashod Bateman,WR,0.17,0.57,False,True,False,report only
+2022,8,DEN,Kendall Hinton,WR,0.02,0.76,False,True,False,report only
+2022,8,GB,Christian Watson,WR,0.09,0.78,True,True,False,pbp+report
+2022,8,NE,DeVante Parker,WR,0.01,0.82,False,True,False,report only
+2022,8,NO,Mark Ingram,RB,0.08,0.33,False,True,False,report only
+2022,8,NYG,Richie James,WR,0.06,0.62,True,True,False,pbp+report
+2022,9,ARI,Greg Dortch,WR,0.08,0.5900000000000001,False,True,False,report only
+2022,9,CAR,PJ Walker,QB,0.37,1.0,False,True,False,report only
+2022,9,DET,D'Andre Swift,RB,0.16,0.4,False,True,False,report only
+2022,9,GB,Christian Watson,WR,0.23,0.78,False,True,False,report only
+2022,9,GB,Romeo Doubs,WR,0.01,0.82,False,True,False,report only
+2022,9,KC,Isiah Pacheco,RB,0.22,0.485,False,True,False,report only
+2022,9,LV,Keelan Cole,WR,0.15,0.48,False,True,False,report only
+2022,10,ARI,Greg Dortch,WR,0.03,0.5900000000000001,False,True,False,report only
+2022,10,ARI,Trace McSorley,QB,0.03,0.33,False,True,False,report only
+2022,10,ARI,Zach Ertz,TE,0.13,0.785,True,True,False,pbp+report
+2022,10,CAR,Shi Smith,WR,0.24,0.51,False,True,False,report only
+2022,10,DEN,Jerry Jeudy,WR,0.01,0.705,True,True,False,pbp+report
+2022,10,LA,Van Jefferson,WR,0.28,0.93,True,False,False,pbp only
+2022,10,LAC,Gerald Everett,TE,0.17,0.635,False,True,False,report only
+2022,10,MIA,Raheem Mostert,RB,0.28,0.575,False,True,False,report only
+2022,10,TB,Leonard Fournette,RB,0.29,0.61,False,True,False,report only
+2022,11,ARI,Rondale Moore,WR,0.03,0.7,False,True,False,report only
+2022,11,CHI,Dante Pettis,WR,0.26,0.565,False,True,False,report only
+2022,11,CIN,Joe Mixon,RB,0.21,0.7,False,True,False,report only
+2022,11,CLE,David Njoku,TE,0.37,0.85,False,True,False,report only
+2022,11,DET,DJ Chark,WR,0.16,0.75,False,True,False,report only
+2022,11,LA,Darrell Henderson,RB,0.06,0.57,False,True,False,report only
+2022,11,LAC,Mike Williams,WR,0.09,0.85,False,True,False,report only
+2022,11,NE,DeVante Parker,WR,0.4,0.82,False,True,False,report only
+2022,11,NO,Kevin White,WR,0.02,0.33499999999999996,False,True,False,report only
+2022,11,NYG,Richie James,WR,0.22,0.62,False,True,False,report only
+2022,11,PIT,Jaylen Warren,RB,0.04,0.43,False,True,False,report only
+2022,12,CHI,Darnell Mooney,WR,0.32,0.845,True,False,False,pbp only
+2022,12,JAX,Travis Etienne,RB,0.08,0.71,False,True,False,report only
+2022,12,NE,Jakobi Meyers,WR,0.29,0.82,False,True,False,report only
+2022,13,BAL,Lamar Jackson,QB,0.14,1.0,False,True,False,report only
+2022,13,CHI,N'Keal Harry,TE,0.1,0.43,False,True,False,report only
+2022,13,CIN,Hayden Hurst,TE,0.13,0.6799999999999999,False,True,False,report only
+2022,13,DEN,Courtland Sutton,WR,0.43,0.88,False,True,False,report only
+2022,13,SEA,Kenneth Walker III,RB,0.21,0.58,False,True,False,report only
+2022,13,SF,Jimmy Garoppolo,QB,0.1,1.0,False,True,False,report only
+2022,13,TEN,Treylon Burks,WR,0.18,0.67,True,True,False,pbp+report
+2022,14,ARI,Greg Dortch,WR,0.05,0.5900000000000001,False,True,False,report only
+2022,14,ARI,Kyler Murray,QB,0.04,1.0,True,False,False,pbp only
+2022,14,CIN,Tyler Boyd,WR,0.03,0.785,False,True,False,report only
+2022,14,CIN,Tee Higgins,WR,0.01,0.81,False,True,False,report only
+2022,14,DAL,Jake Ferguson,TE,0.11,0.655,False,True,False,report only
+2022,14,LA,John Wolford,QB,0.05,0.95,False,True,False,report only
+2022,14,MIA,Jeff Wilson,RB,0.16,0.37,False,True,False,report only
+2022,14,NE,Rhamondre Stevenson,RB,0.22,0.65,True,True,False,pbp+report
+2022,14,NE,DeVante Parker,WR,0.1,0.82,False,True,False,report only
+2022,14,NYJ,Corey Davis,WR,0.12,0.78,True,True,False,pbp+report
+2022,14,PHI,Gardner Minshew,QB,0.07,0.595,False,True,False,report only
+2022,14,PIT,Kenny Pickett,QB,0.15,1.0,False,True,False,report only
+2022,15,ARI,Greg Dortch,WR,0.09,0.5900000000000001,False,True,False,report only
+2022,15,CHI,Equanimeous St. Brown,WR,0.05,0.58,True,True,False,pbp+report
+2022,15,NYG,Nick Vannett,TE,0.16,0.44,False,True,False,report only
+2022,15,NYJ,Denzel Mims,WR,0.1,0.41,True,True,False,pbp+report
+2022,16,ARI,A.J. Green,WR,0.26,0.585,False,True,False,report only
+2022,16,ARI,Robbie Chosen,WR,0.07,0.31,False,True,False,report only
+2022,16,CAR,Shi Smith,WR,0.21,0.51,True,True,False,pbp+report
+2022,16,DEN,Eric Tomlinson,TE,0.16,0.355,False,True,False,report only
+2022,16,GB,Christian Watson,WR,0.38,0.78,False,True,False,report only
+2022,16,NE,Hunter Henry,TE,0.05,0.785,False,True,False,report only
+2022,17,CHI,Dante Pettis,WR,0.27,0.565,False,True,False,report only
+2022,17,MIA,Cedrick Wilson Jr.,WR,0.15,0.39,True,True,False,pbp+report
+2022,17,MIA,Alec Ingold,RB,0.15,0.37,False,True,False,report only
+2022,17,SEA,Tyler Lockett,WR,0.32,0.81,False,True,False,report only
+2022,18,LAC,Mike Williams,WR,0.37,0.85,True,False,False,pbp only
+2022,18,MIN,Dalvin Cook,RB,0.34,0.765,True,False,False,pbp only
+2023,1,BAL,Devin Duvernay,WR,0.11,0.575,False,True,False,report only
+2023,1,CHI,Marcedes Lewis,TE,0.07,0.305,False,True,False,report only
+2023,1,DEN,Greg Dulcich,TE,0.33,0.72,False,True,False,report only
+2023,1,NO,Taysom Hill,QB,0.14,0.39,False,True,False,report only
+2023,1,NYJ,Breece Hall,RB,0.31,0.63,False,True,False,report only
+2023,2,CHI,Darnell Mooney,WR,0.28,0.845,False,True,False,report only
+2023,2,CHI,Marcedes Lewis,TE,0.15,0.305,False,True,False,report only
+2023,2,CLE,Nick Chubb,RB,0.21,0.545,True,False,False,pbp only
+2023,2,IND,Anthony Richardson,QB,0.32,0.96,False,True,False,report only
+2023,2,PHI,Quez Watkins,WR,0.14,0.58,False,True,False,report only
+2023,3,CAR,Jonathan Mingo,WR,0.33,0.94,False,True,False,report only
+2023,3,LA,Ben Skowronek,WR,0.22,0.495,False,True,False,report only
+2023,3,NYG,Wan'Dale Robinson,WR,0.22,0.69,False,True,False,report only
+2023,4,BAL,Justice Hill,RB,0.12,0.33999999999999997,False,True,False,report only
+2023,4,CLE,Cedric Tillman,WR,0.2,0.73,False,True,False,report only
+2023,4,DEN,Javonte Williams,RB,0.17,0.48,False,True,False,report only
+2023,4,GB,Luke Musgrave,TE,0.25,0.73,False,True,False,report only
+2023,4,JAX,Parker Washington,WR,0.02,0.515,True,True,False,pbp+report
+2023,4,NE,DeMario Douglas,WR,0.33,0.72,False,True,False,report only
+2023,4,NYG,Daniel Bellinger,TE,0.08,0.63,False,True,False,report only
+2023,4,NYJ,Xavier Gipson,WR,0.19,0.6,False,True,False,report only
+2023,4,PHI,Jack Stoll,TE,0.08,0.4,False,True,False,report only
+2023,4,SEA,Drew Lock,QB,0.31,1.0,False,True,False,report only
+2023,4,TB,Mike Evans,WR,0.37,0.84,False,True,False,report only
+2023,5,CAR,Ian Thomas,TE,0.21,0.48,False,True,False,report only
+2023,5,CHI,Roschon Johnson,RB,0.09,0.42,False,True,False,report only
+2023,5,HOU,Tank Dell,WR,0.36,0.77,False,True,False,report only
+2023,5,IND,Anthony Richardson,QB,0.33,0.96,True,False,False,pbp only
+2023,5,IND,Mo Alie-Cox,TE,0.18,0.47,True,True,False,pbp+report
+2023,5,LA,Ben Skowronek,WR,0.11,0.495,False,True,False,report only
+2023,5,LV,Tre Tucker,WR,0.11,0.31,False,True,False,report only
+2023,5,NE,DeMario Douglas,WR,0.13,0.72,False,True,False,report only
+2023,6,ARI,Greg Dortch,WR,0.21,0.5900000000000001,False,True,False,report only
+2023,6,ATL,Cordarrelle Patterson,RB,0.12,0.31,False,True,False,report only
+2023,6,DEN,Greg Dulcich,TE,0.21,0.72,False,True,False,report only
+2023,6,LA,Ben Skowronek,WR,0.05,0.495,False,True,False,report only
+2023,6,NYJ,Michael Carter,RB,0.2,0.405,True,False,False,pbp only
+2023,6,SEA,Zach Charbonnet,RB,0.24,0.52,False,True,False,report only
+2023,6,SF,Deebo Samuel Sr.,WR,0.15,0.82,False,True,False,report only
+2023,7,ARI,Greg Dortch,WR,0.06,0.5900000000000001,False,True,False,report only
+2023,7,BAL,Keaton Mitchell,RB,0.03,0.345,False,True,False,report only
+2023,7,CLE,Deshaun Watson,QB,0.16,0.98,True,True,False,pbp+report
+2023,7,LA,Ben Skowronek,WR,0.19,0.495,False,True,False,report only
+2023,7,NE,Tyquan Thornton,WR,0.05,0.57,False,True,False,report only
+2023,8,ATL,Desmond Ridder,QB,0.46,1.0,False,True,False,report only
+2023,8,LA,Ben Skowronek,WR,0.08,0.495,False,True,False,report only
+2023,8,LV,Austin Hooper,TE,0.22,0.48,False,True,False,report only
+2023,8,NYG,Darren Waller,TE,0.23,0.82,False,True,False,report only
+2023,8,NYJ,Xavier Gipson,WR,0.25,0.6,True,True,False,pbp+report
+2023,8,PIT,Kenny Pickett,QB,0.42,1.0,True,True,False,pbp+report
+2023,8,WAS,Curtis Samuel,WR,0.19,0.655,False,True,False,report only
+2023,9,ATL,Cordarrelle Patterson,RB,0.13,0.31,False,True,False,report only
+2023,9,BAL,Devin Duvernay,WR,0.21,0.575,False,True,False,report only
+2023,9,IND,Josh Downs,WR,0.2,0.72,False,True,False,report only
+2023,9,MIN,K.J. Osborn,WR,0.27,0.795,True,True,False,pbp+report
+2023,9,NYG,Daniel Jones,QB,0.33,1.0,True,False,False,pbp only
+2023,10,BAL,Devin Duvernay,WR,0.07,0.575,False,True,False,report only
+2023,10,NYJ,Michael Carter,RB,0.14,0.405,False,True,False,report only
+2023,11,BAL,Mark Andrews,TE,0.11,0.85,True,True,False,pbp+report
+2023,11,BUF,Trent Sherfield,WR,0.13,0.33999999999999997,False,True,False,report only
+2023,11,CHI,D'Onta Foreman,RB,0.24,0.495,True,True,False,pbp+report
+2023,11,CIN,Joe Burrow,QB,0.44,1.0,False,True,False,report only
+2023,11,GB,Aaron Jones,RB,0.21,0.56,True,True,False,pbp+report
+2023,11,KC,Mecole Hardman,WR,0.2,0.46,False,True,False,report only
+2023,11,LA,Cooper Kupp,WR,0.27,0.98,False,True,False,report only
+2023,11,LA,Ben Skowronek,WR,0.13,0.495,False,True,False,report only
+2023,11,MIA,De'Von Achane,RB,0.04,0.48,False,True,False,report only
+2023,11,SEA,Kenneth Walker III,RB,0.11,0.58,False,True,False,report only
+2023,11,WAS,Curtis Samuel,WR,0.16,0.655,False,True,False,report only
+2023,12,CHI,Tyler Scott,WR,0.17,0.38,False,True,False,report only
+2023,12,LA,Ben Skowronek,WR,0.21,0.495,False,True,False,report only
+2023,12,NE,Kayshon Boutte,WR,0.16,0.355,False,True,False,report only
+2023,12,NO,Rashid Shaheed,WR,0.26,0.5549999999999999,True,True,False,pbp+report
+2023,13,CLE,Amari Cooper,WR,0.32,0.83,False,True,False,report only
+2023,13,HOU,Tank Dell,WR,0.13,0.77,True,False,False,pbp only
+2023,13,JAX,Christian Kirk,WR,0.01,0.855,True,True,False,pbp+report
+2023,13,NE,Rhamondre Stevenson,RB,0.27,0.65,True,True,False,pbp+report
+2023,13,NYJ,C.J. Uzomah,TE,0.03,0.46,True,False,False,pbp only
+2023,13,PIT,Kenny Pickett,QB,0.49,1.0,True,True,False,pbp+report
+2023,13,WAS,Brian Robinson,RB,0.22,0.475,False,True,False,report only
+2023,14,CAR,Ian Thomas,TE,0.04,0.48,False,True,False,report only
+2023,14,HOU,Nico Collins,WR,0.05,0.74,False,True,False,report only
+2023,14,LA,Tutu Atwell,WR,0.12,0.6799999999999999,True,True,False,pbp+report
+2023,14,LA,Ben Skowronek,WR,0.08,0.495,True,True,False,pbp+report
+2023,14,LAC,Justin Herbert,QB,0.46,1.0,True,True,False,pbp+report
+2023,14,MIN,Justin Jefferson,WR,0.18,0.965,False,True,False,report only
+2023,15,ARI,Marquise Brown,WR,0.32,0.93,False,True,False,report only
+2023,15,DET,Brock Wright,TE,0.18,0.44,False,True,False,report only
+2023,15,IND,Michael Pittman,WR,0.31,0.97,True,True,False,pbp+report
+2023,15,NYJ,Zach Wilson,QB,0.38,1.0,True,True,False,pbp+report
+2023,16,CHI,Cole Kmet,TE,0.43,0.9,True,True,False,pbp+report
+2023,16,DEN,Courtland Sutton,WR,0.13,0.88,False,True,False,report only
+2023,16,GB,AJ Dillon,RB,0.18,0.52,False,True,False,report only
+2023,16,HOU,Andrew Beck,RB,0.17,0.345,False,True,False,report only
+2023,16,MIN,Jordan Addison,WR,0.38,0.915,False,True,False,report only
+2023,16,MIN,Alexander Mattison,RB,0.09,0.385,False,True,False,report only
+2023,16,NE,Kayshon Boutte,WR,0.09,0.355,False,True,False,report only
+2023,16,NE,Tyquan Thornton,WR,0.09,0.57,False,True,False,report only
+2023,16,NYJ,Allen Lazard,WR,0.27,0.86,False,True,False,report only
+2023,17,ATL,Cordarrelle Patterson,RB,0.14,0.31,False,True,False,report only
+2023,17,CHI,Cole Kmet,TE,0.18,0.9,False,True,False,report only
+2023,17,GB,AJ Dillon,RB,0.16,0.52,False,True,False,report only
+2023,17,HOU,Noah Brown,WR,0.11,0.72,False,True,False,report only
+2023,17,NE,DeVante Parker,WR,0.28,0.82,False,True,False,report only
+2023,17,NO,Alvin Kamara,RB,0.33,0.7,False,True,False,report only
+2023,17,TEN,Will Levis,QB,0.24,1.0,True,True,False,pbp+report
+2023,18,DET,Sam LaPorta,TE,0.4,0.84,True,False,False,pbp only
+2023,18,PHI,A.J. Brown,WR,0.18,0.89,True,False,False,pbp only
+2024,1,CLE,David Njoku,TE,0.37,0.825,True,True,False,pbp+report
+2024,1,LA,Puka Nacua,WR,0.32,0.81,True,False,False,pbp only
+2024,1,NYJ,Mike Williams,WR,0.18,0.58,False,True,False,report only
+2024,2,NO,Cedrick Wilson Jr.,WR,0.2,0.445,False,True,False,report only
+2024,3,CAR,Adam Thielen,WR,0.31,0.885,True,False,False,pbp only
+2024,3,HOU,Robert Woods,WR,0.19,0.59,False,True,False,report only
+2024,3,LV,Aidan O'Connell,QB,0.2,1.0,False,True,False,report only
+2024,3,PIT,Van Jefferson,WR,0.16,0.715,False,True,False,report only
+2024,3,TB,Trey Palmer,WR,0.21,0.53,False,True,False,report only
+2024,3,WAS,Austin Ekeler,RB,0.22,0.53,False,True,False,report only
+2024,4,CAR,Jalen Coker,WR,0.1,0.7549999999999999,False,True,False,report only
+2024,4,GB,Christian Watson,WR,0.12,0.73,True,True,False,pbp+report
+2024,4,IND,Anthony Richardson,QB,0.2,1.0,True,True,False,pbp+report
+2024,4,KC,Rashee Rice,WR,0.06,0.67,True,False,False,pbp only
+2024,4,NO,Taysom Hill,QB,0.2,0.42,False,True,False,report only
+2024,4,NO,Cedrick Wilson Jr.,WR,0.19,0.445,False,True,False,report only
+2024,4,TB,Trey Palmer,WR,0.14,0.53,False,True,False,report only
+2024,4,TEN,Will Levis,QB,0.17,1.0,True,True,False,pbp+report
+2024,4,TEN,DeAndre Hopkins,WR,0.32,0.7,False,True,False,report only
+2024,5,CAR,Xavier Legette,WR,0.37,0.77,False,True,False,report only
+2024,5,CAR,Tommy Tremble,TE,0.28,0.64,True,True,False,pbp+report
+2024,5,HOU,Robert Woods,WR,0.24,0.59,False,True,False,report only
+2024,5,MIA,De'Von Achane,RB,0.14,0.6,True,True,False,pbp+report
+2024,5,MIN,Aaron Jones,RB,0.22,0.615,False,True,False,report only
+2024,5,NE,Kendrick Bourne,WR,0.27,0.62,False,True,False,report only
+2024,5,SEA,Pharaoh Brown,TE,0.14,0.305,False,True,False,report only
+2024,6,ARI,Marvin Harrison Jr.,WR,0.14,0.84,True,True,False,pbp+report
+2024,6,CAR,David Moore,WR,0.09,0.575,False,True,False,report only
+2024,6,CLE,Jerome Ford,RB,0.07,0.535,False,True,False,report only
+2024,6,GB,Dontayvion Wicks,WR,0.14,0.5,False,True,False,report only
+2024,6,JAX,Travis Etienne,RB,0.18,0.69,False,True,False,report only
+2024,6,LAC,Hayden Hurst,TE,0.09,0.35000000000000003,False,True,False,report only
+2024,6,NO,Chris Olave,WR,0.03,0.78,False,True,False,report only
+2024,6,PHI,Dallas Goedert,TE,0.05,0.84,True,True,False,pbp+report
+2024,6,TEN,Tyjae Spears,RB,0.21,0.52,False,True,False,report only
+2024,6,TEN,Treylon Burks,WR,0.16,0.65,False,True,False,report only
+2024,7,ATL,Charlie Woerner,TE,0.15,0.47,False,True,False,report only
+2024,7,BUF,Curtis Samuel,WR,0.04,0.37,False,True,False,report only
+2024,7,CLE,Deshaun Watson,QB,0.39,0.975,True,False,False,pbp only
+2024,7,KC,JuJu Smith-Schuster,WR,0.1,0.51,False,True,False,report only
+2024,7,MIA,Braxton Berrios,WR,0.07,0.43,True,False,False,pbp only
+2024,7,NYG,Jalin Hyatt,WR,0.05,0.35,True,True,False,pbp+report
+2024,7,SF,Brandon Aiyuk,WR,0.4,0.865,True,False,False,pbp only
+2024,7,SF,Deebo Samuel Sr.,WR,0.06,0.81,False,True,False,report only
+2024,7,TB,Mike Evans,WR,0.28,0.81,True,True,False,pbp+report
+2024,7,WAS,Jayden Daniels,QB,0.14,1.0,False,True,False,report only
+2024,8,JAX,Gabe Davis,WR,0.16,0.78,False,True,False,report only
+2024,8,NE,Tyquan Thornton,WR,0.18,0.375,False,True,False,report only
+2024,8,NE,Drake Maye,QB,0.3,1.0,False,True,False,report only
+2024,9,ATL,Drake London,WR,0.19,0.86,False,True,False,report only
+2024,9,CIN,Erick All,TE,0.2,0.47,True,True,False,pbp+report
+2024,9,JAX,Travis Etienne,RB,0.31,0.69,False,True,False,report only
+2024,9,LAC,Hayden Hurst,TE,0.14,0.35000000000000003,False,True,False,report only
+2024,9,NO,Chris Olave,WR,0.1,0.78,True,True,False,pbp+report
+2024,9,TEN,Tyler Boyd,WR,0.29,0.61,False,True,False,report only
+2024,10,BUF,Dalton Kincaid,TE,0.24,0.605,False,True,False,report only
+2024,10,CAR,Miles Sanders,RB,0.1,0.36,True,True,False,pbp+report
+2024,10,LAC,Hayden Hurst,TE,0.15,0.34500000000000003,False,True,False,report only
+2024,10,MIA,Raheem Mostert,RB,0.15,0.46,False,True,False,report only
+2024,11,CLE,Geoff Swaim,TE,0.14,0.32,False,True,False,report only
+2024,11,DAL,Jake Ferguson,TE,0.08,0.72,False,True,False,report only
+2024,11,MIA,Raheem Mostert,RB,0.15,0.46,False,True,False,report only
+2024,12,CAR,Ja'Tavion Sanders,TE,0.19,0.55,True,True,False,pbp+report
+2024,12,HOU,Teagan Quitoriano,TE,0.11,0.3,False,True,False,report only
+2024,12,HOU,Xavier Hutchinson,WR,0.14,0.41,False,True,False,report only
+2024,12,LAC,J.K. Dobbins,RB,0.3,0.67,False,True,False,report only
+2024,12,MIA,Alec Ingold,RB,0.13,0.34,False,True,False,report only
+2024,12,TB,Trey Palmer,WR,0.26,0.53,False,True,False,report only
+2024,12,WAS,Brian Robinson,RB,0.17,0.525,True,True,False,pbp+report
+2024,13,CHI,Roschon Johnson,RB,0.03,0.37,False,True,False,report only
+2024,13,JAX,Trevor Lawrence,QB,0.27,1.0,True,False,False,pbp only
+2024,13,SF,Christian McCaffrey,RB,0.25,0.85,True,False,False,pbp only
+2024,13,TB,Trey Palmer,WR,0.19,0.53,False,True,False,report only
+2024,14,NYG,Tommy DeVito,QB,0.01,0.94,False,True,False,report only
+2024,14,TB,Bucky Irving,RB,0.16,0.435,False,True,False,report only
+2024,14,TB,Trey Palmer,WR,0.11,0.53,False,True,False,report only
+2024,15,PIT,Justin Fields,QB,0.02,1.0,False,True,False,report only
+2024,15,TB,Trey Palmer,WR,0.24,0.53,False,True,False,report only
+2024,15,TEN,Will Levis,QB,0.47,1.0,False,True,False,report only
+2024,15,WAS,Zach Ertz,TE,0.23,0.6950000000000001,True,True,False,pbp+report
+2024,15,WAS,Luke McCaffrey,WR,0.15,0.355,False,True,False,report only
+2024,16,BAL,Justice Hill,RB,0.11,0.415,True,True,False,pbp+report
+2024,16,DAL,Jalen Tolbert,WR,0.28,0.62,False,True,False,report only
+2024,16,GB,Luke Musgrave,TE,0.12,0.64,False,True,False,report only
+2024,16,LA,Tutu Atwell,WR,0.21,0.5,False,True,False,report only
+2024,16,LAC,Hayden Hurst,TE,0.12,0.35000000000000003,False,True,False,report only
+2024,16,NE,Ja'Lynn Polk,WR,0.04,0.45499999999999996,False,True,False,report only
+2024,16,PHI,Jalen Hurts,QB,0.16,1.0,True,True,False,pbp+report
+2024,16,SEA,Zach Charbonnet,RB,0.22,0.45,False,True,False,report only
+2024,17,CLE,Jerome Ford,RB,0.19,0.535,True,True,False,pbp+report
+2024,17,LA,Tutu Atwell,WR,0.16,0.5,False,True,False,report only
+2024,18,BAL,Zay Flowers,WR,0.2,0.835,True,False,False,pbp only
+2024,18,GB,Christian Watson,WR,0.15,0.73,True,False,False,pbp only
+2025,1,JAX,Hunter Long,TE,0.09,0.45999999999999996,False,True,False,report only
+2025,1,KC,Xavier Worthy,WR,0.05,0.73,True,True,False,pbp+report
+2025,1,NYG,Cam Skattebo,RB,0.12,0.6,False,True,False,report only
+2025,2,CAR,Rico Dowdle,RB,0.29,0.585,False,True,False,report only
+2025,2,CIN,Joe Burrow,QB,0.3,1.0,True,False,False,pbp only
+2025,2,GB,Jayden Reed,WR,0.07,0.59,True,True,False,pbp+report
+2025,2,JAX,Hunter Long,TE,0.01,0.45999999999999996,False,True,False,report only
+2025,2,SF,Kyle Juszczyk,RB,0.14,0.49,False,True,False,report only
+2025,2,WAS,John Bates,TE,0.13,0.51,False,True,False,report only
+2025,3,ARI,James Conner,RB,0.3,0.635,True,True,False,pbp+report
+2025,3,CHI,Colston Loveland,TE,0.1,0.65,False,True,False,report only
+2025,3,DAL,CeeDee Lamb,WR,0.09,0.83,True,True,False,pbp+report
+2025,3,LV,Michael Mayer,TE,0.08,0.63,True,True,False,pbp+report
+2025,3,NYG,Jaxson Dart,QB,0.05,1.0,False,True,False,report only
+2025,3,NYG,Tyrone Tracy Jr.,RB,0.17,0.63,True,True,False,pbp+report
+2025,3,PHI,Grant Calcaterra,TE,0.19,0.49,False,True,False,report only
+2025,4,ATL,Darnell Mooney,WR,0.45,0.92,False,True,False,report only
+2025,4,CAR,David Moore,WR,0.01,0.485,True,False,False,pbp only
+2025,4,LA,Colby Parkinson,TE,0.28,0.57,False,True,False,report only
+2025,4,MIA,Tyreek Hill,WR,0.41,0.8200000000000001,True,False,False,pbp only
+2025,4,NYG,Malik Nabers,WR,0.33,0.93,True,False,False,pbp only
+2025,4,NYG,Russell Wilson,QB,0.03,0.95,False,True,False,report only
+2025,5,ARI,Bam Knight,RB,0.16,0.46,False,True,False,report only
+2025,5,DET,Kalif Raymond,WR,0.03,0.33499999999999996,True,True,False,pbp+report
+2025,5,NYJ,Allen Lazard,WR,0.33,0.78,False,True,False,report only
+2025,5,PHI,Grant Calcaterra,TE,0.11,0.49,False,True,False,report only
+2025,5,TEN,Van Jefferson,WR,0.18,0.73,False,True,False,report only
+2025,5,TEN,Tyler Lockett,WR,0.25,0.51,False,True,False,report only
+2025,6,ARI,Marvin Harrison Jr.,WR,0.23,0.825,False,True,False,report only
+2025,6,BUF,Josh Palmer,WR,0.11,0.5,True,True,False,pbp+report
+2025,6,CHI,Roschon Johnson,RB,0.05,0.32,False,True,False,report only
+2025,6,CIN,Mike Gesicki,TE,0.03,0.43,False,True,False,report only
+2025,6,DET,Kalif Raymond,WR,0.04,0.33499999999999996,False,True,False,report only
+2025,6,TEN,Calvin Ridley,WR,0.1,0.83,False,True,False,report only
+2025,6,WAS,Chris Rodriguez Jr.,RB,0.02,0.32,False,True,False,report only
+2025,7,CAR,Andy Dalton,QB,0.31,0.93,False,True,False,report only
+2025,7,CHI,Cole Kmet,TE,0.41,0.855,False,True,False,report only
+2025,7,CHI,Roschon Johnson,RB,0.01,0.32,False,True,False,report only
+2025,7,KC,Kareem Hunt,RB,0.19,0.48,True,True,False,pbp+report
+2025,7,LAC,Will Dissly,TE,0.04,0.5,False,True,False,report only
+2025,7,NO,Devin Neal,RB,0.12,0.42500000000000004,False,True,False,report only
+2025,7,NYJ,Justin Fields,QB,0.46,1.0,True,False,False,pbp only
+2025,7,TB,Mike Evans,WR,0.2,0.75,True,False,False,pbp only
+2025,8,CHI,Luther Burden III,WR,0.17,0.41500000000000004,False,True,False,report only
+2025,8,LAC,Keenan Allen,WR,0.25,0.57,False,True,False,report only
+2025,8,MIN,Josh Oliver,TE,0.08,0.5,False,True,False,report only
+2025,8,NO,Taysom Hill,QB,0.07,0.33,False,True,False,report only
+2025,8,NYG,Cam Skattebo,RB,0.21,0.6,True,False,False,pbp only
+2025,9,ARI,Xavier Weaver,WR,0.04,0.5800000000000001,False,True,False,report only
+2025,9,BAL,Justice Hill,RB,0.2,0.405,False,True,False,report only
+2025,9,CHI,Cole Kmet,TE,0.26,0.855,True,True,False,pbp+report
+2025,9,CIN,Samaje Perine,RB,0.01,0.38,True,True,False,pbp+report
+2025,9,DET,Isaac TeSlaa,WR,0.05,0.375,False,True,False,report only
+2025,9,HOU,C.J. Stroud,QB,0.32,1.0,True,True,False,pbp+report
+2025,9,NE,Kayshon Boutte,WR,0.26,0.755,False,True,False,report only
+2025,10,ARI,Zay Jones,WR,0.14,0.39,True,False,False,pbp only
+2025,10,HOU,Braxton Berrios,WR,0.01,0.38,False,True,False,report only
+2025,10,LA,Jordan Whittington,WR,0.1,0.38,False,True,False,report only
+2025,10,NYJ,Garrett Wilson,WR,0.39,0.97,False,True,False,report only
+2025,11,CLE,Brenden Bates,TE,0.13,0.41,False,True,False,report only
+2025,11,GB,Josh Jacobs,RB,0.22,0.64,False,True,False,report only
+2025,11,HOU,Cade Stover,TE,0.2,0.44,False,True,False,report only
+2025,11,LA,Konata Mumpfield,WR,0.12,0.39,False,True,False,report only
+2025,11,TEN,Chimere Dike,WR,0.27,0.63,True,True,False,pbp+report
+2025,11,TEN,Calvin Ridley,WR,0.02,0.83,True,False,False,pbp only
+2025,11,WAS,Jaylin Lane,WR,0.15,0.405,False,True,False,report only
+2025,12,CLE,Jerome Ford,RB,0.16,0.42000000000000004,False,True,False,report only
+2025,12,LV,Michael Mayer,TE,0.16,0.63,False,True,False,report only
+2025,12,NO,Alvin Kamara,RB,0.14,0.73,False,True,False,report only
+2025,12,TB,Chris Godwin Jr.,WR,0.36,0.79,False,True,False,report only
+2025,13,CHI,Olamide Zaccheaus,WR,0.28,0.58,False,True,False,report only
+2025,13,DET,Amon-Ra St. Brown,WR,0.06,0.91,True,True,False,pbp+report
+2025,14,CLE,David Njoku,TE,0.09,0.765,True,True,False,pbp+report
+2025,14,GB,Dontayvion Wicks,WR,0.11,0.485,False,True,False,report only
+2025,14,GB,Matthew Golden,WR,0.09,0.59,False,True,False,report only
+2025,14,HOU,Nick Chubb,RB,0.11,0.34,False,True,False,report only
+2025,14,IND,Daniel Jones,QB,0.23,1.0,True,False,False,pbp only
+2025,14,LA,Jordan Whittington,WR,0.17,0.38,False,True,False,report only
+2025,14,MIA,De'Von Achane,RB,0.34,0.72,False,True,False,report only
+2025,14,NYJ,Tyrod Taylor,QB,0.1,0.54,False,True,False,report only
+2025,14,SEA,Elijah Arroyo,TE,0.11,0.41500000000000004,False,True,False,report only
+2025,15,DAL,Javonte Williams,RB,0.29,0.77,False,True,False,report only
+2025,15,GB,Josh Whyle,TE,0.03,0.42,True,True,False,pbp+report
+2025,15,HOU,Christian Kirk,WR,0.24,0.5,False,True,False,report only
+2025,15,HOU,Woody Marks,RB,0.22,0.54,True,True,False,pbp+report
+2025,15,IND,Andrew Ogletree,TE,0.15,0.33,False,True,False,report only
+2025,15,LA,Jordan Whittington,WR,0.06,0.38,False,True,False,report only
+2025,15,NE,DeMario Douglas,WR,0.19,0.42,False,True,False,report only
+2025,16,BAL,Lamar Jackson,QB,0.47,1.0,True,True,False,pbp+report
+2025,16,CLE,Dillon Gabriel,QB,0.02,0.95,False,True,False,report only
+2025,16,DEN,Nate Adkins,TE,0.11,0.37,False,True,False,report only
+2025,16,DET,David Montgomery,RB,0.18,0.39,False,True,False,report only
+2025,16,GB,Jordan Love,QB,0.36,1.0,True,True,False,pbp+report
+2025,16,IND,Andrew Ogletree,TE,0.08,0.33,False,True,False,report only
+2025,16,MIN,Jordan Mason,RB,0.07,0.4,True,True,False,pbp+report
+2025,16,NE,DeMario Douglas,WR,0.18,0.42,False,True,False,report only
+2025,16,NE,TreVeyon Henderson,RB,0.19,0.47,True,True,False,pbp+report
+2025,16,NO,Foster Moreau,TE,0.28,0.6,False,True,False,report only
+2025,16,PIT,Calvin Austin III,WR,0.16,0.525,False,True,False,report only
+2025,16,WAS,Jacory Croskey-Merritt,RB,0.2,0.42000000000000004,False,True,False,report only
+2025,16,WAS,Jaylin Lane,WR,0.02,0.405,False,True,False,report only
+2025,17,ARI,Marvin Harrison Jr.,WR,0.33,0.825,False,True,False,report only
+2025,17,CAR,Ja'Tavion Sanders,TE,0.02,0.535,True,True,False,pbp+report
+2025,17,CLE,Harold Fannin Jr.,TE,0.23,0.8,True,True,False,pbp+report
+2025,17,DAL,Jake Ferguson,TE,0.29,0.685,False,True,False,report only
+2025,17,DAL,Javonte Williams,RB,0.27,0.77,False,True,False,report only
+2025,17,GB,Dontayvion Wicks,WR,0.06,0.485,False,True,False,report only
+2025,17,GB,Josh Jacobs,RB,0.28,0.64,False,True,False,report only
+2025,17,MIA,Jaylen Waddle,WR,0.25,0.82,False,True,False,report only
+2025,17,NE,DeMario Douglas,WR,0.14,0.42,False,True,False,report only
+2025,17,SEA,Rashid Shaheed,WR,0.18,0.525,True,True,False,pbp+report
+2025,17,TEN,Van Jefferson,WR,0.31,0.73,False,True,False,report only
+2025,18,TEN,Cam Ward,QB,0.09,1.0,True,False,False,pbp only
+2026,1,BAL,Zay Flowers,WR,0.29,0.865,False,True,False,report only
+2026,1,DEN,Jonah Coleman,RB,0.06,0.4,False,True,False,report only
+2026,1,JAX,Brian Thomas Jr.,WR,0.35,0.775,False,True,False,report only
+2026,1,LA,Tyler Higbee,TE,0.2,0.55,False,True,False,report only
+2026,1,MIN,Kyler Murray,QB,0.17,1.0,True,True,False,pbp+report
+2026,1,SEA,Sam Darnold,QB,0.1,1.0,True,True,False,pbp+report
+2026,1,TEN,Chimere Dike,WR,0.08,0.57,True,False,False,pbp only
+2026,2,BUF,DJ Moore,WR,0.31,0.7,True,True,False,pbp+report
+2026,2,GB,Jayden Reed,WR,0.03,0.49,True,True,False,pbp+report
+2026,2,IND,Alec Pierce,WR,0.26,0.885,False,True,False,report only
+2026,2,LAC,David Njoku,TE,0.16,0.55,True,False,False,pbp only
+2026,2,NE,Eli Raridon,TE,0.2,0.54,False,True,False,report only
+2026,2,NYG,Jaxson Dart,QB,0.12,1.0,True,True,False,pbp+report
+2026,2,NYJ,Arian Smith,WR,0.01,0.33,True,False,False,pbp only
+2026,2,PHI,Saquon Barkley,RB,0.16,0.8,True,True,True,pbp+report
+2026,2,PHI,Dallas Goedert,TE,0.25,0.88,False,True,False,report only
+2026,2,PIT,Rico Dowdle,RB,0.26,0.58,False,True,False,report only
+2026,2,TB,Jalen McMillan,WR,0.11,0.52,False,True,False,report only
+2026,2,WAS,Jaylin Lane,WR,0.15,0.34,False,True,False,report only
+2026,3,MIA,De'Von Achane,RB,0.05,0.765,True,False,False,pbp only
+2026,3,TB,Jalen McMillan,WR,0.03,0.52,True,False,False,pbp only
