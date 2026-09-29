@@ -109,6 +109,7 @@ h2{font-family:var(--f-disp);font-style:italic;font-weight:800;font-size:22px;te
   <main id="view"></main>
 </div>
 
+<script type="application/json" id="rzdata">[]</script>
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -118,8 +119,9 @@ try{const t=localStorage.getItem('rzd-tab'); if(t) st.tab=t;}catch(e){}
 
 /* ---------- data ---------- */
 async function loadWeeks(){
-  const w=await (await fetch('weeks.json')).json(); st.weeks=w.weeks;
-  for(const x of st.weeks){ st.data[x.week]=await (await fetch(x.file)).json(); }
+  // picks are embedded in the page by redzone/build_page.py (one entry per week)
+  const all=JSON.parse(document.getElementById('rzdata').textContent);
+  st.weeks=all.map(d=>({week:d.week})); all.forEach(d=>st.data[d.week]=d);
   st.cur=st.weeks[st.weeks.length-1].week;
 }
 const allPicks=()=>{const m={}; for(const w of st.weeks) for(const p of st.data[w.week].picks) m[p.id]={...p,week:w.week}; return m;};

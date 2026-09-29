@@ -13,4 +13,4 @@ echo "== scoreboard"; (cd gm && python3 ../redzone/points.py ../$SL $W)
 echo "== simulate"; node redzone/predict.js $SL redzone/picks_w$W.json
 # the page's data files: every week's picks plus an index (publish redzone/site/* next to redzone.html)
 mkdir -p redzone/site && cp redzone/picks_w$W.json redzone/site/
-node -e "const fs=require('fs');const d='redzone/site';const w=fs.readdirSync(d).filter(f=>/^picks_w\d+\.json$/.test(f)).map(f=>({week:+f.match(/\d+/)[0],file:f})).sort((a,b)=>a.week-b.week);fs.writeFileSync(d+'/weeks.json',JSON.stringify({weeks:w}));console.log('site weeks',w.map(x=>x.week).join(','))"
+python3 redzone/build_page.py

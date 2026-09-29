@@ -30,7 +30,7 @@ total pick is measured against.
 
 **Weekly.** `./setup_data.sh` once in a fresh session (or rerun it to refresh 2026 data), update the hand OUT /
 QUESTIONABLE lists in `gen_nfl.py` and `STARTER` in `overrides.json`, then `redzone/run.sh <week>`. Publish
-`redzone/redzone.html` to the page URL with `files` = every `redzone/site/*` (weeks.json + picks_w*.json).
+`redzone/site/index.html` (the page with every week's picks built in by `build_page.py`) to the page URL.
 
 **Tracking.** The page's database: `mine/<pick id>` = the user's tracked picks (the page writes them; `result` is
 W/L/P when the user marks it), `grades/w<week>` = `{results: {<pick id>: "W"|"L"|"P"}}`, written by Claude after the
