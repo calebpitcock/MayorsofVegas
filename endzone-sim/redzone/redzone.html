@@ -213,14 +213,17 @@ function render(){
       <div class="gbody">${[g.ml,g.ats,g.tot].map(p=>pickRow(p)).join('')}
       <div class="sub">Touchdowns</div>${tds.map(p=>pickRow(p)).join('')}
       <div class="sub">Yards and catches</div>${yd.map(p=>pickRow(p)).join('')}
-      ${(g.mu||[]).length?`<div class="sub">Receiver matchups</div>${g.mu.map(muRow).join('')}`:''}</div></section>`;}).join('')}</div>`;
+      ${(g.mu||[]).length?`<div class="sub">Matchups</div>${g.mu.map(muRow).join('')}`:''}</div></section>`;}).join('')}</div>`;
   } else if(st.tab==='mu'){
-    const all=D.games.flatMap(g=>g.mu||[]);
-    const best=all.filter(m=>m.score>=.03).sort((a,b)=>b.score-a.score).slice(0,15), worst=all.filter(m=>m.score<=-.03).sort((a,b)=>a.score-b.score).slice(0,10);
+    const all=D.games.flatMap(g=>g.mu||[]), rec=all.filter(m=>m.pos!=='RB'), rbs=all.filter(m=>m.pos==='RB');
+    const best=rec.filter(m=>m.score>=.03).sort((a,b)=>b.score-a.score).slice(0,15), worst=rec.filter(m=>m.score<=-.03).sort((a,b)=>a.score-b.score).slice(0,10);
+    const rbBest=rbs.filter(m=>m.score>=.02).sort((a,b)=>b.score-a.score).slice(0,10), rbWorst=rbs.filter(m=>m.score<=-.02).sort((a,b)=>a.score-b.score).slice(0,8);
     const cv=D.coverage||[], chg=(a,b)=>{const d=Math.round(100*(a-b));return d?`<small class="${d>0?'up':'dn'}">${d>0?'+':''}${d}</small>`:'';};
     v.innerHTML=`<p class="note">Each receiver against the corners or safeties most likely to cover him, from their coverage stats and style. The number is the change to his expected yards. Tap one for the details. Who covers whom isn't published for free, so these are likely matchups based on where he lines up and the depth chart.</p>
-      <h2>Best edges</h2><div class="list">${best.map(muRow).join('')}</div>
-      <h2>Toughest matchups</h2><div class="list">${worst.map(muRow).join('')}</div>
+      <h2>Receivers: best edges</h2><div class="list">${best.map(muRow).join('')}</div>
+      <h2>Receivers: toughest</h2><div class="list">${worst.map(muRow).join('')}</div>
+      ${rbs.length?`<h2>Running backs: best edges</h2><p class="note">Each back's inside/outside run mix against how this defense does against inside and outside runs. The number is the change to his yards per carry.</p><div class="list">${rbBest.map(muRow).join('')}</div>
+      <h2>Running backs: toughest</h2><div class="list">${rbWorst.map(muRow).join('')}</div>`:''}
       ${cv.length?`<h2>Team coverage this week</h2><p class="note">Estimated from this season's tracking data (real coverage charting comes out after the season). Small numbers: change from last season. League: man ${pct(cv[0].lgMan)}, single-high ${pct(cv[0].lgHi)}, blitz ${pct(cv[0].lgBlitz)}.</p>
       <div class="tblwrap"><table class="cov"><thead><tr><th>Defense</th><th>vs</th><th>Man</th><th>Zone</th><th>Single-high</th><th>Blitz</th></tr></thead><tbody>
       ${cv.map(c=>`<tr><td><b>${esc(c.team)}</b></td><td>${esc(c.opp)}</td><td>${pct(c.man)} ${chg(c.man,c.man2025)}</td><td>${pct(1-c.man)}</td><td>${pct(c.hi)} ${chg(c.hi,c.hi2025)}</td><td>${pct(c.blitz)}</td></tr>`).join('')}

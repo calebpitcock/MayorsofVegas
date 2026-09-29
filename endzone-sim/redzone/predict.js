@@ -113,7 +113,7 @@ for(const g of S.games){
     if(rz.slot&&p.pos==='WR'&&rz.slot>=.45) why.push(`Works the slot (about ${pct(rz.slot)} of snaps, estimated)`);
     const f=(g.form||{})[side]; if(f&&p.pos==='RB'&&Math.abs(f.run-1)>=.02) why.push(`Formations: ${p.t} run game ${sgn(100*(f.run-1))}% against ${opp}'s boxes`);
     if(f&&f.pos&&f.pos[p.pos]&&Math.abs(f.pos[p.pos].tgt-1)>=.02&&(p.pos==='TE'||p.pos==='RB')) why.push(`Personnel matchup: ${NAME[p.pos]} targets ${sgn(100*(f.pos[p.pos].tgt-1))}%`);
-    if(src.mu) why.push(`Matchup: ${src.mu.edge} vs ${src.mu.vs} (${src.mu.role}, likely)`, ...src.mu.why.filter(w=>/^(Style|After)/.test(w)));
+    if(src.mu) why.push(`Matchup: ${src.mu.edge} vs ${src.mu.vs} (${src.mu.role}, likely)`, ...src.mu.why.filter(w=>/^(Style|After|Run style|Inside runs|Outside runs|Formation)/.test(w)));
     why.push(...playerStatWhy(p,src,g,side));
     const tw_=teamWhy(g,side).filter(t=>(/Pass rush/.test(t)&&p.pos==='QB')||(/Run blocking/.test(t)&&p.pos==='RB')||(/Big plays/.test(t)&&p.pos!=='QB'));
     why.push(...tw_.slice(0,2));
