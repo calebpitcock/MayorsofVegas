@@ -150,8 +150,6 @@ def main(path, week):
                 style = 'deeper (tested deep)' if adot >= 1 else 'shorter (gives up the underneath throws)' if adot <= -1 else 'about as deep'
                 why.append(f"Style: passes thrown at {names if one else 'these defenders'} go {style} than at the average starter ({'+' if adot >= 0 else ''}{adot:.1f} yds)"
                            + (f"; {p['n']} averages {ad} yds downfield per target (league {adl})" if ad is not None else ''))
-                if size is not None and abs(size) >= 1: why.append(f"Size: {int(me['ht']) // 12}'{int(me['ht']) % 12}\" vs {int(round(np.mean(dh))) // 12}'{int(round(np.mean(dh))) % 12}\": {abs(size):.0f} in. {'more' if size > 0 else 'less'} height edge than a usual {p['pos']} vs {'safety' if p['pos'] == 'TE' else 'corner'} matchup")
-                if speed is not None and abs(speed) >= .03: why.append(f"Speed: 40 time {me['forty']:.2f} vs {np.mean(df):.2f}: {'faster' if speed > 0 else 'slower'} than a usual {p['pos']} vs {'safety' if p['pos'] == 'TE' else 'corner'} matchup by {abs(speed):.2f}s")
                 if abs(yac - 1) >= .08: why.append(f"After the catch: {'these defenders allow' if len(vs) > 1 else 'he allows'} {100 * (yac - 1):+.0f}% yards after catch vs the average starter")
                 why.append(f"Effect: targets {100 * (mult['rec'] - 1):+.0f}%, catch rate {100 * (mult['cat'] - 1):+.0f}%, yards per catch {100 * (mult['ypr'] - 1):+.0f}%, red-zone {100 * (mult['gl'] - 1):+.0f}%")
                 why.append('Likely matchup, not confirmed: who covers whom is not published for free (based on alignment and the depth chart)')

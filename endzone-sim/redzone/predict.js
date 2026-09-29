@@ -113,7 +113,7 @@ for(const g of S.games){
     if(rz.slot&&p.pos==='WR'&&rz.slot>=.45) why.push(`Works the slot (about ${pct(rz.slot)} of snaps, estimated)`);
     const f=(g.form||{})[side]; if(f&&p.pos==='RB'&&Math.abs(f.run-1)>=.02) why.push(`Formations: ${p.t} run game ${sgn(100*(f.run-1))}% against ${opp}'s boxes`);
     if(f&&f.pos&&f.pos[p.pos]&&Math.abs(f.pos[p.pos].tgt-1)>=.02&&(p.pos==='TE'||p.pos==='RB')) why.push(`Personnel matchup: ${NAME[p.pos]} targets ${sgn(100*(f.pos[p.pos].tgt-1))}%`);
-    if(src.mu) why.push(`Matchup: ${src.mu.edge} vs ${src.mu.vs} (${src.mu.role}, likely)`, ...src.mu.why.filter(w=>/^(Style|Size|Speed|After)/.test(w)));
+    if(src.mu) why.push(`Matchup: ${src.mu.edge} vs ${src.mu.vs} (${src.mu.role}, likely)`, ...src.mu.why.filter(w=>/^(Style|After)/.test(w)));
     why.push(...playerStatWhy(p,src,g,side));
     const tw_=teamWhy(g,side).filter(t=>(/Pass rush/.test(t)&&p.pos==='QB')||(/Run blocking/.test(t)&&p.pos==='RB')||(/Big plays/.test(t)&&p.pos!=='QB'));
     why.push(...tw_.slice(0,2));
@@ -155,7 +155,13 @@ for(const g of S.games){
 // the board: the most likely picks per type
 const top=(type,n,min=0)=>picks.filter(p=>p.type===type&&p.prob>=min).sort((a,b)=>b.prob-a.prob).slice(0,n);
 const board=[...top('Winner',4),...top('Spread',3),...top('Total',2),...top('Anytime TD',6),...top('Yards',5),...top('Catches',2)].sort((a,b)=>b.prob-a.prob);
-const out={season:SEASON,week:WEEK,label:S.label,generated:new Date().toISOString(),config:CFG,games,board:board.map(p=>p.id),picks};
+// this week's defenses: estimated man / zone / single-high / blitz (coverage_2026.py, football.py)
+const coverage=[];
+for(const g of S.games) for(const side of ['away','home']){ const c=((g.rzfb||{})[side]||{}).cov; if(!c) continue;
+  const dfn=side==='away'?g.home:g.away, opp=g[side];
+  coverage.push({team:dfn,opp,man:c.man,man2025:c.man2025,lgMan:c.lgMan,hi:c.hi,hi2025:c.hi2025,lgHi:c.lgHi,blitz:c.blitz,lgBlitz:c.lgBlitz}); }
+coverage.sort((a,b)=>b.man-a.man);
+const out={season:SEASON,week:WEEK,label:S.label,generated:new Date().toISOString(),config:CFG,games,board:board.map(p=>p.id),picks,coverage};
 fs.writeFileSync(outF,JSON.stringify(out));
 console.log(`${games.length} games, ${picks.length} picks, board ${board.length}`);
 board.forEach(p=>console.log(`${pct(p.prob).padStart(4)}  ${p.type.padEnd(10)} ${p.text}  (${p.game})`));

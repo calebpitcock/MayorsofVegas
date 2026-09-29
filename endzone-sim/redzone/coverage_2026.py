@@ -11,6 +11,7 @@ import json, os, sys, numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); D = os.path.join(HERE, '..', '..', 'data')
 REP = {'OAK': 'LV', 'SD': 'LAC', 'STL': 'LA', 'LAR': 'LA'}
 FEATS = ['cushion', 'sep', 'contested', 'blitz', 'rushers', 'box', 'deep', 'adot']
+MORE = ['hit_nb', 'yac', 'short_cmp', 'mid', 'ttt']      # added clues: QB hits without a blitz, YAC allowed, short completion rate, middle-of-field share, opposing QB time to throw
 
 def games():
     g = pd.read_csv(f'{D}/games.csv'); g = g[g.game_type == 'REG']
@@ -27,17 +28,27 @@ def defense_games(season, G):
     w = n.targets.clip(lower=1)
     ng = n.assign(wc=w * n.avg_cushion, ws=w * n.avg_separation, w=w).groupby(['def', 'week'])[['wc', 'ws', 'w']].sum()
     ng = pd.DataFrame({'cushion': ng.wc / ng.w, 'sep': ng.ws / ng.w})
-    p = pd.read_csv(f'{D}/play_by_play_{season}.csv.gz', usecols=['game_id', 'play_id', 'season_type', 'week', 'defteam', 'posteam', 'pass_attempt', 'sack', 'air_yards', 'qb_dropback'], low_memory=False)
+    p = pd.read_csv(f'{D}/play_by_play_{season}.csv.gz', usecols=['game_id', 'play_id', 'season_type', 'week', 'defteam', 'posteam', 'pass_attempt', 'sack', 'air_yards', 'qb_dropback', 'qb_hit', 'yards_after_catch', 'complete_pass', 'pass_location'], low_memory=False)
     p = p[(p.season_type == 'REG') & (p.qb_dropback == 1)].assign(defteam=lambda x: x.defteam.replace(REP))
     att = p[(p.pass_attempt == 1) & p.air_yards.notna()]
-    pg = att.groupby(['defteam', 'week']).agg(deep=('air_yards', lambda a: (a >= 20).mean()), adot=('air_yards', 'mean'))
+    att = att.assign(short=(att.air_yards < 10).astype(float), mid=(att.pass_location == 'middle').astype(float))
+    pg = att.groupby(['defteam', 'week']).agg(deep=('air_yards', lambda a: (a >= 20).mean()), adot=('air_yards', 'mean'), mid=('mid', 'mean'),
+                                              yac=('yards_after_catch', 'mean'))
+    sc = att[att.short == 1].groupby(['defteam', 'week']).complete_pass.mean().rename('short_cmp')
+    pg = pg.join(sc)
     pg.index.names = ['def', 'week']
     f = pd.read_parquet(f'{D}/ftn_charting_{season}.parquet').rename(columns={'nflverse_game_id': 'game_id', 'nflverse_play_id': 'play_id'})
     f = f.merge(p[['game_id', 'play_id', 'defteam', 'pass_attempt']], on=['game_id', 'play_id'])
+    f = f.merge(p[['game_id', 'play_id', 'qb_hit', 'sack']], on=['game_id', 'play_id'])
+    f['hit'] = ((f.qb_hit.fillna(0) + f.sack.fillna(0)) > 0).astype(float)
     fg = f.groupby(['defteam', 'week']).agg(blitz=('n_blitzers', lambda b: (b > 0).mean()), rushers=('n_pass_rushers', 'mean'), box=('n_defense_box', 'mean'),
                                            contested=('is_contested_ball', lambda c: c.astype(float).mean()))
+    fg = fg.join(f[f.n_blitzers == 0].groupby(['defteam', 'week']).hit.mean().rename('hit_nb'))
     fg.index.names = ['def', 'week']
-    return ng.join(pg, how='outer').join(fg, how='outer')
+    q = pd.read_parquet(f'{D}/ngs_passing.parquet'); q = q[(q.season == season) & (q.season_type == 'REG') & (q.week > 0)]
+    q = q.assign(off=q.team_abbr.replace(REP)).merge(opp, on=['week', 'off'])
+    qt = q.assign(x=q.attempts * q.avg_time_to_throw).groupby(['def', 'week'])[['x', 'attempts']].sum(); qt = (qt.x / qt.attempts).rename('ttt')
+    return ng.join(pg, how='outer').join(fg, how='outer').join(qt, how='outer')
 
 def truth(season):
     f = f'{D}/pbp_participation_{season}.parquet'
@@ -56,16 +67,32 @@ def truth(season):
 def rate(t, weeks):
     x = t[t.index.get_level_values('week').isin(weeks)].groupby(level='def').sum(); return x['sum'] / x['count']
 
-def dataset(G, seasons, early=3):
+def early_mean(F, early, hl):
+    """per-defense mean of weeks 1..early, recent games weighted more when hl (half-life in games) is set."""
+    x = F[F.index.get_level_values('week') <= early]
+    if not hl: return x.groupby(level='def').mean()
+    w = 0.5 ** ((early - x.index.get_level_values('week').values) / hl)
+    num = x.mul(w, axis=0).groupby(level='def').sum(min_count=1); den = x.notna().mul(w, axis=0).groupby(level='def').sum()
+    return num / den.replace(0, np.nan)
+
+def new_hc(G, s):
+    a = G[G.season == s - 1]; b = G[G.season == s]
+    last = pd.concat([a[['week', 'home_team', 'home_coach']].set_axis(['w', 't', 'c'], axis=1), a[['week', 'away_team', 'away_coach']].set_axis(['w', 't', 'c'], axis=1)]).sort_values('w').groupby('t').c.last()
+    first = pd.concat([b[['week', 'home_team', 'home_coach']].set_axis(['w', 't', 'c'], axis=1), b[['week', 'away_team', 'away_coach']].set_axis(['w', 't', 'c'], axis=1)]).sort_values('w').groupby('t').c.first()
+    return {t: float(first.get(t) != last.get(t)) for t in first.index}
+
+def dataset(G, seasons, early=3, hl=None):
     rows = []
     for s in seasons:
         F = defense_games(s, G); T = truth(s); P = truth(s - 1)
         if T is None or P is None: continue
-        e = F[F.index.get_level_values('week') <= early].groupby(level='def').mean()
+        e = early_mean(F, early, hl)
         e = (e - e.mean()) / e.std()          # each feature relative to that season's league (removes league-wide drift)
         for k, (t, pt) in {'man': (T[0], P[0]), 'hi': (T[1], P[1])}.items():
             y = rate(t, range(early + 1, 30)); prior = rate(pt, range(1, 30))
-            df = e.assign(y=y - y.mean(), prior=prior - prior.mean(), season=s, kind=k).dropna(); rows.append(df)
+            nh = pd.Series(new_hc(G, s)).reindex(e.index).fillna(0)
+            df = e.assign(y=y - y.mean(), prior=prior - prior.mean(), season=s, kind=k); df['prior_nhc'] = df.prior * nh
+            rows.append(df.dropna(subset=['y', 'prior']))
     return pd.concat(rows)
 
 def fit(X, y, lam=10.0):
@@ -76,25 +103,35 @@ def fit(X, y, lam=10.0):
 def pred(b, mu, sd, X): return np.column_stack([np.ones(len(X)), ((X - mu) / sd).values]) @ b
 
 def main(week=4):
-    G = games(); data = dataset(G, [2023, 2024, 2025])
-    out = {'season': 2026, 'week': week, 'test': {}, 'teams': {}}
-    cols = FEATS + ['prior']
+    G = games(); early = max(1, week - 1)
+    variants = {'v1 (original)': (FEATS, None, False), 'more clues': (FEATS + MORE, None, False),
+                'more clues + recent games': (FEATS + MORE, 1.5, False), 'more clues + recent + new coach': (FEATS + MORE, 1.5, True),
+                'more clues + new coach': (FEATS + MORE, None, True)}
+    out = {'season': 2026, 'week': week, 'early': early, 'test': {}, 'chosen': {}, 'teams': {}}
+    cache = {}
     for k in ('man', 'hi'):
-        d = data[data.kind == k]
-        errs = {}
-        for hold in (2023, 2024, 2025):
-            tr, te = d[d.season != hold], d[d.season == hold]
-            b, mu, sd = fit(tr[cols], tr.y)
-            errs[hold] = (float(np.sqrt(np.mean((pred(b, mu, sd, te[cols]) - te.y) ** 2))), float(np.sqrt(np.mean((te.prior - te.y) ** 2))),
-                          float(np.corrcoef(pred(b, mu, sd, te[cols]), te.y)[0, 1]), float(np.corrcoef(te.prior, te.y)[0, 1]))
-        out['test'][k] = {str(h): dict(rmse_model=round(a, 4), rmse_last_season=round(b_, 4), r_model=round(c, 3), r_last_season=round(e, 3)) for h, (a, b_, c, e) in errs.items()}
-        b, mu, sd = fit(d[cols], d.y)
-        F = defense_games(2026, G); e = F[F.index.get_level_values('week') < week].groupby(level='def').mean(); e = (e - e.mean()) / e.std()
+        res = {}
+        for name, (feats, hl, nhc) in variants.items():
+            if hl not in cache: cache[hl] = dataset(G, [2023, 2024, 2025], early, hl)
+            d = cache[hl]; d = d[d.kind == k].copy(); cols = feats + ['prior'] + (['prior_nhc'] if nhc else [])
+            d[cols] = d[cols].fillna(0)
+            errs = []
+            for hold in (2023, 2024, 2025):
+                tr, te = d[d.season != hold], d[d.season == hold]
+                b, mu, sd = fit(tr[cols], tr.y)
+                errs.append((float(np.sqrt(np.mean((pred(b, mu, sd, te[cols]) - te.y) ** 2))), float(np.sqrt(np.mean((te.prior - te.y) ** 2)))))
+            res[name] = dict(rmse=round(float(np.mean([e[0] for e in errs])), 4), rmse_last_season=round(float(np.mean([e[1] for e in errs])), 4),
+                             by_season=[round(e[0], 4) for e in errs])
+        best = min(res, key=lambda n: res[n]['rmse']); out['test'][k] = res; out['chosen'][k] = best
+        feats, hl, nhc = variants[best]; d = cache[hl]; d = d[d.kind == k].copy(); cols = feats + ['prior'] + (['prior_nhc'] if nhc else [])
+        d[cols] = d[cols].fillna(0); b, mu, sd = fit(d[cols], d.y)
+        F = defense_games(2026, G); e = early_mean(F[F.index.get_level_values('week') < week], early, hl); e = (e - e.mean()) / e.std()
         prior = rate(truth(2025)[0 if k == 'man' else 1], range(1, 30))
-        e = e.assign(prior=prior - prior.mean()).dropna()
+        e = e.assign(prior=prior - prior.mean()); nh = pd.Series(new_hc(G, 2026)).reindex(e.index).fillna(0); e['prior_nhc'] = e.prior * nh
+        e = e.dropna(subset=['prior']); e[cols] = e[cols].fillna(0)
         p = np.clip(prior.mean() + pred(b, mu, sd, e[cols]), .03, .85)   # league level carried from 2025
         for t, v in zip(e.index, p): out['teams'].setdefault(t, {})[k] = round(float(v), 3); out['teams'][t][k + '2025'] = round(float(prior[t]), 3)
-        print(k, json.dumps(out['test'][k]))
+        for n, r in res.items(): print(k, f"{n:34s} rmse {r['rmse']:.4f} (last season only {r['rmse_last_season']:.4f}) {r['by_season']}" + ('  <- chosen' if n == best else ''))
     json.dump(out, open(os.path.join(HERE, 'coverage_2026.json'), 'w'), indent=1)
     print('teams', len(out['teams']))
 
