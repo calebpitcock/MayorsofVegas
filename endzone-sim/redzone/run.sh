@@ -14,6 +14,7 @@ echo "== coverage 2026"; python3 redzone/coverage_2026.py $W | tail -1
 echo "== football stats"; python3 redzone/football.py $SL $W
 echo "== DB matchups"; python3 redzone/db_matchups.py $SL $W
 echo "== RB matchups"; python3 redzone/rb_matchups.py $SL $W
+echo "== finishing"; python3 redzone/finishing.py $SL $W
 echo "== scoreboard"; (cd gm && python3 ../redzone/points.py ../$SL $W)
 echo "== simulate"; node redzone/predict.js $SL redzone/picks_w$W.json
 # the page's data files: every week's picks plus an index (publish redzone/site/* next to redzone.html)

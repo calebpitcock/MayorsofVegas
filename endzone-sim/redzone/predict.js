@@ -61,7 +61,16 @@ const priceWhy=(pr,prob)=>pr?`Book price ${pr.odds>0?'+':''}${pr.odds} (${pr.src
 const fmtSpread=x=>x===0?'PK':(x>0?'+':'')+x;
 const games=[], picks=[];
 for(const g of S.games){
-  const k=E.calibrateV3(g,ctx,{N:4000,trust:1});
+  let k=E.calibrateV3(g,ctx,{N:4000,trust:1});
+  /* finishing drives (finishing.py): move each team's red-zone TD rate by its tested amount (rzdev), then re-solve the
+     offenses so the projected score stays where the scoreboard put it -- more touchdowns, fewer field goals */
+  if(g.rzx&&g.rzx.away&&g.rzx.home&&(g.rzx.away.rzdev||g.rzx.home.rzdev)){
+    const sd=E.hashStr(g.id+'|fin'), rate=r=>[0,1].map(i=>r.diag.rzTD[i]/Math.max(1,r.diag.rzTrips[i]));
+    const b0=rate(E.simGameV3(g,{N:6000,trust:1,k,seed:sd,hist:false},ctx)), tgt=[b0[0]+g.rzx.away.rzdev,b0[1]+g.rzx.home.rzdev];
+    for(let it=0;it<3;it++){ const rr=rate(E.simGameV3(g,{N:6000,trust:1,k,seed:sd,hist:false},ctx));
+      ['away','home'].forEach((s,i)=>{ g.rzx[s].rzfin=+Math.min(1.5,Math.max(.67,(g.rzx[s].rzfin||1)*Math.exp(2.5*(tgt[i]-rr[i])))).toFixed(4); }); }
+    k=E.calibrateV3(g,ctx,{N:4000,trust:1,k0:k});
+  }
   const r=E.simGameV3(g,{N,trust:1,k,seed:E.hashStr(g.id+'|rz')},ctx);
   const W=r.G.W, pH=(r.G.win[1]+r.G.tie/2)/W, z=g.rzg, L=g.line, A=g.away, H=g.home;
   const sc={away:Math.round(r.ptsA),home:Math.round(r.ptsH)};
@@ -72,6 +81,9 @@ for(const g of S.games){
   for(const a of z.adj) gameWhy.push(a.text);
   const qb=g.qb||{}; for(const s of ['away','home']) if(qb[s]&&qb[s].change) gameWhy.push(`${g[s]} QB: ${qb[s].name} starts. ${qb[s].why}`);
   for(const s of ['away','home']) gameWhy.push(...teamWhy(g,s));
+  for(const s of ['away','home']){ const f=(g.fin||{})[s]; if(!f) continue;
+    if(Math.abs(f.offLast-f.lgLast)>=.05) gameWhy.push(`Red-zone finishing: ${g[s]} scored TDs on ${pct(f.offLast)} of red-zone trips last season (league ${pct(f.lgLast)}); about a quarter of that carries over, so ${f.dev>0?'more':'fewer'} of its points come as touchdowns`);
+    if(Math.abs(f.glpass)>=.03) gameWhy.push(`Goal line: ${g[s]} throws on ${pct(f.offGL)} of plays inside the 10 (league ${pct(f.lgGL)}); here ${f.glpass>0?'+':''}${Math.round(100*f.glpass)} pts of pass rate near the goal line`); }
   if(g.wx) gameWhy.push(`Weather: ${g.wx.roof==='unknown'?'roof status not listed; no forecast available here, treated as normal':g.wx.note}`);
   const gp=[];
   // winner
@@ -115,6 +127,10 @@ for(const g of S.games){
     if(f&&f.pos&&f.pos[p.pos]&&Math.abs(f.pos[p.pos].tgt-1)>=.02&&(p.pos==='TE'||p.pos==='RB')) why.push(`Personnel matchup: ${NAME[p.pos]} targets ${sgn(100*(f.pos[p.pos].tgt-1))}%`);
     if(src.mu) why.push(`Matchup: ${src.mu.edge} vs ${src.mu.vs} (${src.mu.role}, likely)`, ...src.mu.why.filter(w=>/^(Style|After|Run style|Inside runs|Outside runs|Formation)/.test(w)));
     why.push(...playerStatWhy(p,src,g,side));
+    const fin=(g.fin||{})[side];
+    if(fin&&Math.abs(fin.glpass)>=.03&&p.pos!=='QB') why.push(`Goal line: ${p.t} ${fin.glpass>0?'throws':'runs'} more than most teams inside the 10 (${pct(fin.offGL)} pass, league ${pct(fin.lgGL)}), which ${(fin.glpass>0)===(p.pos!=='RB')?'helps':'hurts'} his TD chances`);
+    if(fin&&p.pos==='QB'&&Math.abs(fin.qbShare-fin.lgQB)>=.04) why.push(`QB at the goal line: ${p.t}'s quarterbacks take ${pct(fin.qbShare)} of carries inside the 5 (league ${pct(fin.lgQB)}), sneaks included`);
+    if(fin&&Math.abs(fin.offLast-fin.lgLast)>=.05) why.push(`Red-zone finishing: ${p.t} ${pct(fin.offLast)} TD rate on red-zone trips last season (league ${pct(fin.lgLast)})`);
     const tw_=teamWhy(g,side).filter(t=>(/Pass rush/.test(t)&&p.pos==='QB')||(/Run blocking/.test(t)&&p.pos==='RB')||(/Big plays/.test(t)&&p.pos!=='QB'));
     why.push(...tw_.slice(0,2));
     if(src.flag) why.push(`Injury: ${src.flag}`);
