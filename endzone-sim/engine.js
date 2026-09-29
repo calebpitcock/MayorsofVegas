@@ -191,11 +191,12 @@ function simGameV3(g,opts,ctx){
   /* where this defense lets targets and receiving touchdowns go, by position */
   /* Where a defense allowed its touchdowns (by position, run vs pass) is not used: split-half reliability over
      2016-25 was ~0 (audit/dvp.py), so it only added noise to touchdown odds. ctx.tdloc=1 restores it for tests. */
-  const TDLOC=ctx.tdloc??0;
+  /* ctx.tdlocW scales it (Redzone Desk runs it at 2 = twice the original strength). */
+  const TDLOC=ctx.tdloc??0, TDW=ctx.tdlocW??1;
   const oppT=new Float64Array(n).fill(1), oppRZ=new Float64Array(n).fill(1);
   if(OPP) ROS.forEach((p,i)=>{ const d=dp[p.side===g.home?1:0]; if(!d||p.field||p.pos==="QB") return;
-    oppT[i]=Math.pow(d.tgt[p.pos]??1,.7*MW); if(TDLOC) oppRZ[i]=Math.pow(d.tdpos[p.pos]??1,.5); });
-  const rzRunLean=[OPP&&TDLOC&&dp[0]?(1-dp[0].rtd)*.25:0, OPP&&TDLOC&&dp[1]?(1-dp[1].rtd)*.25:0];
+    oppT[i]=Math.pow(d.tgt[p.pos]??1,.7*MW); if(TDLOC) oppRZ[i]=Math.pow(d.tdpos[p.pos]??1,.5*TDW); });
+  const rzRunLean=[OPP&&TDLOC&&dp[0]?(1-dp[0].rtd)*.25*TDW:0, OPP&&TDLOC&&dp[1]?(1-dp[1].rtd)*.25*TDW:0];
   /* coverage and pressure matchup (scheme_match.py): each receiver's man/zone and blitz target split against this
      defense's rates, damped to the share of it that held up out of sample. p.cov = 1 when unknown. */
   const covM=Float64Array.from(ROS,p=>(p.cov>0&&!p.field)?Math.max(.5,1+MW*(p.cov-1)):1);

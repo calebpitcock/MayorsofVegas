@@ -8,7 +8,7 @@ K_LEAN = 0.10          # lean toward the model vs DraftKings' line. Fitted vs cl
 ANCHOR = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'anchor.json')))   # win/cover rates per point, ml_anchor.py
 FULL = {'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Ravens':'BAL','Buffalo Bills':'BUF','Carolina Panthers':'CAR','Chicago Bears':'CHI','Cincinnati Bengals':'CIN','Cleveland Browns':'CLE','Dallas Cowboys':'DAL','Denver Broncos':'DEN','Detroit Lions':'DET','Green Bay Packers':'GB','Houston Texans':'HOU','Indianapolis Colts':'IND','Jacksonville Jaguars':'JAX','Kansas City Chiefs':'KC','Los Angeles Rams':'LA','Los Angeles Chargers':'LAC','Las Vegas Raiders':'LV','Miami Dolphins':'MIA','Minnesota Vikings':'MIN','New England Patriots':'NE','New Orleans Saints':'NO','New York Giants':'NYG','New York Jets':'NYJ','Philadelphia Eagles':'PHI','Pittsburgh Steelers':'PIT','Seattle Seahawks':'SEA','San Francisco 49ers':'SF','Tampa Bay Buccaneers':'TB','Tennessee Titans':'TEN','Washington Commanders':'WAS'}
 def main(slate_path):
-    slate = json.load(open(slate_path)); ov = json.load(open('../overrides.json')); WEEK = ov['week']; SEASON = 2026
+    slate = json.load(open(slate_path)); ov = json.load(open('../overrides.json')); WEEK = int(os.environ.get('EZWEEK') or ov['week']); SEASON = 2026
     # 1) fitted margin model on every completed season
     D = model4.add(model2.build(P, QP))
     tr = D[(D.season < SEASON + 1) & (D.week >= 3)]; sw = 0.5 ** ((SEASON - tr.season) / 8.0)
@@ -67,7 +67,7 @@ def main(slate_path):
     # BOOKS_W, the stats view (offense, defense, special teams, QB; no books) the rest. Public power rankings count
     # PUBW of the final value when this week's ranking is available. Each home team gets the league home field plus
     # HFA_SHARE of its own edge (computed from nflverse results; an optional hfa_source.json overrides it), capped.
-    BOOKS_W, PUBW, HFA_SHARE, HFA_CAP = 0.25, 0.10, 0.5, 1.0
+    BOOKS_W, PUBW, HFA_SHARE, HFA_CAP = float(os.environ.get('EZBOOKSW', 0.25)), 0.10, 0.5, 1.0   # Redzone Desk: EZBOOKSW=0 (no sportsbook input)
     here = os.path.dirname(os.path.abspath(__file__))
     for t in TEAMS:
         parts[t]['statsview'] = parts[t]['stats'] + parts[t]['qbS']

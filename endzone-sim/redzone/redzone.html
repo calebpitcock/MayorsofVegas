@@ -1,0 +1,217 @@
+<title>Redzone Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Extra+Condensed:ital,wght@1,700;1,800&family=Saira+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: a broadcast desk. Wordmark bar, a score ticker of every game, then one column of pick "look-ins"
+   you tap open. Deliberately one dark look (a TV graphics package), with every color set explicitly. */
+:root{
+  --bg:#07080C; --panel:#10131B; --panel2:#171B26; --line:#262B3A;
+  --red:#E1141E; --red-deep:#8E0B12; --gold:#FFC629; --text:#F2F3F7; --mist:#9AA1B4; --dim:#646B80;
+  --win:#3DD68C; --loss:#FF5A60; --push:#9AA1B4;
+  --f-disp:"Saira Extra Condensed","Arial Narrow",Impact,sans-serif;
+  --f-cond:"Saira Condensed","Arial Narrow",sans-serif;
+  --f-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 48px;display:flex;flex-direction:column;gap:14px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---- top bar ---- */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:12px 16px 10px;border-bottom:3px solid var(--red);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mark{font-family:var(--f-disp);font-style:italic;font-weight:800;font-size:30px;line-height:1;letter-spacing:.01em;text-transform:uppercase;display:flex;align-items:baseline;gap:8px}
+.mark .rz{background:var(--red);color:#fff;padding:2px 10px 0 8px;transform:skewX(-10deg);display:inline-block}
+.mark .rz span{display:inline-block;transform:skewX(10deg)}
+.mark .desk{color:var(--gold)}
+.wk{font-family:var(--f-cond);font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--mist)}
+.recs{display:flex;gap:8px;flex-wrap:wrap}
+.rec{font-family:var(--f-cond);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;background:var(--panel2);border:1px solid var(--line);padding:4px 10px;border-radius:3px;font-variant-numeric:tabular-nums}
+.rec b{color:var(--gold);font-weight:700}
+
+/* ---- ticker ---- */
+.ticker{overflow-x:auto;margin-inline:-16px;padding-inline:16px;scrollbar-width:none;border-bottom:1px solid var(--line)}
+.ticker::-webkit-scrollbar{display:none}
+.tk{display:flex;gap:0;width:max-content}
+.tg{font-family:var(--f-cond);font-weight:600;font-size:14px;padding:8px 14px;border-right:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums;display:grid;grid-template-columns:auto auto;column-gap:10px}
+.tg .w{color:var(--gold)}
+.tg small{grid-column:1/-1;color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ---- tabs ---- */
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{font-family:var(--f-disp);font-style:italic;font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.02em;padding:6px 14px 4px;color:var(--mist);border-bottom:3px solid transparent}
+.tab[aria-selected="true"]{color:var(--text);border-bottom-color:var(--gold)}
+.note{color:var(--mist);font-size:13px}
+.note b{color:var(--text)}
+
+/* ---- pick rows ---- */
+.list{display:flex;flex-direction:column;gap:6px}
+.pick{background:var(--panel);border:1px solid var(--line);border-radius:4px;display:grid;grid-template-columns:64px 1fr auto;align-items:stretch}
+.pick.open{border-color:var(--red)}
+.pbtn{grid-column:1/3;display:grid;grid-template-columns:64px 1fr;text-align:left;align-items:center;min-width:0}
+.prob{font-family:var(--f-disp);font-style:italic;font-weight:800;font-size:28px;color:var(--gold);text-align:center;font-variant-numeric:tabular-nums;padding:10px 0}
+.prob.mid{color:var(--text)}
+.body{padding:10px 6px 10px 2px;min-width:0}
+.ptxt{font-family:var(--f-cond);font-weight:700;font-size:18px;line-height:1.15}
+.meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:3px;color:var(--mist);font-size:12.5px}
+.chip{font-family:var(--f-cond);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--red-deep);color:#fff;padding:1px 7px;border-radius:2px}
+.chip.td{background:var(--red)}
+.track{font-family:var(--f-cond);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:0 14px;border-left:1px solid var(--line);color:var(--mist);min-width:78px}
+.track:hover{color:var(--text)}
+.track.on{color:var(--bg);background:var(--gold)}
+.why{grid-column:1/-1;border-top:1px solid var(--line);padding:10px 16px 12px 22px;margin:0;display:flex;flex-direction:column;gap:5px;color:#D6D9E3;font-size:14px}
+.why li::marker{color:var(--red)}
+.res{font-family:var(--f-cond);font-weight:700;font-size:12px;letter-spacing:.08em;padding:1px 7px;border-radius:2px;text-transform:uppercase}
+.res.W{background:var(--win);color:#06140C}.res.L{background:var(--loss);color:#1A0506}.res.P{background:var(--push);color:#0B0C10}.res.O{border:1px solid var(--line);color:var(--mist)}
+
+/* ---- games ---- */
+.game{background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ghead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(90deg,var(--red-deep),var(--panel2) 60%);flex-wrap:wrap}
+.teams{font-family:var(--f-disp);font-style:italic;font-weight:800;font-size:24px;text-transform:uppercase;line-height:1;font-variant-numeric:tabular-nums}
+.teams .s{color:var(--gold)}
+.kick{font-family:var(--f-cond);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#E5E7EE}
+.gbody{padding:8px;display:flex;flex-direction:column;gap:6px}
+.gbody .pick{background:var(--panel2)}
+.sub{font-family:var(--f-cond);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);padding:6px 6px 0}
+
+/* ---- my picks / record ---- */
+.mine-acts{display:flex;gap:4px;padding:0 10px;align-items:center;border-left:1px solid var(--line)}
+.mine-acts button{font-family:var(--f-cond);font-weight:700;font-size:12px;width:28px;height:28px;border:1px solid var(--line);border-radius:3px;color:var(--mist)}
+.mine-acts button[aria-pressed="true"]{background:var(--text);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px 14px}
+.stat .k{font-family:var(--f-cond);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mist)}
+.stat .v{font-family:var(--f-disp);font-style:italic;font-weight:800;font-size:30px;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:16px;color:var(--gold);margin-left:6px}
+h2{font-family:var(--f-disp);font-style:italic;font-weight:800;font-size:22px;text-transform:uppercase;margin:6px 0 0;text-wrap:balance}
+.empty{border:1px dashed var(--line);border-radius:4px;padding:18px;color:var(--mist);text-align:center}
+@media (max-width:480px){.tab{font-size:16px;padding:6px 8px 4px}.pick{grid-template-columns:54px 1fr auto}.pbtn{grid-template-columns:54px 1fr}.prob{font-size:24px}.ptxt{font-size:16px}.track{min-width:64px;padding:0 10px}}
+@media (prefers-reduced-motion:no-preference){.pick,.track{transition:border-color .15s,background .15s,color .15s}}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div>
+      <div class="mark"><span class="rz"><span>Redzone</span></span><span class="desk">Desk</span></div>
+      <div class="wk" id="wk">Loading picks…</div>
+    </div>
+    <div class="recs" id="recs"></div>
+  </header>
+  <div class="ticker" aria-label="Projected scores"><div class="tk" id="ticker"></div></div>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-t="top" aria-selected="true" id="tab-top">Top plays</button>
+    <button class="tab" role="tab" data-t="games" aria-selected="false" id="tab-games">Games</button>
+    <button class="tab" role="tab" data-t="mine" aria-selected="false" id="tab-mine">My picks</button>
+    <button class="tab" role="tab" data-t="record" aria-selected="false" id="tab-record">Record</button>
+  </nav>
+  <main id="view"></main>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=x=>Math.round(100*x)+'%';
+const st={tab:'top',weeks:[],data:{},cur:null,open:new Set(),mine:{},grades:{},db:null,local:false};
+try{const t=localStorage.getItem('rzd-tab'); if(t) st.tab=t;}catch(e){}
+
+/* ---------- data ---------- */
+async function loadWeeks(){
+  const w=await (await fetch('weeks.json')).json(); st.weeks=w.weeks;
+  for(const x of st.weeks){ st.data[x.week]=await (await fetch(x.file)).json(); }
+  st.cur=st.weeks[st.weeks.length-1].week;
+}
+const allPicks=()=>{const m={}; for(const w of st.weeks) for(const p of st.data[w.week].picks) m[p.id]={...p,week:w.week}; return m;};
+function resultOf(id){ const m=st.mine[id]; if(m&&m.result) return m.result; return st.grades[id]||null; }
+
+/* ---------- storage: the page database (shared, so Claude can grade), else this device ---------- */
+async function initDb(){
+  let db=null; try{ db=await window.claude?.use?.('db'); }catch(e){}
+  if(!db){ st.local=true; try{ st.mine=JSON.parse(localStorage.getItem('rzd-mine')||'{}'); }catch(e){} render(); return; }
+  st.db=db;
+  db.collection('mine').onSnapshot(s=>{ const m={}; s.docs.forEach(d=>m[d.id]=d.data()); st.mine=m; render(); }, ()=>{});
+  db.collection('grades').onSnapshot(s=>{ const g={}; s.docs.forEach(d=>Object.assign(g,(d.data()||{}).results||{})); st.grades=g; render(); }, ()=>{});
+}
+async function saveMine(id,body){
+  if(st.local){ if(body) st.mine[id]=body; else delete st.mine[id]; try{localStorage.setItem('rzd-mine',JSON.stringify(st.mine));}catch(e){} render(); return; }
+  const ref=st.db.collection('mine').doc(id.replace(/[^A-Za-z0-9_.~:@+-]/g,'-'));
+  try{ if(body) await ref.set(body); else await ref.delete(); }catch(e){ flash('Could not save. Try again in a moment.'); }
+}
+function flash(t){ const n=$('#wk'); const o=n.textContent; n.textContent=t; setTimeout(()=>n.textContent=o,2500); }
+const mineKey=id=>id.replace(/[^A-Za-z0-9_.~:@+-]/g,'-');
+function isTracked(id){ return !!st.mine[mineKey(id)]; }
+function toggleTrack(p){
+  const k=mineKey(p.id);
+  if(st.mine[k]) saveMine(p.id,null);
+  else saveMine(p.id,{id:p.id,week:p.week??st.cur,type:p.type,text:p.text,game:p.game,prob:+p.prob.toFixed(3),addedAt:new Date().toISOString(),result:null});
+}
+
+/* ---------- records ---------- */
+function tally(ids){ const r={W:0,L:0,P:0,O:0}; ids.forEach(id=>{const x=resultOf(id); r[x||'O']++;}); return r; }
+const recTxt=r=>`${r.W}-${r.L}${r.P?'-'+r.P:''}`;
+const winPct=r=>r.W+r.L?Math.round(100*r.W/(r.W+r.L))+'%':'—';
+function modelIds(){ return st.weeks.flatMap(w=>st.data[w.week].board); }
+
+/* ---------- rendering ---------- */
+function pickRow(p,{showTrack=true}={}){
+  const open=st.open.has(p.id), res=resultOf(p.id), on=isTracked(p.id);
+  return `<div class="pick${open?' open':''}">
+    <button class="pbtn" data-open="${esc(p.id)}" aria-expanded="${open}">
+      <div class="prob${p.prob<.6?' mid':''}">${pct(p.prob)}</div>
+      <div class="body"><div class="ptxt">${esc(p.text)}</div>
+        <div class="meta"><span class="chip${p.type==='Anytime TD'?' td':''}">${esc(p.type)}</span><span>${esc(p.game)}</span>${res?`<span class="res ${res}">${{W:'Win',L:'Loss',P:'Push'}[res]}</span>`:''}</div></div>
+    </button>
+    ${showTrack?`<button class="track${on?' on':''}" data-track="${esc(p.id)}" aria-pressed="${on}">${on?'Tracked':'+ Track'}</button>`:'<span></span>'}
+    ${open?`<ul class="why">${p.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
+  </div>`;
+}
+function render(){
+  if(!st.cur) return;
+  const D=st.data[st.cur], P=Object.fromEntries(D.picks.map(p=>[p.id,p]));
+  $('#wk').textContent=`${D.label||'Week '+D.week} · model only, no sportsbook input`;
+  const mr=tally(modelIds()), my=tally(Object.keys(st.mine).map(k=>st.mine[k].id));
+  $('#recs').innerHTML=`<span class="rec">Model <b>${recTxt(mr)}</b></span><span class="rec">Me <b>${recTxt(my)}</b></span>`;
+  $('#ticker').innerHTML=D.games.map(g=>{const hw=g.pHome>=.5;return `<div class="tg"><span>${g.away} ${g.score.away}</span><span>${g.home} ${g.score.home}</span><small>${esc(g.kick)} · <span class="w">${hw?g.home:g.away} ${pct(Math.max(g.pHome,1-g.pHome))}</span></small></div>`;}).join('');
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===st.tab));
+  const v=$('#view');
+  if(st.tab==='top'){
+    v.innerHTML=`<p class="note">The most likely outcomes this week. Tap a pick to see why; tap <b>+ Track</b> to add it to your picks.</p><div class="list">${D.board.map(id=>pickRow(P[id])).join('')}</div>`;
+  } else if(st.tab==='games'){
+    v.innerHTML=`<div class="list">${D.games.map(g=>{
+      const tds=D.picks.filter(p=>p.gameId===g.id&&p.type==='Anytime TD').sort((a,b)=>b.prob-a.prob).slice(0,4);
+      const yd=D.picks.filter(p=>p.gameId===g.id&&(p.type==='Yards'||p.type==='Catches')).sort((a,b)=>b.prob-a.prob).slice(0,3);
+      return `<section class="game"><div class="ghead"><div class="teams">${g.away} <span class="s">${g.score.away}</span> · ${g.home} <span class="s">${g.score.home}</span></div><div class="kick">${esc(g.kick)}</div></div>
+      <div class="gbody">${[g.ml,g.ats,g.tot].map(p=>pickRow(p)).join('')}
+      <div class="sub">Touchdowns</div>${tds.map(p=>pickRow(p)).join('')}
+      <div class="sub">Yards and catches</div>${yd.map(p=>pickRow(p)).join('')}</div></section>`;}).join('')}</div>`;
+  } else if(st.tab==='mine'){
+    const rows=Object.values(st.mine).sort((a,b)=>(b.addedAt||'').localeCompare(a.addedAt||''));
+    const AP=allPicks();
+    v.innerHTML=(st.local?`<p class="note">Picks save on this device only in this view.</p>`:'')+(rows.length?`<div class="list">${rows.map(m=>{
+      const p=AP[m.id]||{...m,why:['This pick is from a week no longer on the board.']}; const r=resultOf(m.id);
+      return `<div class="pick${st.open.has(m.id)?' open':''}"><button class="pbtn" data-open="${esc(m.id)}" aria-expanded="${st.open.has(m.id)}"><div class="prob${m.prob<.6?' mid':''}">${pct(m.prob)}</div>
+        <div class="body"><div class="ptxt">${esc(m.text)}</div><div class="meta"><span class="chip">${esc(m.type)}</span><span>Wk ${m.week} · ${esc(m.game)}</span><span class="res ${r||'O'}">${r?{W:'Win',L:'Loss',P:'Push'}[r]:'Open'}</span></div></div></button>
+        <div class="mine-acts">${['W','L','P'].map(x=>`<button data-res="${esc(m.id)}" data-v="${x}" aria-pressed="${m.result===x}" aria-label="Mark ${({W:'win',L:'loss',P:'push'})[x]}">${x}</button>`).join('')}<button data-track="${esc(m.id)}" aria-label="Remove">✕</button></div>
+        ${st.open.has(m.id)?`<ul class="why">${p.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`
+      :`<div class="empty">No picks tracked yet. Open <b>Top plays</b> or <b>Games</b> and tap <b>+ Track</b> on any pick.</div>`);
+  } else {
+    const ids=modelIds(), AP=allPicks(), types=[...new Set(ids.map(i=>AP[i].type))];
+    const my=Object.values(st.mine).map(m=>m.id);
+    const card=(k,r)=>`<div class="stat"><div class="k">${esc(k)}</div><div class="v">${recTxt(r)}<small>${winPct(r)}</small></div></div>`;
+    v.innerHTML=`<h2>Model</h2><p class="note">Every pick on the Top plays board, graded after the games.</p>
+      <div class="grid">${card('All top plays',tally(ids))}${types.map(t=>card(t,tally(ids.filter(i=>AP[i].type===t)))).join('')}</div>
+      <h2>Me</h2><div class="grid">${card('My picks',tally(my))}${[...new Set(my.map(i=>(AP[i]||st.mine[mineKey(i)]||{}).type))].filter(Boolean).map(t=>card(t,tally(my.filter(i=>((AP[i]||st.mine[mineKey(i)]).type===t))))).join('')}</div>
+      <p class="note">Open picks: model ${tally(ids).O}, mine ${tally(my).O}. Results fill in when Claude grades the week; you can also mark your own picks W, L or P.</p>`;
+  }
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-t],[data-open],[data-track],[data-res]'); if(!t) return;
+  if(t.dataset.t){ st.tab=t.dataset.t; try{localStorage.setItem('rzd-tab',st.tab);}catch(e){} render(); return; }
+  if(t.dataset.open){ const id=t.dataset.open; st.open.has(id)?st.open.delete(id):st.open.add(id); render(); return; }
+  const AP=allPicks();
+  if(t.dataset.track){ const id=t.dataset.track; toggleTrack(AP[id]||st.mine[mineKey(id)]||{id}); return; }
+  if(t.dataset.res){ const m=st.mine[mineKey(t.dataset.res)]; if(!m) return; saveMine(m.id,{...m,result:m.result===t.dataset.v?null:t.dataset.v}); }
+});
+loadWeeks().then(()=>{render(); initDb();}).catch(()=>{$('#wk').textContent='Picks file missing. Ask Claude to republish the Redzone Desk.';});
+</script>

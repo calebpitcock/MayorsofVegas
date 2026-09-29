@@ -10,7 +10,7 @@ NAMES = dict(ARI='Cardinals',ATL='Falcons',BAL='Ravens',BUF='Bills',CAR='Panther
   TB='Buccaneers',TEN='Titans',WAS='Commanders')
 
 SEASON = 2026
-WEEK = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'overrides.json')))['week']
+WEEK = int(os.environ.get('EZWEEK') or json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'overrides.json')))['week'])
 b = nb.Builder(SEASON)
 dbk = nb.DefBook(b)
 R = b.R
@@ -71,7 +71,8 @@ QBWHY = {
   'MIN': "Murray is back from the concussion. He took 7 dropbacks in Week 1 before leaving; Wentz generated almost all of Minnesota's priors.",
 }
 
-old = json.load(open(os.path.join(os.path.dirname(__file__), '..', 'db', 'slate', 'current.json')))
+_oldf = os.path.join(os.path.dirname(__file__), '..', 'db', 'slate', 'current.json')   # the page's last slate (kept prices); absent in a fresh session
+old = json.load(open(_oldf)) if os.path.exists(_oldf) else {'games': []}
 oldp = {}
 for g in old['data']['games'] if 'data' in old else old['games']:
     for p in g['players']:
@@ -141,7 +142,7 @@ _old = old.get('data', old)
 slate = fix(dict(label=_lab, league='NFL', updated=pd.Timestamp.now('UTC').isoformat(), version=int(_old.get('version', 0)) + 1, engine=3,
                  source='nflverse play-by-play 2025–26 and snap counts (usage and role trends), practice reports + news (availability), DraftKings props and game lines via davidcantugtr/nfl-player-prop-opportunity, anytime-TD prices via jaredpatchett/NFL-Model (DraftKings estimated)',
                  games=games))
-out = os.path.join(os.path.dirname(__file__), 'slate_nfl.json')
+out = os.environ.get('EZOUT') or os.path.join(os.path.dirname(__file__), 'slate_nfl.json')
 json.dump(slate, open(out, 'w'), indent=1)
 print(len(games), 'games;', sum(len(g['players']) for g in games), 'players ->', out)
 for g in games: print(g['id'], g['spread'], g['total'], g['ml'], len(g['players']), g['qb'].keys(), g['note'][:120])

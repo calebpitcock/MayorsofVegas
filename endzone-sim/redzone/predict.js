@@ -1,0 +1,92 @@
+// Redzone Desk: simulate every game with all Redzone factors on, anchored to the model's own margin and total
+// (redzone/points.py), and write the most likely picks with plain-English reasons.
+// Usage: node redzone/predict.js slate.json out.json
+const E=require('../harness.js'), fs=require('fs'), path=require('path');
+const [,,inF,outF]=process.argv;
+const S=JSON.parse(fs.readFileSync(inF)), CFG=JSON.parse(fs.readFileSync(path.join(__dirname,'config.json')));
+const CAL=JSON.parse(fs.readFileSync(path.join(__dirname,'..','td_cal_nfl.json')));
+const lg=q=>{q=Math.min(.999,Math.max(.001,q));return Math.log(q/(1-q));}, sg=z=>1/(1+Math.exp(-z));
+const pct=x=>Math.round(100*x)+'%', sgn=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(1), NAME={RB:'running backs',WR:'wide receivers',TE:'tight ends',QB:'quarterbacks'};
+const WEEK=S.redzone.week, SEASON=2026, N=CFG.sims;
+const ctx={tuning:{},out:new Set(),tune:E.TUNE,opp:1,scheme:'off',mw:CFG.matchup_weight,fw:CFG.formation,tdloc:1,tdlocW:CFG.td_location_defense};
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const fmtSpread=x=>x===0?'PK':(x>0?'+':'')+x;
+const games=[], picks=[];
+for(const g of S.games){
+  const k=E.calibrateV3(g,ctx,{N:4000,trust:1});
+  const r=E.simGameV3(g,{N,trust:1,k,seed:E.hashStr(g.id+'|rz')},ctx);
+  const W=r.G.W, pH=(r.G.win[1]+r.G.tie/2)/W, z=g.rzg, L=g.line, A=g.away, H=g.home;
+  const sc={away:Math.round(r.ptsA),home:Math.round(r.ptsH)};
+  const gid=`${SEASON}w${WEEK}-${g.id}`, label=`${A} @ ${H}`;
+  const gameWhy=[`Model score: ${H} ${sc.home}, ${A} ${sc.away} (${N.toLocaleString()} simulated games)`,
+    `Team ratings alone (offense, defense, special teams, QB, home field, rest): ${Math.abs(z.base)<.5?'even':(z.base>0?H:A)+' by '+Math.abs(z.base).toFixed(1)}`];
+  for(const w of z.why) gameWhy.push(w.replace(/^(\w[\w ]*?) ([\d.]+) pts to (\w+)$/,(m,a,b,c)=>`${c} +${b} pts on ${a}`));
+  for(const a of z.adj) gameWhy.push(a.text);
+  const qb=g.qb||{}; for(const s of ['away','home']) if(qb[s]&&qb[s].change) gameWhy.push(`${g[s]} QB: ${qb[s].name} starts. ${qb[s].why}`);
+  const gp=[];
+  // winner
+  const fav=pH>=.5?H:A, pf=Math.max(pH,1-pH);
+  gp.push({id:`${gid}-ml-${slug(fav)}`,type:'Winner',game:label,gameId:g.id,team:fav,text:`${fav} win`,prob:pf,
+    why:[`${fav} win ${pct(pf)} of simulations`,...gameWhy]});
+  // spread vs the current line (the line is only the target; it never feeds the model)
+  const sH=L.spread, ov=E.histOver(r.G.margin,80,-sH), pHc=ov.over/((1-ov.push)||1);
+  const side=pHc>=.5?H:A, ps=Math.max(pHc,1-pHc), sp=side===H?sH:-sH;
+  gp.push({id:`${gid}-ats-${slug(side)}`,type:'Spread',game:label,gameId:g.id,team:side,line:sp,text:`${side} ${fmtSpread(sp)}`,prob:ps,
+    why:[`Model has ${z.margin>=0?H:A} by ${Math.abs(z.margin).toFixed(1)}; the line is ${H} ${fmtSpread(sH)}`,`${side} covers ${pct(ps)} of simulations`,...gameWhy]});
+  // total
+  const to=E.histOver(r.G.total,0,L.total), pO=to.over/((1-to.push)||1), ou=pO>=.5?'Over':'Under', po=Math.max(pO,1-pO);
+  const pr=g.rzt||{}, tw=[`Model total ${z.total.toFixed(1)} vs line ${L.total}`,`${ou} hits ${pct(po)} of simulations`];
+  for(const s of ['away','home']) if(pr[s]&&Math.abs(pr[s].proe)>=2) tw.push(`${g[s]} passes ${Math.abs(pr[s].proe).toFixed(1)}% ${pr[s].proe>0?'more':'less'} than expected in the same situations`);
+  for(const s of ['away','home']){const f=(g.form||{})[s]; if(f&&Math.abs(f.run-1)>=.02) tw.push(`Formations: ${g[s]} run game ${sgn(100*(f.run-1))}% vs this front`);}
+  gp.push({id:`${gid}-tot-${ou.toLowerCase()}`,type:'Total',game:label,gameId:g.id,line:L.total,side:ou,text:`${ou} ${L.total}`,prob:po,why:[...tw,...gameWhy.slice(0,1),...z.adj.filter(a=>a.k==='od').map(a=>a.text)]});
+  // players
+  const pl=[];
+  for(const p of r.players){ if(p.field||p.hidden) continue;
+    const src=g.players.find(x=>x.n===p.n)||{}, rz=src.rz||{}, side=p.side===H?'home':'away', opp=p.side===H?A:H, dp=(g.defp||{})[side]||{};
+    const td=sg(CAL.slope*lg(p.pModel)+(CAL[p.pos]||0));
+    const why=[];
+    const role=[]; if(src.rec>=.04) role.push(`${pct(src.rec)} of ${p.t} targets`); if(src.rush>=.04) role.push(`${pct(src.rush)} of ${p.t} designed carries`);
+    if(role.length) why.push(`Role: ${role.join(' and ')}`);
+    if(rz.ez&&Math.abs(rz.ez-1)>=.1&&src.rec>=.08) why.push(`End-zone targets: ${rz.ez.toFixed(2)}× his overall target share`);
+    if(rz.i5&&Math.abs(rz.i5-1)>=.1&&src.rush>=.08) why.push(`Carries inside the 5: ${rz.i5.toFixed(2)}× his overall carry share`);
+    if(rz.rzs&&Math.abs(rz.rzs-1)>=.08) why.push(`Red-zone snaps and touches: ${rz.rzs.toFixed(2)}× his normal share`);
+    const tl=(dp.tdpos||{})[p.pos]; if(tl&&p.pos!=='QB'&&Math.abs(tl-1)>=.15) why.push(`${opp} has given up ${tl.toFixed(2)}× the usual share of receiving TDs to ${NAME[p.pos]}`);
+    if(dp.rtd&&(p.pos==='RB'||p.pos==='QB')&&Math.abs(dp.rtd-1)>=.12) why.push(`${opp} gives up rushing TDs at ${dp.rtd.toFixed(2)}× the league rate`);
+    const pv=rz.pvo; if(pv){ const bits=[]; if(pv.yprx) bits.push(sgn(pv.recy)+' rec yds'); if(pv.ypcx) bits.push(sgn(pv.ry)+' rush yds');
+      if(Math.abs(pv.td)>=.1) bits.push(`scores ${pv.td>0?'more':'less'} often`);
+      if(bits.length) why.push(`Past games vs ${pv.opp} (last ${pv.n}): ${bits.join(', ')} vs his usual`); }
+    if(rz.yac&&Math.abs(rz.yac)>=.8) why.push(`Yards after catch: ${sgn(rz.yac)} per catch vs expected`);
+    if(rz.slot&&p.pos==='WR'&&rz.slot>=.45) why.push(`Works the slot (about ${pct(rz.slot)} of snaps, estimated)`);
+    const f=(g.form||{})[side]; if(f&&p.pos==='RB'&&Math.abs(f.run-1)>=.02) why.push(`Formations: ${p.t} run game ${sgn(100*(f.run-1))}% against ${opp}'s boxes`);
+    if(f&&f.pos&&f.pos[p.pos]&&Math.abs(f.pos[p.pos].tgt-1)>=.02&&(p.pos==='TE'||p.pos==='RB')) why.push(`Personnel matchup: ${NAME[p.pos]} targets ${sgn(100*(f.pos[p.pos].tgt-1))}%`);
+    if(src.flag) why.push(`Injury: ${src.flag}`);
+    why.push(`${p.t} projected ${side==='home'?sc.home:sc.away} points`);
+    const m=p.mean;
+    pl.push({n:p.n,t:p.t,pos:p.pos,td,rec:+m.REC.toFixed(1),recY:Math.round(m.RCY),rushY:Math.round(m.RY),passY:Math.round(m.PY),
+      medRec:E.histQuantile(p.hist.recYds,15,.5),medRush:E.histQuantile(p.hist.rushYds,40,.5)});
+    const base=`${p.n} (${p.t} ${p.pos})`;
+    if(p.pos!=='QB'||td>=.2) gp.push({id:`${gid}-td-${slug(p.n)}`,type:'Anytime TD',game:label,gameId:g.id,player:p.n,team:p.t,text:`${p.n} anytime TD`,prob:td,
+      why:[`Scores in ${pct(td)} of simulations (calibrated)`,...why]});
+    for(const [key,off,lab,min] of [['recYds',15,'receiving yards',35],['rushYds',40,'rushing yards',35],['rec',0,'catches',3.5]]){
+      if(p.pos==='QB'&&key!=='rushYds') continue;
+      const med=E.histQuantile(p.hist[key],off,.5); if(med<min) continue;
+      // the highest DraftKings-style milestone he still reaches in at least 62% of simulations
+      const ladder=key==='rec'?[3,4,5,6,7,8,9,10]:[25,40,50,60,70,80,90,100,125,150];
+      const ok=ladder.filter(t=>E.histAtLeast(p.hist[key],off,t)>=.62); if(!ok.length) continue;
+      const thr=ok[ok.length-1], pr=E.histAtLeast(p.hist[key],off,thr);
+      gp.push({id:`${gid}-${key}-${slug(p.n)}-${thr}`,type:key==='rec'?'Catches':'Yards',game:label,gameId:g.id,player:p.n,team:p.t,stat:key,thr,
+        text:`${p.n} ${thr}+ ${lab}`,prob:pr,why:[`Reaches ${thr}+ in ${pct(pr)} of simulations; projection ${med} ${lab}`,...why]});
+    }
+  }
+  games.push({id:g.id,gid,away:A,home:H,awayName:g.awayName,homeName:g.homeName,kick:g.kick.replace('Brazil','neutral site'),score:sc,pHome:pH,margin:z.margin,total:z.total,line:L,
+    ml:gp[0],ats:gp[1],tot:gp[2],why:gameWhy,players:pl.sort((a,b)=>b.td-a.td).slice(0,8)});
+  picks.push(...gp);
+  process.stderr.write(`${label}: ${H} ${sc.home}-${sc.away} ${A}, ${H} win ${pct(pH)}\n`);
+}
+// the board: the most likely picks per type
+const top=(type,n,min=0)=>picks.filter(p=>p.type===type&&p.prob>=min).sort((a,b)=>b.prob-a.prob).slice(0,n);
+const board=[...top('Winner',4),...top('Spread',3),...top('Total',2),...top('Anytime TD',6),...top('Yards',5),...top('Catches',2)].sort((a,b)=>b.prob-a.prob);
+const out={season:SEASON,week:WEEK,label:S.label,generated:new Date().toISOString(),config:CFG,games,board:board.map(p=>p.id),picks};
+fs.writeFileSync(outF,JSON.stringify(out));
+console.log(`${games.length} games, ${picks.length} picks, board ${board.length}`);
+board.forEach(p=>console.log(`${pct(p.prob).padStart(4)}  ${p.type.padEnd(10)} ${p.text}  (${p.game})`));
