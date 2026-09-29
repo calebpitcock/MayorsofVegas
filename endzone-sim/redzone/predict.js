@@ -10,6 +10,24 @@ const pct=x=>Math.round(100*x)+'%', sgn=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(
 const WEEK=S.redzone.week, SEASON=2026, N=CFG.sims;
 const ctx={tuning:{},out:new Set(),tune:E.TUNE,opp:1,scheme:'off',mw:CFG.matchup_weight,fw:CFG.formation,tdloc:1,tdlocW:CFG.td_location_defense};
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+/* ---- sportsbook prices: shown next to each pick, never used by the model ----
+   Game lines: the market line in nflverse games.csv. Anytime TD: best US price (jaredpatchett/NFL-Model player_td.json).
+   Yards/catches: every book in the davidcantugtr snapshot, averaged (mean implied probability) at the most common line. */
+const imp=o=>o<0?-o/(-o+100):100/(o+100), am=p=>p>=.5?-Math.round(100*p/(1-p)):Math.round(100*(1-p)/p);
+const price=(o,src)=>o==null||isNaN(o)?null:{odds:Math.round(o),implied:+imp(o).toFixed(3),src};
+const EXT='/home/user/ext', TDP={}, PROPS={};
+try{ const t=JSON.parse(fs.readFileSync(EXT+'/jaredpatchett_NFL-Model/data/player_td.json'));
+  if(t.week===WEEK) for(const x of t.players){ const o=(x.market||{}).anytime_td_price; if(o!=null) TDP[x.player_id]={o:+o,asOf:t.generated_at.slice(0,10)}; } }catch(e){}
+try{ const rows=fs.readFileSync(EXT+'/nfl-player-prop-opportunity/data/latest/player_props.csv','utf8').trim().split('\n');
+  const H=rows[0].split(','), ix=k=>H.indexOf(k), MK={player_reception_yds:'recYds',player_rush_yds:'rushYds',player_receptions:'rec'};
+  const acc={};
+  for(const r of rows.slice(1)){ const c=r.split(','); if(+c[ix('Week')]!==WEEK||!MK[c[ix('Market Key')]]) continue;
+    const k=c[ix('Player')]+'|'+MK[c[ix('Market Key')]]; (acc[k]=acc[k]||[]).push({line:+c[ix('Line')],side:c[ix('Side')],o:+c[ix('American Odds')],book:c[ix('Bookmaker')]}); }
+  for(const [k,v] of Object.entries(acc)){ const cnt={}; v.forEach(x=>cnt[x.line]=(cnt[x.line]||0)+1);
+    const line=+Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0][0], at=v.filter(x=>x.line===line);
+    const avg=s=>{const q=at.filter(x=>x.side===s); return q.length?am(q.reduce((a,x)=>a+imp(x.o),0)/q.length):null;};
+    PROPS[k]={line,over:avg('Over'),under:avg('Under'),books:new Set(at.map(x=>x.book)).size}; } }catch(e){}
+const priceWhy=(pr,prob)=>pr?`Book price ${pr.odds>0?'+':''}${pr.odds} (${pr.src}) implies ${pct(pr.implied)}; the model says ${pct(prob)}`:'No book price posted yet for this pick';
 const fmtSpread=x=>x===0?'PK':(x>0?'+':'')+x;
 const games=[], picks=[];
 for(const g of S.games){
@@ -26,19 +44,23 @@ for(const g of S.games){
   const gp=[];
   // winner
   const fav=pH>=.5?H:A, pf=Math.max(pH,1-pH);
-  gp.push({id:`${gid}-ml-${slug(fav)}`,type:'Winner',game:label,gameId:g.id,team:fav,text:`${fav} win`,prob:pf,
-    why:[`${fav} win ${pct(pf)} of simulations`,...gameWhy]});
+  const MS='market consensus', ml=g.ml||{};
+  const mlP=price(fav===H?ml.home:ml.away,MS);
+  gp.push({id:`${gid}-ml-${slug(fav)}`,type:'Winner',game:label,gameId:g.id,team:fav,text:`${fav} win`,prob:pf,price:mlP,
+    why:[`${fav} win ${pct(pf)} of simulations`,priceWhy(mlP,pf),...gameWhy]});
   // spread vs the current line (the line is only the target; it never feeds the model)
   const sH=L.spread, ov=E.histOver(r.G.margin,80,-sH), pHc=ov.over/((1-ov.push)||1);
   const side=pHc>=.5?H:A, ps=Math.max(pHc,1-pHc), sp=side===H?sH:-sH;
-  gp.push({id:`${gid}-ats-${slug(side)}`,type:'Spread',game:label,gameId:g.id,team:side,line:sp,text:`${side} ${fmtSpread(sp)}`,prob:ps,
-    why:[`Model has ${z.margin>=0?H:A} by ${Math.abs(z.margin).toFixed(1)}; the line is ${H} ${fmtSpread(sH)}`,`${side} covers ${pct(ps)} of simulations`,...gameWhy]});
+  const spP=price((g.spreadOdds||{})[side===H?'home':'away'],MS);
+  gp.push({id:`${gid}-ats-${slug(side)}`,type:'Spread',game:label,gameId:g.id,team:side,line:sp,text:`${side} ${fmtSpread(sp)}`,prob:ps,price:spP,
+    why:[`Model has ${z.margin>=0?H:A} by ${Math.abs(z.margin).toFixed(1)}; the line is ${H} ${fmtSpread(sH)}`,`${side} covers ${pct(ps)} of simulations`,priceWhy(spP,ps),...gameWhy]});
   // total
   const to=E.histOver(r.G.total,0,L.total), pO=to.over/((1-to.push)||1), ou=pO>=.5?'Over':'Under', po=Math.max(pO,1-pO);
   const pr=g.rzt||{}, tw=[`Model total ${z.total.toFixed(1)} vs line ${L.total}`,`${ou} hits ${pct(po)} of simulations`];
   for(const s of ['away','home']) if(pr[s]&&Math.abs(pr[s].proe)>=2) tw.push(`${g[s]} passes ${Math.abs(pr[s].proe).toFixed(1)}% ${pr[s].proe>0?'more':'less'} than expected in the same situations`);
   for(const s of ['away','home']){const f=(g.form||{})[s]; if(f&&Math.abs(f.run-1)>=.02) tw.push(`Formations: ${g[s]} run game ${sgn(100*(f.run-1))}% vs this front`);}
-  gp.push({id:`${gid}-tot-${ou.toLowerCase()}`,type:'Total',game:label,gameId:g.id,line:L.total,side:ou,text:`${ou} ${L.total}`,prob:po,why:[...tw,...gameWhy.slice(0,1),...z.adj.filter(a=>a.k==='od').map(a=>a.text)]});
+  const toP=price((g.totalOdds||{})[ou.toLowerCase()],MS); tw.splice(2,0,priceWhy(toP,po));
+  gp.push({id:`${gid}-tot-${ou.toLowerCase()}`,type:'Total',game:label,gameId:g.id,line:L.total,side:ou,text:`${ou} ${L.total}`,prob:po,price:toP,why:[...tw,...gameWhy.slice(0,1),...z.adj.filter(a=>a.k==='od').map(a=>a.text)]});
   // players
   const pl=[];
   for(const p of r.players){ if(p.field||p.hidden) continue;
@@ -65,17 +87,27 @@ for(const g of S.games){
     pl.push({n:p.n,t:p.t,pos:p.pos,td,rec:+m.REC.toFixed(1),recY:Math.round(m.RCY),rushY:Math.round(m.RY),passY:Math.round(m.PY),
       medRec:E.histQuantile(p.hist.recYds,15,.5),medRush:E.histQuantile(p.hist.rushYds,40,.5)});
     const base=`${p.n} (${p.t} ${p.pos})`;
-    if(p.pos!=='QB'||td>=.2) gp.push({id:`${gid}-td-${slug(p.n)}`,type:'Anytime TD',game:label,gameId:g.id,player:p.n,team:p.t,text:`${p.n} anytime TD`,prob:td,
-      why:[`Scores in ${pct(td)} of simulations (calibrated)`,...why]});
+    const tp=TDP[src.id], tdP=tp?price(tp.o,`best US price, ${tp.asOf}`):null;
+    if(p.pos!=='QB'||td>=.2) gp.push({id:`${gid}-td-${slug(p.n)}`,type:'Anytime TD',game:label,gameId:g.id,player:p.n,team:p.t,text:`${p.n} anytime TD`,prob:td,price:tdP,
+      why:[`Scores in ${pct(td)} of simulations (calibrated)`,priceWhy(tdP,td),...why]});
     for(const [key,off,lab,min] of [['recYds',15,'receiving yards',35],['rushYds',40,'rushing yards',35],['rec',0,'catches',3.5]]){
       if(p.pos==='QB'&&key!=='rushYds') continue;
+      // a posted book line: pick the side the model likes at that line, priced at the books' average
+      const bk=PROPS[p.n+'|'+key];
+      if(bk&&(bk.over!=null||bk.under!=null)){
+        const o=E.histOver(p.hist[key],off,bk.line), pOv=o.over/((1-o.push)||1), s=pOv>=.5?'over':'under', pr=Math.max(pOv,1-pOv);
+        const bp=price(bk[s],`average of ${bk.books} books`);
+        gp.push({id:`${gid}-${key}-${slug(p.n)}-${s}-${bk.line}`,type:key==='rec'?'Catches':'Yards',game:label,gameId:g.id,player:p.n,team:p.t,stat:key,side:s,line:bk.line,
+          text:`${p.n} ${s} ${bk.line} ${lab}`,prob:pr,price:bp,why:[`${s==='over'?'Over':'Under'} hits ${pct(pr)} of simulations; projection ${E.histQuantile(p.hist[key],off,.5)} ${lab}`,priceWhy(bp,pr),...why]});
+        continue;
+      }
       const med=E.histQuantile(p.hist[key],off,.5); if(med<min) continue;
       // the highest DraftKings-style milestone he still reaches in at least 62% of simulations
       const ladder=key==='rec'?[3,4,5,6,7,8,9,10]:[25,40,50,60,70,80,90,100,125,150];
       const ok=ladder.filter(t=>E.histAtLeast(p.hist[key],off,t)>=.62); if(!ok.length) continue;
       const thr=ok[ok.length-1], pr=E.histAtLeast(p.hist[key],off,thr);
       gp.push({id:`${gid}-${key}-${slug(p.n)}-${thr}`,type:key==='rec'?'Catches':'Yards',game:label,gameId:g.id,player:p.n,team:p.t,stat:key,thr,
-        text:`${p.n} ${thr}+ ${lab}`,prob:pr,why:[`Reaches ${thr}+ in ${pct(pr)} of simulations; projection ${med} ${lab}`,...why]});
+        text:`${p.n} ${thr}+ ${lab}`,prob:pr,price:null,why:[`Reaches ${thr}+ in ${pct(pr)} of simulations; projection ${med} ${lab}`,priceWhy(null,pr),...why]});
     }
   }
   games.push({id:g.id,gid,away:A,home:H,awayName:g.awayName,homeName:g.homeName,kick:g.kick.replace('Brazil','neutral site'),score:sc,pHome:pH,margin:z.margin,total:z.total,line:L,

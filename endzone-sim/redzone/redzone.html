@@ -58,6 +58,9 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:3px;color:var(--mist);font-size:12.5px}
 .chip{font-family:var(--f-cond);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--red-deep);color:#fff;padding:1px 7px;border-radius:2px}
 .chip.td{background:var(--red)}
+.odds{font-family:var(--f-cond);font-weight:700;font-size:14px;color:var(--text);font-variant-numeric:tabular-nums}
+.odds small{font-weight:600;font-size:11.5px;color:var(--mist);letter-spacing:.04em}
+.odds.none{font-size:12px;font-weight:600;color:var(--dim)}
 .track{font-family:var(--f-cond);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:0 14px;border-left:1px solid var(--line);color:var(--mist);min-width:78px}
 .track:hover{color:var(--text)}
 .track.on{color:var(--bg);background:var(--gold)}
@@ -146,7 +149,7 @@ function isTracked(id){ return !!st.mine[mineKey(id)]; }
 function toggleTrack(p){
   const k=mineKey(p.id);
   if(st.mine[k]) saveMine(p.id,null);
-  else saveMine(p.id,{id:p.id,week:p.week??st.cur,type:p.type,text:p.text,game:p.game,prob:+p.prob.toFixed(3),addedAt:new Date().toISOString(),result:null});
+  else saveMine(p.id,{id:p.id,week:p.week??st.cur,type:p.type,text:p.text,game:p.game,prob:+p.prob.toFixed(3),odds:p.price?p.price.odds:null,addedAt:new Date().toISOString(),result:null});
 }
 
 /* ---------- records ---------- */
@@ -156,13 +159,15 @@ const winPct=r=>r.W+r.L?Math.round(100*r.W/(r.W+r.L))+'%':'—';
 function modelIds(){ return st.weeks.flatMap(w=>st.data[w.week].board); }
 
 /* ---------- rendering ---------- */
+const fmtOdds=o=>(o>0?'+':'')+o;
+function oddsTag(pr){ return pr?`<span class="odds" title="${esc(pr.src)}">${fmtOdds(pr.odds)} <small>book ${pct(pr.implied)}</small></span>`:`<span class="odds none">Price pending</span>`; }
 function pickRow(p,{showTrack=true}={}){
   const open=st.open.has(p.id), res=resultOf(p.id), on=isTracked(p.id);
   return `<div class="pick${open?' open':''}">
     <button class="pbtn" data-open="${esc(p.id)}" aria-expanded="${open}">
       <div class="prob${p.prob<.6?' mid':''}">${pct(p.prob)}</div>
       <div class="body"><div class="ptxt">${esc(p.text)}</div>
-        <div class="meta"><span class="chip${p.type==='Anytime TD'?' td':''}">${esc(p.type)}</span><span>${esc(p.game)}</span>${res?`<span class="res ${res}">${{W:'Win',L:'Loss',P:'Push'}[res]}</span>`:''}</div></div>
+        <div class="meta"><span class="chip${p.type==='Anytime TD'?' td':''}">${esc(p.type)}</span>${oddsTag(p.price)}<span>${esc(p.game)}</span>${res?`<span class="res ${res}">${{W:'Win',L:'Loss',P:'Push'}[res]}</span>`:''}</div></div>
     </button>
     ${showTrack?`<button class="track${on?' on':''}" data-track="${esc(p.id)}" aria-pressed="${on}">${on?'Tracked':'+ Track'}</button>`:'<span></span>'}
     ${open?`<ul class="why">${p.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
@@ -193,7 +198,7 @@ function render(){
     v.innerHTML=(st.local?`<p class="note">Picks save on this device only in this view.</p>`:'')+(rows.length?`<div class="list">${rows.map(m=>{
       const p=AP[m.id]||{...m,why:['This pick is from a week no longer on the board.']}; const r=resultOf(m.id);
       return `<div class="pick${st.open.has(m.id)?' open':''}"><button class="pbtn" data-open="${esc(m.id)}" aria-expanded="${st.open.has(m.id)}"><div class="prob${m.prob<.6?' mid':''}">${pct(m.prob)}</div>
-        <div class="body"><div class="ptxt">${esc(m.text)}</div><div class="meta"><span class="chip">${esc(m.type)}</span><span>Wk ${m.week} · ${esc(m.game)}</span><span class="res ${r||'O'}">${r?{W:'Win',L:'Loss',P:'Push'}[r]:'Open'}</span></div></div></button>
+        <div class="body"><div class="ptxt">${esc(m.text)}</div><div class="meta"><span class="chip">${esc(m.type)}</span>${m.odds!=null?`<span class="odds">${fmtOdds(m.odds)}</span>`:oddsTag(p.price)}<span>Wk ${m.week} · ${esc(m.game)}</span><span class="res ${r||'O'}">${r?{W:'Win',L:'Loss',P:'Push'}[r]:'Open'}</span></div></div></button>
         <div class="mine-acts">${['W','L','P'].map(x=>`<button data-res="${esc(m.id)}" data-v="${x}" aria-pressed="${m.result===x}" aria-label="Mark ${({W:'win',L:'loss',P:'push'})[x]}">${x}</button>`).join('')}<button data-track="${esc(m.id)}" aria-label="Remove">✕</button></div>
         ${st.open.has(m.id)?`<ul class="why">${p.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`
       :`<div class="empty">No picks tracked yet. Open <b>Top plays</b> or <b>Games</b> and tap <b>+ Track</b> on any pick.</div>`);
