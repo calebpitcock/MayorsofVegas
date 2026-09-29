@@ -188,6 +188,11 @@ function simGameV3(g,opts,ctx){
   const FW=opts.neutral?0:(ctx.fw??0), fm=[(g.form&&g.form.away&&g.form.away.run)||1,(g.form&&g.form.home&&g.form.home.run)||1];
   const runEff=[1+(sf[0].run-.5)*.35, 1+(sf[1].run-.5)*.35].map((x,i)=>x*Math.sqrt(mix[i].rush)*(OPP&&dp[i]?Math.pow(dp[i].ypc,.6*MW):1)*Math.pow(fm[i],FW));
   const passEff=[1+(sf[0].pass-.5)*.35, 1+(sf[1].pass-.5)*.35].map((x,i)=>x*(OPP&&dp[i]?Math.pow(dp[i].ypt,.6*MW):1));
+  /* Redzone Desk team matchups (redzone/football.py g.rzx[side]: pass rush vs protection, run blocking, big plays, play style,
+     turnovers). Applied only when ctx.rzx is set, so the Endzone Sim is unchanged. */
+  const RZX=[{},{}]; if(ctx.rzx&&g.rzx&&!opts.neutral){ RZX[0]=g.rzx.away||{}; RZX[1]=g.rzx.home||{}; }
+  for(let i=0;i<2;i++){ runEff[i]*=RZX[i].run||1; passEff[i]*=RZX[i].pass||1; }
+  const rzExp=[RZX[0].exp||1,RZX[1].exp||1], rzInt=[RZX[0].int||1,RZX[1].int||1], rzFum=[RZX[0].fum||1,RZX[1].fum||1];
   /* where this defense lets targets and receiving touchdowns go, by position */
   /* Where a defense allowed its touchdowns (by position, run vs pass) is not used: split-half reliability over
      2016-25 was ~0 (audit/dvp.py), so it only added noise to touchdown odds. ctx.tdloc=1 restores it for tests. */
@@ -211,7 +216,7 @@ function simGameV3(g,opts,ctx){
   const AGG=[(g.agg&&g.agg.away)||0,(g.agg&&g.agg.home)||0];
   const goP=(p,ball)=>{const z=Math.log(p/(1-p))+AGG[ball];return 1/(1+Math.exp(-z));};
   const windAdj=(g.wind>10&&g.roof!=="dome"&&g.roof!=="closed")?-Math.min(.04,.0025*(g.wind-10)):0;
-  const pressure=[1+(defFor[0].blitz-LEAGUE.blitz)*.9, 1+(defFor[1].blitz-LEAGUE.blitz)*.9];
+  const pressure=[(1+(defFor[0].blitz-LEAGUE.blitz)*.9)*(RZX[0].sack||1), (1+(defFor[1].blitz-LEAGUE.blitz)*.9)*(RZX[1].sack||1)];
   const passLean0=[(sf[0].pass-sf[0].run)*.10+qbI[0].tier*.02,(sf[1].pass-sf[1].run)*.10+qbI[1].tier*.02];
 
   /* live state */
@@ -278,13 +283,13 @@ function simGameV3(g,opts,ctx){
     const pi=pick(ix,rz?wRZRun:wRun), p=ROS[pi];
     const b=pi*S.NS;
     st[b+S.RA]++;
-    if(R.u()<.0072){ /* fumble lost */ st[b+S.RA]+=0; return {fum:true,pi,y:Math.round(R.u()*4)}; }
+    if(R.u()<.0072*rzFum[ball]){ /* fumble lost */ st[b+S.RA]+=0; return {fum:true,pi,y:Math.round(R.u()*4)}; }
     let y;
     const mean=p.ypc*kSim[ball]*runEff[ball];
     if(R.u()<.105) y=-(1+((R.u()*4)|0));
     else{
       const comp=yl<12?Math.pow(yl/12,.6):1;
-      const kk=p.kRun/Math.pow(p.deep*smXR[pi],.6);
+      const kk=p.kRun/Math.pow(p.deep*smXR[pi]*rzExp[ball],.6);
       const m=((mean+.105*2.5)/.895)*comp;
       y=Math.round(R.gamma(kk)*m/kk);
     }
@@ -300,7 +305,7 @@ function simGameV3(g,opts,ctx){
       const y=-Math.round(3+R.gamma(2)*2);
       diag.sacks[ball]++;
       if(L.sackAsRush){st[qb+S.RA]++; st[qb+S.RY]+=y;}
-      if(R.u()<.075) return {fum:true,sack:true,y:y};
+      if(R.u()<.075*rzFum[ball]) return {fum:true,sack:true,y:y};
       return {y,sack:true};
     }
     if(r<sackP+q.qscr){
@@ -314,19 +319,19 @@ function simGameV3(g,opts,ctx){
     const rz=yl<=15;
     const ti=pick(sideIx[ball],rz?wRZTgt:wTgt), p=ROS[ti], tb=ti*S.NS;
     st[tb+S.TGT]++;
-    const intP=q.qint/Math.sqrt(k)*(rz?1.15:1);
+    const intP=q.qint/Math.sqrt(k)*(rz?1.15:1)*rzInt[ball];
     if(R.u()<intP){ st[qb+S.INT]++; return {int:true,ti,air:Math.round(4+R.gamma(1.5)*6)}; }
     const rzc=yl<20?(.78+.22*yl/20):1;
     const late=down>=3&&togo>=3;             // routes are run past the sticks on third and long
     const cp=Math.min(.93,p.cat*q.qacc*L.acc*(1+(k*passEff[ball]-1)*.45)*rzc*(late?(togo<=6?1.07:1-.006*Math.min(9,togo-6)):1));
     if(R.u()>=cp) return {inc:true,ti};
-    const kk=p.kRec/Math.pow(p.deep*(smEX[ti]/Math.max(.5,smB[ti]))*Math.sqrt(mix[ball].explosive),.7);
+    const kk=p.kRec/Math.pow(p.deep*(smEX[ti]/Math.max(.5,smB[ti]))*Math.sqrt(mix[ball].explosive)*rzExp[ball],.7);
     const m=p.ypr*fY[ti]*k*passEff[ball]+p.shift+(late?.62*Math.min(15,togo):0);
     let y=Math.round(R.gamma(kk)*m/kk-p.shift);
     if(late&&y<togo&&R.u()<.30) y=togo;      // the sticks: receivers are coached to them
     if(y>=yl) y=yl;
     st[qb+S.CMP]++; st[qb+S.PY]+=y; st[tb+S.REC]++; st[tb+S.RCY]+=y;
-    if(R.u()<.0055) return {fum:true,pi:ti,y,cmp:true};
+    if(R.u()<.0055*rzFum[ball]) return {fum:true,pi:ti,y,cmp:true};
     return {y,pi:ti,ti,cmp:true};
   }
 

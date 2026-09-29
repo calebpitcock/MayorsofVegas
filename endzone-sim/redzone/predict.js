@@ -8,7 +8,37 @@ const CAL=JSON.parse(fs.readFileSync(path.join(__dirname,'..','td_cal_nfl.json')
 const lg=q=>{q=Math.min(.999,Math.max(.001,q));return Math.log(q/(1-q));}, sg=z=>1/(1+Math.exp(-z));
 const pct=x=>Math.round(100*x)+'%', sgn=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(1), NAME={RB:'running backs',WR:'wide receivers',TE:'tight ends',QB:'quarterbacks'};
 const WEEK=S.redzone.week, SEASON=2026, N=CFG.sims;
-const ctx={tuning:{},out:new Set(),tune:E.TUNE,opp:1,scheme:'off',mw:CFG.matchup_weight,fw:CFG.formation,tdloc:1,tdlocW:CFG.td_location_defense};
+const ctx={tuning:{},out:new Set(),tune:E.TUNE,opp:1,scheme:CFG.coverage_shells?'data':'off',mw:CFG.matchup_weight,fw:CFG.formation,tdloc:1,tdlocW:CFG.td_location_defense,rzx:true};
+/* team matchup bullets from football.py (offense in g[side] against the other team's defense) */
+const rel=(x,l)=>l?(x/l-1):0, P1=x=>(100*x).toFixed(1)+'%';
+function teamWhy(g,side){
+  const f=(g.rzfb||{})[side]; if(!f) return []; const off=g[side], dfn=side==='away'?g.home:g.away, out=[];
+  const c=f.cov; if(c) out.push(`${dfn} coverage this season (estimated from tracking data): man ${pct(c.man)} (league ${pct(c.lgMan)}, ${pct(c.man2025)} last year), single-high ${pct(c.hi)} (league ${pct(c.lgHi)}), blitz ${pct(c.blitz)} (league ${pct(c.lgBlitz)})`);
+  if(Math.abs(rel(f.pressure,f.lgPressure))>=.08) out.push(`Pass rush vs protection: ${off}'s QB should be pressured on ${pct(f.pressure)} of dropbacks (league ${pct(f.lgPressure)}): ${off} allows ${pct(f.offPress)}, ${dfn} generates ${pct(f.defPress)}`);
+  if(Math.abs(f.ybcOff-f.lgYbc)+Math.abs(f.ybcDef-f.lgYbc)>=.25) out.push(`Run blocking: ${off} gets ${f.ybcOff.toFixed(1)} yds before contact per carry, ${dfn} allows ${f.ybcDef.toFixed(1)} (league ${f.lgYbc.toFixed(1)})`);
+  if(Math.abs(rel(f.missedTackle,f.lgMissed))>=.12) out.push(`${dfn} misses ${pct(f.missedTackle)} of tackles (league ${pct(f.lgMissed)})`);
+  if(Math.abs(rel(f.expOff,f.lgExp))+Math.abs(rel(f.expDef,f.lgExp))>=.2) out.push(`Big plays: ${off} ${P1(f.expOff)} of plays go 10+ run / 20+ pass, ${dfn} allows ${P1(f.expDef)} (league ${P1(f.lgExp)})`);
+  const nm={pa:'play-action',motion:'pre-snap motion',screen:'screens'};
+  for(const [k,v] of Object.entries(f.style||{})) if(Math.abs(v.rate*v.def_epa)>=.015) out.push(`Play style: ${off} uses ${nm[k]} on ${pct(v.rate)} of dropbacks; ${dfn} is ${v.def_epa>0?'worse':'better'} than average against it (${v.def_epa>0?'+':''}${v.def_epa.toFixed(2)} EPA per dropback)`);
+  if(Math.abs(rel(f.intDef,f.lgInt))>=.2) out.push(`${dfn} intercepts ${P1(f.intDef)} of dropbacks (league ${P1(f.lgInt)})`);
+  if(Math.abs(rel(f.fumOff,f.lgFum))>=.25) out.push(`${off} loses a fumble on ${P1(f.fumOff)} of plays (league ${P1(f.lgFum)})`);
+  return out;
+}
+function playerStatWhy(p,src,g,side){
+  const b=src.fb||{}, out=[], opp=side==='home'?g.away:g.home, dp=(g.defp||{})[side]||{};
+  if(b.sep!=null&&Math.abs(b.sep-b.sepLg)>=.3) out.push(`Separation: ${b.sep.toFixed(1)} yds at the catch (${NAME[p.pos]} average ${b.sepLg.toFixed(1)})`);
+  if(b.drop!=null&&Math.abs(b.drop-b.dropLg)>=.02) out.push(`Drops ${pct(b.drop)} of catchable targets (league ${pct(b.dropLg)})`);
+  if(b.airShare!=null&&b.airShare>=.15) out.push(`Air yards: ${pct(b.airShare)} of his team's; average target ${b.adot} yds downfield (${NAME[p.pos]} ${b.adotLg})`);
+  else if(b.adot!=null&&Math.abs(b.adot-b.adotLg)>=2) out.push(`Average target ${b.adot} yds downfield (${NAME[p.pos]} ${b.adotLg})`);
+  if(b.ryoe!=null&&Math.abs(b.ryoe)>=.3) out.push(`Rush yards over expected: ${b.ryoe>0?'+':''}${b.ryoe.toFixed(1)} per carry (player tracking)`);
+  if(b.cpoe!=null&&Math.abs(b.cpoe)>=2) out.push(`Completion % over expected: ${b.cpoe>0?'+':''}${b.cpoe.toFixed(1)}`);
+  if(b.ttt!=null&&Math.abs(b.ttt-b.tttLg)>=.15) out.push(`Time to throw ${b.ttt.toFixed(2)}s (league ${b.tttLg.toFixed(2)}s)`);
+  if(b.p2s!=null&&Math.abs(b.p2s-b.p2sLg)>=.04) out.push(`Turns ${pct(b.p2s)} of pressures into sacks (league ${pct(b.p2sLg)})`);
+  if(b.intw!=null&&Math.abs(b.intw-b.intwLg)>=.006) out.push(`Interception-worthy throws on ${P1(b.intw)} of dropbacks (league ${P1(b.intwLg)})`);
+  if((p.pos==='WR'||p.pos==='TE')&&dp.mofc!=null&&Math.abs(dp.mofc-.48)>=.06) out.push(`${opp} plays single-high ${dp.mofc>.48?'more':'less'} than average: ${dp.mofc>.48?'deep shots open up':'fewer deep shots, more underneath'}`);
+  const cp=src.covParts; if(cp&&cp.man&&Math.abs(cp.man.raw-1)>=.02) out.push(`Man vs zone: ${opp} plays man ${pct(cp.man.rate)} (league ${pct(cp.man.lg)}); he gets ${cp.man.split>=1?Math.round(100*(cp.man.split-1))+'% more':Math.round(100*(1-cp.man.split))+'% fewer'} targets vs man than vs zone`);
+  return out;
+}
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 /* ---- sportsbook prices: shown next to each pick, never used by the model ----
    Game lines: the market line in nflverse games.csv. Anytime TD: best US price (jaredpatchett/NFL-Model player_td.json).
@@ -41,6 +71,8 @@ for(const g of S.games){
   for(const w of z.why) gameWhy.push(w.replace(/^(\w[\w ]*?) ([\d.]+) pts to (\w+)$/,(m,a,b,c)=>`${c} +${b} pts on ${a}`));
   for(const a of z.adj) gameWhy.push(a.text);
   const qb=g.qb||{}; for(const s of ['away','home']) if(qb[s]&&qb[s].change) gameWhy.push(`${g[s]} QB: ${qb[s].name} starts. ${qb[s].why}`);
+  for(const s of ['away','home']) gameWhy.push(...teamWhy(g,s));
+  if(g.wx) gameWhy.push(`Weather: ${g.wx.roof==='unknown'?'roof status not listed; no forecast available here, treated as normal':g.wx.note}`);
   const gp=[];
   // winner
   const fav=pH>=.5?H:A, pf=Math.max(pH,1-pH);
@@ -81,6 +113,9 @@ for(const g of S.games){
     if(rz.slot&&p.pos==='WR'&&rz.slot>=.45) why.push(`Works the slot (about ${pct(rz.slot)} of snaps, estimated)`);
     const f=(g.form||{})[side]; if(f&&p.pos==='RB'&&Math.abs(f.run-1)>=.02) why.push(`Formations: ${p.t} run game ${sgn(100*(f.run-1))}% against ${opp}'s boxes`);
     if(f&&f.pos&&f.pos[p.pos]&&Math.abs(f.pos[p.pos].tgt-1)>=.02&&(p.pos==='TE'||p.pos==='RB')) why.push(`Personnel matchup: ${NAME[p.pos]} targets ${sgn(100*(f.pos[p.pos].tgt-1))}%`);
+    why.push(...playerStatWhy(p,src,g,side));
+    const tw_=teamWhy(g,side).filter(t=>(/Pass rush/.test(t)&&p.pos==='QB')||(/Run blocking/.test(t)&&p.pos==='RB')||(/Big plays/.test(t)&&p.pos!=='QB'));
+    why.push(...tw_.slice(0,2));
     if(src.flag) why.push(`Injury: ${src.flag}`);
     why.push(`${p.t} projected ${side==='home'?sc.home:sc.away} points`);
     const m=p.mean;

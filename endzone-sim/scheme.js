@@ -113,7 +113,8 @@ const ALIGN={
  "Drake London":{slot:.30,wide:.70,sep:.66,cont:.90,vert:.68},
  "Matthew Golden":{slot:.38,wide:.62,sep:.74,cont:.42,vert:.88}
 };
-const alignOf=p=>Object.assign({slot:0,wide:0,inline:0,back:0},POSALIGN[p.pos]||POSALIGN.WR,ALIGN[p.n]||{});
+/* p.align (Redzone Desk, redzone/football.py): measured slot share, separation and depth of target, which win over the archetypes */
+const alignOf=p=>Object.assign({slot:0,wide:0,inline:0,back:0},POSALIGN[p.pos]||POSALIGN.WR,ALIGN[p.n]||{},p.align||{});
 
 /* Player-level scheme multipliers. Centered on the league profile so a
    league-average defense returns 1.00 and nothing drifts. */

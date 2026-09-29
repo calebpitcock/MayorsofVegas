@@ -98,6 +98,15 @@ def main(path, week):
                 v = -sign * CFG['new_coach_rating_reset'] * (TV[t]['off'] + TV[t]['dfn'])
                 if abs(v) >= .05:
                     m += v; adj.append(dict(k='newhc', pts=round(v, 2), text=f"New head coach for {t} ({coach(t, coaches)}): {int(100 * CFG['new_coach_rating_reset'])}% of its offense/defense rating reset toward average ({'-' if v * sign < 0 else '+'}{abs(v):.1f} pts)"))
+        # football matchups (football.py g.rzx): pass rush vs protection, run blocking, big plays, play style, turnovers
+        rzx = g.get('rzx') or {}
+        if rzx:
+            wm = CFG.get('stats', {}).get('matchup_points', 1.0); d = {}
+            for side, sgn in (('home', 1), ('away', -1)):
+                x = rzx[side]; mult = x['pass'] ** 0.55 * x['run'] ** 0.45 * x['exp'] ** 0.2 / (x['int'] ** 0.08 * x['fum'] ** 0.05)
+                d[side] = wm * (mult - 1) * (total + sgn * m) / 2
+            m += d['home'] - d['away']; total += d['home'] + d['away']
+            adj.append(dict(k='stats', pts=round(d['home'] - d['away'], 2), text=f"Matchup stats (pressure, blocking, big plays, play style, turnovers): {h} {d['home']:+.1f} pts, {a} {d['away']:+.1f} pts"))
         total = float(max(24.0, total))
         line = g.get('dk') or {}
         g['line'] = dict(spread=line.get('spread', g['spread']), total=g['total'], ml=line.get('ml', g.get('ml')), src=line.get('src', 'consensus'))

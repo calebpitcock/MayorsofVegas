@@ -20,5 +20,9 @@
  "slot_proxy": true,
  "matchup_weight": 1.0,
  "qb_total_weight": 0.5,
+ "coverage_shells": true,
+ "stats": {"_about": "football.py: the user's 10 added stats and this season's coverage. 1 = full strength.",
+   "coverage_matchups": 1.0, "pass_rush": 1.0, "separation": 1.0, "run_blocking": 1.0, "ryoe": 1.0, "qb": 1.0, "drops": 1.0,
+   "big_plays": 1.0, "play_style": 1.0, "air_yards": 1.0, "turnovers": 1.0, "weather": 1.0, "matchup_points": 1.0},
  "sims": 20000
 }
