@@ -23,6 +23,12 @@ tested worse; the DraftKings-anchored Endzone Sim is unchanged and still availab
 The stricter injury-exit rule is not used: it and the current rule are the same switch, and the current one catches
 more injuries.
 
+**Coverage and football stats.** `coverage_2026.py` estimates this season's man and single-high rates (real
+charting is published after the season); `football.py` adds pass rush vs protection, separation, run blocking, RYOE,
+QB accuracy, drops, big plays, play style, air yards and turnovers; `db_matchups.py` pairs each receiver with his likely
+corners/safeties (coverage stats allowed, size, 40 speed, style) and writes `g.mu` for the Matchups tab.
+`get_stats.sh` downloads Next Gen Stats, PFR advanced stats and FTN charting.
+
 **Scoring.** `points.py` sets each game's margin (the stats-only game model plus the history and new-coach terms) and
 total (a points regression on opponent-adjusted offense/defense, fitted 2016–25, plus QB and history). The simulation
 is calibrated to those, not to a sportsbook line. The consensus line is kept in `g.line` only as the number a spread or

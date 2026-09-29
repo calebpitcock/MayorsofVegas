@@ -113,6 +113,7 @@ for(const g of S.games){
     if(rz.slot&&p.pos==='WR'&&rz.slot>=.45) why.push(`Works the slot (about ${pct(rz.slot)} of snaps, estimated)`);
     const f=(g.form||{})[side]; if(f&&p.pos==='RB'&&Math.abs(f.run-1)>=.02) why.push(`Formations: ${p.t} run game ${sgn(100*(f.run-1))}% against ${opp}'s boxes`);
     if(f&&f.pos&&f.pos[p.pos]&&Math.abs(f.pos[p.pos].tgt-1)>=.02&&(p.pos==='TE'||p.pos==='RB')) why.push(`Personnel matchup: ${NAME[p.pos]} targets ${sgn(100*(f.pos[p.pos].tgt-1))}%`);
+    if(src.mu) why.push(`Matchup: ${src.mu.edge} vs ${src.mu.vs} (${src.mu.role}, likely)`, ...src.mu.why.filter(w=>/^(Style|Size|Speed|After)/.test(w)));
     why.push(...playerStatWhy(p,src,g,side));
     const tw_=teamWhy(g,side).filter(t=>(/Pass rush/.test(t)&&p.pos==='QB')||(/Run blocking/.test(t)&&p.pos==='RB')||(/Big plays/.test(t)&&p.pos!=='QB'));
     why.push(...tw_.slice(0,2));
@@ -146,6 +147,7 @@ for(const g of S.games){
     }
   }
   games.push({id:g.id,gid,away:A,home:H,awayName:g.awayName,homeName:g.homeName,kick:g.kick.replace('Brazil','neutral site'),score:sc,pHome:pH,margin:z.margin,total:z.total,line:L,
+    mu:(g.mu||[]).map(m=>({...m,id:`${gid}-mu-${slug(m.n)}`,week:WEEK,game:label})).sort((a,b)=>b.score-a.score),
     ml:gp[0],ats:gp[1],tot:gp[2],why:gameWhy,players:pl.sort((a,b)=>b.td-a.td).slice(0,8)});
   picks.push(...gp);
   process.stderr.write(`${label}: ${H} ${sc.home}-${sc.away} ${A}, ${H} win ${pct(pH)}\n`);

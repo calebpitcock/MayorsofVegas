@@ -58,6 +58,10 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:3px;color:var(--mist);font-size:12.5px}
 .chip{font-family:var(--f-cond);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--red-deep);color:#fff;padding:1px 7px;border-radius:2px}
 .chip.td{background:var(--red)}
+.edge{font-family:var(--f-cond);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;white-space:nowrap}
+.edge.e2{background:var(--win);color:#06140C}.edge.e1{border:1px solid var(--win);color:var(--win)}.edge.e0{border:1px solid var(--line);color:var(--mist)}
+.edge.e-1{border:1px solid var(--loss);color:var(--loss)}.edge.e-2{background:var(--loss);color:#1A0506}
+.mu .prob{font-size:20px}
 .odds{font-family:var(--f-cond);font-weight:700;font-size:14px;color:var(--text);font-variant-numeric:tabular-nums}
 .odds small{font-weight:600;font-size:11.5px;color:var(--mist);letter-spacing:.04em}
 .odds.none{font-size:12px;font-weight:600;color:var(--dim)}
@@ -106,6 +110,7 @@ h2{font-family:var(--f-disp);font-style:italic;font-weight:800;font-size:22px;te
   <nav class="tabs" role="tablist" id="tabs">
     <button class="tab" role="tab" data-t="top" aria-selected="true" id="tab-top">Top plays</button>
     <button class="tab" role="tab" data-t="games" aria-selected="false" id="tab-games">Games</button>
+    <button class="tab" role="tab" data-t="mu" aria-selected="false" id="tab-mu">Matchups</button>
     <button class="tab" role="tab" data-t="mine" aria-selected="false" id="tab-mine">My picks</button>
     <button class="tab" role="tab" data-t="record" aria-selected="false" id="tab-record">Record</button>
   </nav>
@@ -173,6 +178,15 @@ function pickRow(p,{showTrack=true}={}){
     ${open?`<ul class="why">${p.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
   </div>`;
 }
+const EDGE={'Edge':2,'Slight edge':1,'Even':0,'Slightly tough':-1,'Tough':-2};
+function muRow(m){
+  const open=st.open.has(m.id), s=Math.round(100*m.score);
+  return `<div class="pick mu${open?' open':''}"><button class="pbtn" data-open="${esc(m.id)}" aria-expanded="${open}" style="grid-column:1/-1">
+    <div class="prob${Math.abs(m.score)<.03?' mid':''}">${s>0?'+':''}${s}%</div>
+    <div class="body"><div class="ptxt">${esc(m.n)} <span style="color:var(--mist);font-weight:600">vs</span> ${esc(m.vs)}</div>
+      <div class="meta"><span class="edge e${EDGE[m.edge]}">${esc(m.edge)}</span><span>${esc(m.off)} ${esc(m.pos)} · ${esc(m.role)} · ${esc(m.game)}</span></div></div></button>
+    ${open?`<ul class="why">${m.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}</div>`;
+}
 function render(){
   if(!st.cur) return;
   const D=st.data[st.cur], P=Object.fromEntries(D.picks.map(p=>[p.id,p]));
@@ -191,7 +205,14 @@ function render(){
       return `<section class="game"><div class="ghead"><div class="teams">${g.away} <span class="s">${g.score.away}</span> · ${g.home} <span class="s">${g.score.home}</span></div><div class="kick">${esc(g.kick)}</div></div>
       <div class="gbody">${[g.ml,g.ats,g.tot].map(p=>pickRow(p)).join('')}
       <div class="sub">Touchdowns</div>${tds.map(p=>pickRow(p)).join('')}
-      <div class="sub">Yards and catches</div>${yd.map(p=>pickRow(p)).join('')}</div></section>`;}).join('')}</div>`;
+      <div class="sub">Yards and catches</div>${yd.map(p=>pickRow(p)).join('')}
+      ${(g.mu||[]).length?`<div class="sub">Receiver matchups</div>${g.mu.map(muRow).join('')}`:''}</div></section>`;}).join('')}</div>`;
+  } else if(st.tab==='mu'){
+    const all=D.games.flatMap(g=>g.mu||[]);
+    const best=all.filter(m=>m.score>=.03).sort((a,b)=>b.score-a.score).slice(0,15), worst=all.filter(m=>m.score<=-.03).sort((a,b)=>a.score-b.score).slice(0,10);
+    v.innerHTML=`<p class="note">Each receiver against the corners or safeties most likely to cover him, from coverage stats, size, 40 speed and style. The number is the change to his expected yards. Tap one for the details. Who covers whom isn't published for free, so these are likely matchups based on where he lines up and the depth chart.</p>
+      <h2>Best edges</h2><div class="list">${best.map(muRow).join('')}</div>
+      <h2>Toughest matchups</h2><div class="list">${worst.map(muRow).join('')}</div>`;
   } else if(st.tab==='mine'){
     const rows=Object.values(st.mine).sort((a,b)=>(b.addedAt||'').localeCompare(a.addedAt||''));
     const AP=allPicks();
