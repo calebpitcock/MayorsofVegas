@@ -1,16 +1,27 @@
 {
- "week": 3,
+ "week": 4,
  "STARTER": {
   "WAS": "Marcus Mariota",
   "CHI": "Case Keenum",
   "NYG": "Jameis Winston",
-  "MIN": "Kyler Murray"
+  "MIN": "Kyler Murray",
+  "TB": "Jalon Daniels"
  },
  "EARLY_EXIT": [
   [
    "Saquon Barkley",
    2026,
    2
+  ]
+ ],
+ "DEF_OUT": [
+  [
+   "Joey Porter Jr.",
+   "PIT"
+  ],
+  [
+   "Nick Cross",
+   "WAS"
   ]
  ]
 }

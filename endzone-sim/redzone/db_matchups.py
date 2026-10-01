@@ -74,6 +74,10 @@ def main(path, week):
     fi = f'{D}/injuries_{S0}.csv'
     if os.path.exists(fi):
         ij = pd.read_csv(fi); out = set(ij[(ij.week == week) & ij.report_status.isin(['Out', 'Doubtful'])].gsis_id)
+    # defenders ruled out before the official game statuses reach nflverse: overrides.json DEF_OUT = [[name, team], ...]
+    _ov = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'overrides.json')
+    for n_, t_ in (json.load(open(_ov)).get('DEF_OUT', []) if os.path.exists(_ov) else []):
+        out |= set(R[(R.full_name == n_) & (R.team == t_)].index)
     name = R['full_name'].to_dict()
     def room(team):
         x = dc[dc.team.replace(REP) == team]; roles = {}; used = set()
@@ -101,7 +105,7 @@ def main(path, week):
             rm = room(dfn)
             outs = [dline(rm[k]) for k in ('LCB', 'RCB') if k in rm]; nick = dline(rm['NB']) if 'NB' in rm else None
             saf = [dline(rm[k]) for k in ('FS', 'SS') if k in rm]
-            recv = sorted([p for p in g['players'] if p['t'] == off and p['pos'] in ('WR', 'TE') and p['rec'] >= .06], key=lambda p: -p['rec'])
+            recv = sorted([p for p in g['players'] if p['t'] == off and not p.get('out') and p['pos'] in ('WR', 'TE') and p['rec'] >= .06], key=lambda p: -p['rec'])
             wrs = [p for p in recv if p['pos'] == 'WR']; tes = [p for p in recv if p['pos'] == 'TE'][:2]
             slot_wr = max(wrs, key=lambda p: (p.get('rz') or {}).get('slot', 0), default=None)
             if slot_wr is not None and (slot_wr.get('rz') or {}).get('slot', 0) < .45: slot_wr = None

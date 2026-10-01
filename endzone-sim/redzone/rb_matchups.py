@@ -125,7 +125,7 @@ def live(path, week):
     for g in S['games']:
         g.setdefault('mu', [])
         for side, off, dfn in (('away', g['away'], g['home']), ('home', g['home'], g['away'])):
-            for p in [p for p in g['players'] if p['t'] == off and p['pos'] == 'RB' and p['rush'] >= .15]:
+            for p in [p for p in g['players'] if p['t'] == off and not p.get('out') and p['pos'] == 'RB' and p['rush'] >= .15]:
                 pid = p.get('id'); f = feats(P, pid, off, dfn)
                 d_ypc = W * sum(c[k] * f[k] for k in fitj['used'])
                 pct = clip(d_ypc / max(3.0, p['ypc']), -.2, .2)

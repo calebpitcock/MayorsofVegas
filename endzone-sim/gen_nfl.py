@@ -17,25 +17,36 @@ R = b.R
 def pid_of(name, team=None):
     m = R[R.full_name == name]
     if team is not None and len(m) > 1: m = m[m.team == team]
+    if len(m) > 1 and m.position.isin(['QB', 'RB', 'FB', 'WR', 'TE']).any(): m = m[m.position.isin(['QB', 'RB', 'FB', 'WR', 'TE'])]   # e.g. CLE LB Justin Jefferson
     return m.index[-1]
 
-# ---- this week's availability (practice reports + news, Friday morning) ----
+# ---- this week's availability (practice reports + news, Thursday Oct 1 midday: Wednesday practice, TNF final statuses) ----
 OUT = {  # confident enough to remove; the page lets the user restore anyone
-  'Jayden Daniels': 'elbow — out, Mariota starts', 'Caleb Williams': 'hamstring — out', 'Tyson Bagent': 'concussion — out',
-  'Jaxson Dart': 'knee — season-ending surgery', 'Nico Collins': 'hamstring — DNP Wed/Thu, not expected to play',
-  'Puka Nacua': 'hip — DNP Wed/Thu, McVay: "not making great progress"', 'Zay Flowers': 'hamstring — DNP, brace for absence',
-  'Jayden Reed': 'neck — out',
+  'Jayden Daniels': 'elbow — out, Mariota starts', 'Caleb Williams': 'hamstring — out (grade 2, 3-4 weeks)',
+  'Jaxson Dart': 'knee — season-ending surgery', 'Baker Mayfield': 'thumb — dislocated, out about three weeks; Jalon Daniels starts',
+  'Jayden Reed': 'neck — season-ending surgery', "De'Von Achane": 'out for the season',
+  'Rico Dowdle': 'toe — ruled out', 'Tylan Wallace': 'ruled out',
+  'Breece Hall': 'quad — not expected to play', 'Adonai Mitchell': 'finger — week-to-week', 'Mason Taylor': 'thumb — week-to-week',
+  'Travis Etienne': 'hamstring — out multiple weeks', 'Terrance Ferguson': 'ankle — aggravated, not expected to play',
+  'Dallas Goedert': 'knee — missed Week 3 and Wednesday, expected to miss multiple games',
+  'Marquise Brown': 'ankle — missed Week 3 and Wednesday',
 }
 QUESTIONABLE = {  # kept in; flagged
-  'Mike Evans': 'hip — DNP Wed/Thu, reportedly minor', 'DJ Moore': 'shoulder — DNP Wed/Thu', 'Keon Coleman': 'ankle — DNP Wed/Thu',
-  'Xavier Legette': 'knee — DNP Wed/Thu', 'Jalen Coker': 'ankle — DNP Wed/Thu', 'DeVonta Smith': 'hamstring — DNP (plays Monday)',
-  'Dallas Goedert': 'knee — DNP (plays Monday)', 'Tank Bigsby': 'abdomen — DNP (plays Monday)', 'Will Shipley': 'foot — DNP (plays Monday)',
-  'Rico Dowdle': 'toe — DNP Wed/Thu', 'Tyjae Spears': 'ankle — DNP Wed/Thu', 'Kendre Miller': 'illness — DNP', 'Alec Pierce': 'heel — DNP Wed/Thu',
-  'Caleb Douglas': 'ankle — DNP Wed/Thu', 'Mason Taylor': 'thumb — DNP Wed/Thu', 'Andrei Iosivas': 'thumb — DNP',
-  'Kyle Monangai': 'knee — DNP', 'Jonah Coleman': 'ankle — DNP', 'Colby Parkinson': 'knee — DNP', 'Chig Okonkwo': 'hamstring — DNP',
-  'Saquon Barkley': 'neck — limited', 'Aaron Jones': 'knee — limited', 'Brock Bowers': 'knee — limited', 'Travis Etienne': 'hamstring — limited',
-  'Jaylen Warren': 'shoulder — limited', 'Tony Pollard': 'ankle — limited', 'Michael Pittman': 'foot — limited',
+  'Justin Jefferson': 'ankle sprain — DNP Wed, day-to-day; Friday status not out yet', 'DeVonta Smith': 'hamstring — DNP Wed (same path as Week 3, when he played)',
+  'Will Shipley': 'foot — DNP Wed (played Week 3)', 'Chris Godwin Jr.': 'ankle — DNP Wed (new injury)', 'Rachaad White': 'shoulder — DNP Wed',
+  'Mike Evans': 'rib — DNP Wed, reportedly minor', 'Keon Coleman': 'ankle — DNP Wed', 'Xavier Legette': 'knee — DNP Wed',
+  'Jalen Coker': 'quad — DNP Wed, probably out', 'Caleb Douglas': 'ankle — DNP Wed, sat Week 3', 'Colby Parkinson': 'knee/shoulder — DNP Wed',
+  'Charlie Kolar': 'forearm — DNP Wed', 'Brenen Thompson': 'quad — DNP Wed', 'Tony Pollard': 'foot — DNP Wed (played hurt Week 3)',
+  'Tyjae Spears': 'ankle — DNP Wed (played hurt Week 3)', 'Tyrone Tracy Jr.': 'DNP Wed',
 }
+# skill players in OUT stay on the slate marked out, so the engine's scratch rule hands their carries and targets to the
+# next men up at their position (72%, by share) instead of to the anonymous Field. QBs are replaced through STARTER.
+SKILL_OUT = {}
+for _n in OUT:
+    try: _p = pid_of(_n)
+    except Exception: continue
+    if R.loc[_p, 'position'] in ('RB', 'FB', 'WR', 'TE'): SKILL_OUT[_p] = _n
+if b.ACT is not None: b.ACT |= set(SKILL_OUT)      # reserve-list players (Achane, Reed) still need their share computed
 # Official report (nflverse injuries, game statuses post Friday afternoon): Out and Doubtful are removed, Questionable
 # is flagged. The hand lists above win for anyone named in them, except that an official Out/Doubtful overrides a hand
 # 'questionable'. Keyed by gsis id, so same-name players can't be confused.
@@ -62,12 +73,13 @@ for _n in QUESTIONABLE:
     try: b.status_override[pid_of(_n)] = 'Questionable'
     except Exception: pass
 STARTER = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'overrides.json')))['STARTER']   # shared with gm/game_live.py
-TIER = {'WAS': -1, 'CHI': -1, 'NYG': 0, 'MIN': 1}
+TIER = {'WAS': -1, 'CHI': -1, 'NYG': 0, 'MIN': 1, 'TB': -1}
 QBWHY = {
   'WAS': "Daniels dislocated his elbow; Mariota starts. He threw 17 of Washington's 40 dropbacks in Week 2 after Daniels left, so the priors are about 20% his.",
   'CHI': "Caleb Williams (hamstring) and Tyson Bagent (concussion) both out — Case Keenum starts with zero snaps in the sample behind Chicago's usage.",
   'NYG': "Dart is out for the season. Winston started Week 2 (11 of 29, 111 yards), so roughly half the sample is his.",
   'SEA': "Darnold is back from the glute injury (full practice, no game status, depth-chart QB1). He left Week 1 after 5 snaps and Lock started Week 2, so Seattle's 2026 sample is almost all Lock.",
+  'TB': "Baker Mayfield dislocated his right thumb (out about three weeks). Undrafted rookie Jalon Daniels makes his first NFL start with no regular-season snaps, so none of Tampa Bay's usage sample is his.",
   'MIN': "Murray is back from the concussion. He took 7 dropbacks in Week 1 before leaving; Wentz generated almost all of Minnesota's priors.",
 }
 
@@ -104,10 +116,24 @@ for r in L.itertuples():
     for side, team in (('away', a), ('home', h)):
         pr, pace = b.team_env(team, WEEK)
         g['passRate'][side] = pr; g['pace'][side] = pace
-        excl = [pid_of(n) for n in OUT if (R.full_name == n).any() and R.loc[pid_of(n), 'team'] == team]
+        excl = [pid_of(n) for n in OUT if (R.full_name == n).any() and R.loc[pid_of(n), 'team'] == team and pid_of(n) not in SKILL_OUT]
         excl += [pid for pid, (n, t, _) in OFFICIAL_OUT.items() if t == team]
-        qb_pid = pid_of(STARTER[team]) if team in STARTER else b.live_starter(team, WEEK, excl)
+        skill_out = [pid_of(n) for n in OUT if pid_of(n) in SKILL_OUT and R.loc[pid_of(n), 'team'] == team]
+        qb_pid = pid_of(STARTER[team]) if team in STARTER else b.live_starter(team, WEEK, excl + skill_out)
         rows = [x for x in b.team_players(team, WEEK, qb_pid=qb_pid, exclude=excl) if x['pos']=='QB' or x['rush']>=.04 or x['rec']>=.04]
+        # next men up: 72% of an out player's carries/targets (the engine's scratch share) goes to teammates at his position,
+        # split by what they have actually done this season (recency-weighted carries or targets, +1 each) rather than
+        # by model share, which gives backups with no 2026 snaps their position prior (NYJ: Davis and Nwangwu ~18% each).
+        u26 = b.U[(b.U.posteam == team) & (b.U.season == SEASON) & (b.U.week < WEEK)]
+        u26 = u26.assign(rw=np.power(0.5, (WEEK - u26.week) / nb.HL))
+        used = {k: (u26.rw * u26[c]).groupby(u26.pid).sum().to_dict() for k, c in (('rush', 'car'), ('rec', 'tgt'))}
+        for o in [x for x in rows if x['id'] in skill_out]:
+            o['out'] = True; o['flag'] = OUT[SKILL_OUT[o['id']]]; o['outShare'] = dict(rush=o['rush'], rec=o['rec'])
+            for k in ('rush', 'rec'):
+                peers = [x for x in rows if x['id'] not in skill_out and x['pos'] == o['pos'] and x[k] > 0]
+                wt = {x['id']: used[k].get(x['id'], 0.0) + 1.0 for x in peers}; tw = sum(wt.values())
+                for x in peers: x[k] = round(x[k] + .72 * o[k] * wt[x['id']] / tw, 3)
+                o[k] = 0.0          # already handed out; the engine's own scratch rule then has nothing left to move
         # QB-change flag computed from data: how much of this team's 2026 sample did the starter take?
         q = b.Q[(b.Q.posteam == team) & (b.Q.season == SEASON) & (b.Q.week < WEEK)]
         tot = q.groupby('week').db.sum()
@@ -119,7 +145,7 @@ for r in L.itertuples():
             notes.append(f"{team}: {R.loc[qb_pid,'full_name']} starts — usage priors discounted.")
         for p in rows:
             if p['n'] in oldp: p.update(oldp[p['n']])
-            if p['n'] in QUESTIONABLE: p['flag'] = QUESTIONABLE[p['n']]
+            if p['n'] in QUESTIONABLE and not p.get('out'): p['flag'] = QUESTIONABLE[p['n']]
             if p['pos'] in ('WR', 'TE', 'RB'):
                 opp = h if side == 'away' else a
                 mult, parts = sm.multiplier(COV, p['id'], opp); p['cov'] = round(float(mult), 4); p['covParts'] = parts
