@@ -20,25 +20,25 @@ def pid_of(name, team=None):
     if len(m) > 1 and m.position.isin(['QB', 'RB', 'FB', 'WR', 'TE']).any(): m = m[m.position.isin(['QB', 'RB', 'FB', 'WR', 'TE'])]   # e.g. CLE LB Justin Jefferson
     return m.index[-1]
 
-# ---- this week's availability (practice reports + news, Thursday Oct 1 midday: Wednesday practice, TNF final statuses) ----
+# ---- this week's availability (practice reports + news, Friday Oct 2 morning: Wednesday/Thursday practice; Friday game statuses not out yet) ----
 OUT = {  # confident enough to remove; the page lets the user restore anyone
   'Jayden Daniels': 'elbow — out, Mariota starts', 'Caleb Williams': 'hamstring — out (grade 2, 3-4 weeks)',
   'Jaxson Dart': 'knee — season-ending surgery', 'Baker Mayfield': 'thumb — dislocated, out about three weeks; Jalon Daniels starts',
   'Jayden Reed': 'neck — season-ending surgery', "De'Von Achane": 'out for the season',
-  'Rico Dowdle': 'toe — ruled out', 'Tylan Wallace': 'ruled out',
-  'Breece Hall': 'quad — not expected to play', 'Adonai Mitchell': 'finger — week-to-week', 'Mason Taylor': 'thumb — week-to-week',
-  'Travis Etienne': 'hamstring — out multiple weeks', 'Terrance Ferguson': 'ankle — aggravated, not expected to play',
-  'Dallas Goedert': 'knee — missed Week 3 and Wednesday, expected to miss multiple games',
-  'Marquise Brown': 'ankle — missed Week 3 and Wednesday',
+  'Breece Hall': 'quad — DNP Wed/Thu, not expected to play', 'Adonai Mitchell': 'finger — DNP Wed/Thu, week-to-week', 'Mason Taylor': 'thumb — DNP Wed/Thu, week-to-week',
+  'Travis Etienne': 'hamstring — out multiple weeks', 'Terrance Ferguson': 'ankle — DNP Wed/Thu, not expected to play',
+  'Dallas Goedert': 'knee — DNP Wed/Thu, expected to miss multiple games', 'Marquise Brown': 'ankle — DNP Wed/Thu, missed Week 3',
+  'DeVonta Smith': 'hamstring — DNP Wed/Thu, not expected to play',
 }
 QUESTIONABLE = {  # kept in; flagged
-  'Justin Jefferson': 'ankle sprain — DNP Wed, day-to-day; Friday status not out yet', 'DeVonta Smith': 'hamstring — DNP Wed (same path as Week 3, when he played)',
-  'Will Shipley': 'foot — DNP Wed (played Week 3)', 'Chris Godwin Jr.': 'ankle — DNP Wed (new injury)', 'Rachaad White': 'shoulder — DNP Wed',
-  'Mike Evans': 'rib — DNP Wed, reportedly minor', 'Keon Coleman': 'ankle — DNP Wed', 'Xavier Legette': 'knee — DNP Wed',
-  'Jalen Coker': 'quad — DNP Wed, probably out', 'Caleb Douglas': 'ankle — DNP Wed, sat Week 3', 'Colby Parkinson': 'knee/shoulder — DNP Wed',
-  'Charlie Kolar': 'forearm — DNP Wed', 'Brenen Thompson': 'quad — DNP Wed', 'Tony Pollard': 'foot — DNP Wed (played hurt Week 3)',
-  'Tyjae Spears': 'ankle — DNP Wed (played hurt Week 3)', 'Tyrone Tracy Jr.': 'DNP Wed',
+  'Justin Jefferson': 'ankle sprain — DNP Wed/Thu; needs to practice Friday to have a chance', "D'Andre Swift": 'knee — new, DNP Thu',
+  'Will Shipley': 'foot — limited Thu (played Week 3)', 'Rachaad White': 'shoulder — DNP Wed/Thu',
+  'Mike Evans': 'rib — DNP Wed/Thu, GM says he will make every attempt to play', 'Keon Coleman': 'ankle — limited Thu',
+  'Xavier Legette': 'knee — DNP Wed/Thu', 'Jalen Coker': 'quad — limited Thu after a Wednesday DNP', 'Caleb Douglas': 'ankle — DNP Wed/Thu, sat Week 3',
+  'Colby Parkinson': 'knee/shoulder — DNP Wed/Thu', 'Charlie Kolar': 'forearm — DNP Wed/Thu', 'Brenen Thompson': 'quad — DNP Wed/Thu',
 }
+# veteran rest days: on the report as DNP, but not injuries (the role correction would otherwise trim their shares)
+REST = ['Davante Adams', 'Christian McCaffrey']
 # skill players in OUT stay on the slate marked out, so the engine's scratch rule hands their carries and targets to the
 # next men up at their position (72%, by share) instead of to the anonymous Field. QBs are replaced through STARTER.
 SKILL_OUT = {}
@@ -69,6 +69,7 @@ if os.path.exists(_f):
 print('official report: out/doubtful', len(OFFICIAL_OUT), [v[0] for v in OFFICIAL_OUT.values()])
 # official game statuses post Friday afternoon; until then the flagged list stands in for 'Questionable' in the role correction
 b.status_override = {}
+b.practice_override = {pid_of(n): 'Full Participation in Practice' for n in REST}
 for _n in QUESTIONABLE:
     try: b.status_override[pid_of(_n)] = 'Questionable'
     except Exception: pass

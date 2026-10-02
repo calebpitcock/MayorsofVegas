@@ -1,14 +1,9 @@
 {
- "asOf": "Thu Oct 1",
- "about": "Re-simulated Thursday Oct 1 (midday ET) with Wednesday's practice reports, tonight's Steelers\u2013Browns final statuses and the week's news. Players listed as out are removed and 72% of their carries and targets go to teammates at their position, split by what each has done this season. Flags mark news the model still can't price: players who might not play, and Friday game statuses that aren't out yet.",
- "bar": "Re-simulated Oct 1 with the injury news. Friday statuses (Jefferson, Eagles) are still to come.",
+ "asOf": "Fri Oct 2",
+ "about": "Re-simulated Friday Oct 2 (morning ET) with Wednesday and Thursday practice reports and the week's news. Steelers\u2013Browns is final and graded; its picks stay as they were at kickoff. Players listed as out are removed and 72% of their carries and targets go to teammates at their position, split by what each has done this season. Flags mark news the model still can't price: players who might not play, and Friday game statuses that come out this afternoon.",
+ "bar": "Re-simulated Oct 2 with Thursday's practice reports. Friday game statuses come out this afternoon.",
  "outsNote": "Already out of this build. Their carries and targets went to the next men up at their position:",
  "outs": [
-  {
-   "n": "Rico Dowdle",
-   "t": "PIT",
-   "r": "toe, ruled out for tonight. Jaylen Warren takes about 70% of the carries, Travis Homer next."
-  },
   {
    "n": "Breece Hall",
    "t": "NYJ",
@@ -42,12 +37,17 @@
   {
    "n": "Dallas Goedert",
    "t": "PHI",
-   "r": "knee, missed Week 3 and Wednesday and is expected to miss multiple games. Johnny Mundt is the TE. Final status comes Friday."
+   "r": "knee, missed Week 3, Wednesday and Thursday and is expected to miss multiple games. Johnny Mundt is the TE. Final status comes Friday."
+  },
+  {
+   "n": "DeVonta Smith",
+   "t": "PHI",
+   "r": "hamstring, missed Wednesday and Thursday; the Eagles don't expect him to play. Dontayvion Wicks moves up (16% to 22% of targets), Makai Lemon 13% to 18%."
   },
   {
    "n": "Marquise Brown",
    "t": "PHI",
-   "r": "ankle, missed Week 3 and Wednesday. Final status comes Friday."
+   "r": "ankle, missed Week 3, Wednesday and Thursday. Final status comes Friday."
   },
   {
    "n": "Jayden Reed",
@@ -63,111 +63,98 @@
    "n": "Caleb Williams",
    "t": "CHI",
    "r": "hamstring. Case Keenum starts (Ben Johnson hasn't named him; Tyson Bagent cleared concussion protocol)."
-  },
-  {
-   "n": "Tylan Wallace",
-   "t": "CLE",
-   "r": "ruled out for tonight."
   }
  ],
  "players": {
   "Justin Jefferson": {
    "s": "risk",
-   "n": "Ankle sprain, missed Wednesday, day-to-day. Built with him playing at a trimmed share. Friday's game status isn't out yet; if he sits, his picks are void and Jordan Addison is the No. 1."
+   "n": "Ankle sprain, missed Wednesday and Thursday. Built with him playing at a trimmed share. He likely needs to practice Friday to play; if he sits, Jordan Addison is the No. 1."
   },
   "Jordan Addison": {
    "s": "up",
    "n": "Becomes the No. 1 receiver if Jefferson sits. This build has Jefferson playing."
   },
-  "DeVonta Smith": {
-   "s": "risk",
-   "n": "Hamstring, missed Wednesday. Built with him playing: he took the same practice path last week and played. Final status comes Friday."
-  },
   "Will Shipley": {
    "s": "watch",
-   "n": "Foot, missed Wednesday; played last week. Built with him playing."
-  },
-  "Chris Godwin Jr.": {
-   "s": "risk",
-   "n": "New ankle injury, missed Wednesday. Built with him playing, with rookie Jalon Daniels at QB."
+   "n": "Foot, upgraded to limited Thursday; has a shot to play. Built with him playing."
   },
   "Jalen Coker": {
-   "s": "risk",
-   "n": "Quad, missed Wednesday and is probably out. Built with him playing."
+   "s": "watch",
+   "n": "Quad, upgraded to limited Thursday after missing Wednesday. Built with him playing."
   },
   "Xavier Legette": {
    "s": "risk",
-   "n": "Knee, missed Wednesday. Built with him playing."
+   "n": "Knee, missed Wednesday and Thursday. Built with him playing."
   },
   "Keon Coleman": {
-   "s": "risk",
-   "n": "Ankle, missed Wednesday. Built with him playing."
+   "s": "watch",
+   "n": "Ankle, limited Thursday after missing Wednesday. Built with him playing."
   },
   "Caleb Douglas": {
    "s": "risk",
-   "n": "Ankle, missed Wednesday after sitting out Week 3. Built with him playing."
+   "n": "Ankle, missed Wednesday and Thursday after sitting out Week 3. Built with him playing."
   },
   "Colby Parkinson": {
    "s": "risk",
-   "n": "Knee/shoulder, missed Wednesday. Built with him playing."
+   "n": "Knee/shoulder, missed Wednesday and Thursday. Built with him playing."
   },
   "Charlie Kolar": {
    "s": "risk",
-   "n": "Forearm, missed Wednesday. Built with him playing."
+   "n": "Forearm, missed Wednesday and Thursday. Built with him playing."
   },
   "Brenen Thompson": {
    "s": "risk",
-   "n": "Quad, missed Wednesday. Built with him playing."
+   "n": "Quad, missed Wednesday and Thursday. Built with him playing."
   },
   "Rachaad White": {
    "s": "risk",
-   "n": "Shoulder, the only Commander in London who didn't practice Wednesday. Built with him playing; Jacory Croskey-Merritt gets more if he sits."
+   "n": "Shoulder, missed Wednesday and Thursday in London. Built with him playing; Jacory Croskey-Merritt gets more if he sits."
   },
   "Austin Ekeler": {
    "s": "watch",
    "n": "Signed this week and may be active if Rachaad White can't go."
   },
-  "Tony Pollard": {
-   "s": "watch",
-   "n": "Foot, missed Wednesday but played through it last week. Built with him playing."
-  },
   "Tyjae Spears": {
    "s": "watch",
-   "n": "Ankle, missed Wednesday but played through it last week. Built with him playing."
+   "n": "Ankle, limited Thursday; played through it last week. Built with him playing."
   },
   "Mike Evans": {
-   "s": "watch",
-   "n": "Rib, missed Wednesday. Reported day-to-day and not expected to miss time."
-  },
-  "Lamar Jackson": {
-   "s": "watch",
-   "n": "Limited Wednesday (back); expected to play. The model has him at full strength."
+   "s": "risk",
+   "n": "Rib, missed Wednesday and Thursday (worked on the side). GM John Lynch says he'll make every attempt to play. Built with him playing."
   },
   "Puka Nacua": {
    "s": "watch",
-   "n": "Back after missing two games (hip/groin), limited Wednesday. Modeled at his usual share; a snap limit would make his numbers high."
+   "n": "Back after missing two games (hip/groin), limited Wednesday and Thursday. Modeled at his usual share; a snap limit would make his numbers high."
   },
   "Nico Collins": {
    "s": "watch",
-   "n": "Back after missing two games, limited Wednesday. Modeled at his usual share; a snap limit would make his numbers high."
+   "n": "Back after missing two games, limited Wednesday and Thursday. Modeled at his usual share; a snap limit would make his numbers high."
   },
   "Kene Nwangwu": {
    "s": "watch",
    "n": "No offensive snaps this season. His share comes mostly from the model's running-back average, so treat his number as high. Braelon Allen is the lead back, with Isaiah Davis mixed in."
+  },
+  "D'Andre Swift": {
+   "s": "risk",
+   "n": "New knee injury: added to the report Thursday as a DNP. Built with him playing at a trimmed share; Kyle Monangai leads the backfield if he sits."
+  },
+  "Kyle Monangai": {
+   "s": "up",
+   "n": "Becomes the lead back if D'Andre Swift (knee) can't go. This build has Swift playing."
+  },
+  "Davante Adams": {
+   "s": "watch",
+   "n": "His Wednesday and Thursday DNPs were rest days, not an injury; he's expected to play and is modeled at his full share."
   }
  },
  "picks": {
   "2026w4-mia-min-ml-min": {
    "s": "watch",
-   "n": "Built with Jefferson playing. His Friday status isn't out; MIN stays a big favorite either way."
+   "n": "Built with Jefferson playing; he missed Wednesday and Thursday. MIN stays a big favorite either way."
   },
   "2026w4-mia-min-ats-min": {
    "s": "watch",
-   "n": "Built with Jefferson playing. If he sits, this is weaker than shown."
-  },
-  "2026w4-ten-bal-ml-bal": {
-   "s": "watch",
-   "n": "Lamar Jackson limited (back) but expected to play. BAL lost both centers (Gwyn, Pocic) long-term, which season blocking stats don't show yet."
+   "n": "Built with Jefferson playing; he missed Wednesday and Thursday. If he sits, this is weaker than shown."
   },
   "2026w4-ten-bal-td-derrick-henry": {
    "s": "watch",
@@ -175,19 +162,15 @@
   },
   "2026w4-la-phi-ats-phi": {
    "s": "watch",
-   "n": "Built with Goedert and Hollywood Brown out, Smith and Shipley playing, and Puka Nacua back. Eagles' final statuses come Friday; if Smith sits, this is weaker."
+   "n": "Built with Smith, Goedert and Hollywood Brown out, Shipley playing and Puka Nacua back. Eagles' final statuses come Friday afternoon."
   },
   "2026w4-la-phi-ml-phi": {
    "s": "watch",
-   "n": "Same as PHI +3: built with Smith playing and Goedert/Brown out. Final statuses Friday."
+   "n": "Same as the PHI spread: Smith, Goedert and Hollywood Brown out, Puka Nacua back. Final statuses come Friday afternoon."
   },
   "2026w4-la-phi-tot-over": {
    "s": "watch",
-   "n": "Built with Smith playing and Puka Nacua back. Final Eagles statuses come Friday."
-  },
-  "2026w4-pit-cle-recYds-harold-fannin-jr-25": {
-   "s": "up",
-   "n": "Joey Porter Jr. (out) is in this build. CBs Jalen Ramsey (wrist) and Brandin Echols (concussion) are questionable, which isn't."
+   "n": "Built with Smith, Goedert and Hollywood Brown out and Puka Nacua back. Final statuses come Friday afternoon."
   },
   "2026w4-gb-tb-ats-tb": {
    "s": "watch",
@@ -196,23 +179,23 @@
  },
  "games": {
   "pit-cle": [
-   "Final statuses: PIT RB Rico Dowdle and CB Joey Porter Jr. out (both in this build); CBs Jalen Ramsey (wrist) and Brandin Echols (concussion) questionable.",
-   "CLE is out C Elgton Jenkins and WR Tylan Wallace; G Teven Jenkins is limited. Two interior line starters may be missing."
+   "Final: Browns 27, Steelers 24 (Andre Szmyt's 56-yard field goal with 10 seconds left). Picks are frozen as they stood at kickoff and graded: 13 of 29 won. None were on the Top plays board.",
+   "The model's Under 38.5 lost (51 points) and PIT win lost; CLE +2.5 won. Warren (93 rushing yards), Metcalf, Boston, Concepcion and Fannin hit their yardage lines."
   ],
   "ind-was": [
    "Mariota starts again for WAS (in the model). Jayden Daniels was limited.",
-   "WAS RB Rachaad White (shoulder) didn't practice Wednesday; Austin Ekeler signed. S Nick Cross (illness, out; in this build) and G Sam Cosmi (out) are ruled out."
+   "WAS RB Rachaad White (shoulder) missed Wednesday and Thursday; Austin Ekeler signed. S Nick Cross (in this build) and G Sam Cosmi are ruled out."
   ],
   "ten-bal": [
-   "Lamar Jackson limited (back), expected to play. Zay Flowers (hamstring) is back at limited practice and is in this build; the Sep 30 build had him out.",
-   "BAL lost centers Jovaughn Gwyn and Ethan Pocic long-term. TEN RBs Tony Pollard and Tyjae Spears missed Wednesday but played hurt last week."
+   "Lamar Jackson and Zay Flowers were full participants Thursday. Flowers is in this build; the Sep 30 build had him out.",
+   "BAL lost centers Jovaughn Gwyn and Ethan Pocic long-term. TEN's Tony Pollard was full Thursday, Tyjae Spears limited."
   ],
   "ne-buf": [
-   "DJ Moore limited (shoulder), expected to play. Keon Coleman missed practice.",
+   "DJ Moore limited (shoulder), expected to play. Keon Coleman was limited Thursday.",
    "NE CB Christian Gonzalez and RT Morgan Moses missed Wednesday; Drake Maye was a full participant."
   ],
   "nyj-chi": [
-   "Caleb Williams out; Case Keenum starts in this build (not officially named).",
+   "Caleb Williams out; Case Keenum starts in this build (not officially named). D'Andre Swift (knee) was added to Thursday's report as a DNP.",
    "NYJ without Breece Hall, Adonai Mitchell and TE Mason Taylor. Braelon Allen leads the backfield and Garrett Wilson's target share jumps to about 37%."
   ],
   "jax-cin": [
@@ -223,16 +206,16 @@
    "Nico Collins is back (limited Wednesday, expected to play) and in this build. The Sep 30 build had him out."
   ],
   "la-phi": [
-   "LA gets Puka Nacua back (in this build); TE Terrance Ferguson is out. Davante Adams' Wednesday DNP was a rest day.",
-   "PHI: Goedert and Hollywood Brown are out in this build, Smith and Shipley playing. All four missed Wednesday; final statuses come Friday."
+   "LA gets Puka Nacua back (limited Wed/Thu; in this build); TE Terrance Ferguson is out. Davante Adams' two DNPs were rest days.",
+   "PHI: DeVonta Smith, Goedert and Hollywood Brown are out in this build (all DNP Wed/Thu; the team doesn't expect Smith to play). Shipley was limited Thursday. Final statuses Friday afternoon."
   ],
   "gb-tb": [
    "Baker Mayfield (dislocated thumb) is out about three weeks; undrafted rookie Jalon Daniels starts. The model now has this a pick'em (TB 54% before); the market moved to GB -3.5 and the total to 38.5.",
-   "GB's Jayden Reed is out for the season (neck surgery); his targets go to Golden and Watson. Chris Godwin Jr. (ankle) missed Wednesday."
+   "GB's Jayden Reed is out for the season (neck surgery); his targets go to Golden and Watson. Chris Godwin Jr. was a full participant Thursday."
   ],
   "mia-min": [
-   "Justin Jefferson (ankle) missed Wednesday and is day-to-day; this build has him playing.",
-   "MIA lost De'Von Achane for the season; Ollie Gordon II leads, with Jaylen Wright in a smaller role."
+   "Justin Jefferson (ankle) missed Wednesday and Thursday; this build has him playing. Friday's practice decides it.",
+   "MIA lost De'Von Achane for the season; Ollie Gordon II leads, with Jaylen Wright (full Thursday) in a smaller role."
   ],
   "kc-lv": [
    "Nothing material: Mahomes and Ashton Jeanty practiced fully. Brock Bowers is no longer on the report."
@@ -241,16 +224,16 @@
    "LAC missed six on Wednesday, including CB Donte Jackson (concussion) and TE Charlie Kolar. Derwin James and Ladd McConkey were limited."
   ],
   "den-sf": [
-   "Mike Evans (rib) missed Wednesday but isn't expected to miss time. Christian McCaffrey's DNP was his usual rest day."
+   "Mike Evans (rib) missed Wednesday and Thursday but worked on the side; the GM expects him to try to play. Christian McCaffrey's Wednesday DNP was a rest day."
   ],
   "det-car": [
-   "CAR placed CBs Jaycee Horn and Mike Jackson on IR (in this build's matchups). WRs Jalen Coker and Xavier Legette missed practice; Bryce Young was full. Chuba Hubbard and Darren Waller sat Wednesday for rest."
+   "CAR placed CBs Jaycee Horn and Mike Jackson on IR (in this build's matchups). Jalen Coker was limited Thursday, Xavier Legette missed again; Bryce Young, Chuba Hubbard and Darren Waller were full."
   ],
   "atl-no": [
    "NO RB Travis Etienne is out for multiple weeks; Alvin Kamara starts. The spread moved to ATL +2.5, which this build uses."
   ],
   "ari-nyg": [
-   "NYG RB Tyrone Tracy Jr. and LT Andrew Thomas missed Wednesday."
+   "NYG RB Tyrone Tracy Jr. was limited Thursday; LT Andrew Thomas missed Wednesday."
   ]
  }
 }

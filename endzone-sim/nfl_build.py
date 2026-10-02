@@ -428,6 +428,7 @@ class Builder:
                 inj = self._inj.loc[(r['id'], week)] if (r['id'], week) in self._inj.index else None
                 st = getattr(self, 'status_override', {}).get(r['id']) or (inj.report_status if inj is not None and isinstance(inj.report_status, str) else '')
                 pr = inj.practice_status if inj is not None and isinstance(inj.practice_status, str) else ''
+                pr = getattr(self, 'practice_override', {}).get(r['id'], pr)   # veteran rest days are listed DNP but aren't injuries
                 q, lim, dnp = float(st == 'Questionable'), float('Limited' in pr), float('Did Not' in pr)
                 back = float(lastw is not None and len(h[h.week == lastw]) == 0); new = float(r.get('g', 0) <= 1); v = r[key]
                 x = [1, trend, gap, q, lim, dnp, back, trend * v, q * v, lim * v, back * v, new * v]

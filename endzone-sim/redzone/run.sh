@@ -16,7 +16,9 @@ echo "== DB matchups"; python3 redzone/db_matchups.py $SL $W
 echo "== RB matchups"; python3 redzone/rb_matchups.py $SL $W
 echo "== finishing"; python3 redzone/finishing.py $SL $W
 echo "== scoreboard"; (cd gm && python3 ../redzone/points.py ../$SL $W)
+PREV=$(mktemp); [ -e redzone/picks_w$W.json ] && cp redzone/picks_w$W.json $PREV || echo '{}' > $PREV
 echo "== simulate"; node redzone/predict.js $SL redzone/picks_w$W.json
+python3 redzone/carry_played.py $PREV redzone/picks_w$W.json; rm -f $PREV
 # the page's data files: every week's picks plus an index (publish redzone/site/* next to redzone.html)
 mkdir -p redzone/site && cp redzone/picks_w$W.json redzone/site/
 python3 redzone/build_page.py
