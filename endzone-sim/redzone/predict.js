@@ -140,7 +140,7 @@ for(const g of S.games){
       medRec:E.histQuantile(p.hist.recYds,15,.5),medRush:E.histQuantile(p.hist.rushYds,40,.5)});
     const base=`${p.n} (${p.t} ${p.pos})`;
     const tp=TDP[src.id], tdP=tp?price(tp.o,`best US price, ${tp.asOf}`):null;
-    if(p.pos!=='QB'||td>=.2) gp.push({id:`${gid}-td-${slug(p.n)}`,type:'Anytime TD',game:label,gameId:g.id,player:p.n,team:p.t,text:`${p.n} anytime TD`,prob:td,price:tdP,
+    if(p.pos!=='QB'||td>=.2) gp.push({id:`${gid}-td-${slug(p.n)}`,type:'Anytime TD',game:label,gameId:g.id,player:p.n,team:p.t,pos:p.pos,text:`${p.n} anytime TD`,prob:td,price:tdP,
       why:[`Scores in ${pct(td)} of simulations (calibrated)`,priceWhy(tdP,td),...why]});
     for(const [key,off,lab,min] of [['recYds',15,'receiving yards',35],['rushYds',40,'rushing yards',35],['rec',0,'catches',3.5]]){
       if(p.pos==='QB'&&key!=='rushYds') continue;
