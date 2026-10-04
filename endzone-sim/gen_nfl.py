@@ -20,22 +20,25 @@ def pid_of(name, team=None):
     if len(m) > 1 and m.position.isin(['QB', 'RB', 'FB', 'WR', 'TE']).any(): m = m[m.position.isin(['QB', 'RB', 'FB', 'WR', 'TE'])]   # e.g. CLE LB Justin Jefferson
     return m.index[-1]
 
-# ---- this week's availability (practice reports + news, Friday Oct 2 morning: Wednesday/Thursday practice; Friday game statuses not out yet) ----
+# ---- this week's availability (Sunday Oct 4 morning: Friday's final report, Saturday moves, London inactives) ----
 OUT = {  # confident enough to remove; the page lets the user restore anyone
-  'Jayden Daniels': 'elbow — out, Mariota starts', 'Caleb Williams': 'hamstring — out (grade 2, 3-4 weeks)',
+  'Jayden Daniels': 'elbow — inactive, Mariota starts', 'Caleb Williams': 'hamstring — out (grade 2, 3-4 weeks)',
   'Jaxson Dart': 'knee — season-ending surgery', 'Baker Mayfield': 'thumb — dislocated, out about three weeks; Jalon Daniels starts',
   'Jayden Reed': 'neck — season-ending surgery', "De'Von Achane": 'out for the season',
-  'Breece Hall': 'quad — DNP Wed/Thu, not expected to play', 'Adonai Mitchell': 'finger — DNP Wed/Thu, week-to-week', 'Mason Taylor': 'thumb — DNP Wed/Thu, week-to-week',
-  'Travis Etienne': 'hamstring — out multiple weeks', 'Terrance Ferguson': 'ankle — DNP Wed/Thu, not expected to play',
-  'Dallas Goedert': 'knee — DNP Wed/Thu, expected to miss multiple games', 'Marquise Brown': 'ankle — DNP Wed/Thu, missed Week 3',
-  'DeVonta Smith': 'hamstring — DNP Wed/Thu, not expected to play',
+  'Breece Hall': 'quad — out', 'Adonai Mitchell': 'finger — out, week-to-week', 'Mason Taylor': 'thumb — out, week-to-week',
+  'Travis Etienne': 'hamstring — out multiple weeks', 'Terrance Ferguson': 'ankle — out',
+  'Dallas Goedert': 'knee — out', 'Marquise Brown': 'ankle — out', 'DeVonta Smith': 'hamstring — out',
+  'Justin Jefferson': 'ankle — ruled out Friday', 'Keenan Allen': 'groin — ruled out Saturday, inactive in London',
+  'Terry McLaurin': 'hamstring — inactive in London', 'Rachaad White': 'shoulder — ruled out Friday',
+  'Jadarian Price': 'chest — placed on IR', 'Caleb Douglas': 'ankle — ruled out Friday', 'Xavier Legette': 'knee — ruled out Friday',
+  'Brenen Thompson': 'quad — ruled out Friday', 'Charlie Kolar': 'forearm — ruled out Friday', 'Colbie Young': 'ruled out Friday',
 }
+# confirmed inactive after the official report listed them Questionable: the official status must not restore them
+CONFIRMED_OUT = {'Keenan Allen', 'Terry McLaurin'}
 QUESTIONABLE = {  # kept in; flagged
-  'Justin Jefferson': 'ankle sprain — DNP Wed/Thu; needs to practice Friday to have a chance', "D'Andre Swift": 'knee — new, DNP Thu',
-  'Will Shipley': 'foot — limited Thu (played Week 3)', 'Rachaad White': 'shoulder — DNP Wed/Thu',
-  'Mike Evans': 'rib — DNP Wed/Thu, GM says he will make every attempt to play', 'Keon Coleman': 'ankle — limited Thu',
-  'Xavier Legette': 'knee — DNP Wed/Thu', 'Jalen Coker': 'quad — limited Thu after a Wednesday DNP', 'Caleb Douglas': 'ankle — DNP Wed/Thu, sat Week 3',
-  'Colby Parkinson': 'knee/shoulder — DNP Wed/Thu', 'Charlie Kolar': 'forearm — DNP Wed/Thu', 'Brenen Thompson': 'quad — DNP Wed/Thu',
+  'Mike Evans': 'rib — questionable, game-time decision', 'Jalen Coker': 'quad — questionable, limited Friday',
+  'Colby Parkinson': 'knee/shoulder — questionable, missed Thu/Fri', 'Ladd McConkey': 'foot — questionable, limited Friday',
+  'Tyjae Spears': 'ankle — questionable', 'Zay Flowers': 'hamstring — questionable (listing includes rest)', 'Chris Moore': 'ankle — questionable',
 }
 # veteran rest days: on the report as DNP, but not injuries (the role correction would otherwise trim their shares)
 REST = ['Davante Adams', 'Christian McCaffrey']
@@ -63,7 +66,7 @@ if os.path.exists(_f):
     # the official report comes out after the hand list was written: a player it lists as Questionable (practising,
     # undecided) is kept and flagged rather than removed on older news. No game status yet (Monday games) leaves the hand list.
     for r in _i.itertuples():
-        if r.report_status == 'Questionable' and r.full_name in OUT:
+        if r.report_status == 'Questionable' and r.full_name in OUT and r.full_name not in CONFIRMED_OUT:
             print(f'official Questionable overrides hand out: {r.full_name}'); OUT.pop(r.full_name)
             QUESTIONABLE[r.full_name] = f"{r.report_primary_injury.lower() if isinstance(r.report_primary_injury, str) else 'injury'} — questionable (official)"
 print('official report: out/doubtful', len(OFFICIAL_OUT), [v[0] for v in OFFICIAL_OUT.values()])
@@ -77,7 +80,7 @@ STARTER = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__))
 TIER = {'WAS': -1, 'CHI': -1, 'NYG': 0, 'MIN': 1, 'TB': -1}
 QBWHY = {
   'WAS': "Daniels dislocated his elbow; Mariota starts. He threw 17 of Washington's 40 dropbacks in Week 2 after Daniels left, so the priors are about 20% his.",
-  'CHI': "Caleb Williams (hamstring) and Tyson Bagent (concussion) both out — Case Keenum starts with zero snaps in the sample behind Chicago's usage.",
+  'CHI': "Caleb Williams (hamstring) out — Tyson Bagent starts (reports Saturday), with little recent sample behind Chicago's usage.",
   'NYG': "Dart is out for the season. Winston started Week 2 (11 of 29, 111 yards), so roughly half the sample is his.",
   'SEA': "Darnold is back from the glute injury (full practice, no game status, depth-chart QB1). He left Week 1 after 5 snaps and Lock started Week 2, so Seattle's 2026 sample is almost all Lock.",
   'TB': "Baker Mayfield dislocated his right thumb (out about three weeks). Undrafted rookie Jalon Daniels makes his first NFL start with no regular-season snaps, so none of Tampa Bay's usage sample is his.",

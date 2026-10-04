@@ -1,8 +1,8 @@
 {
- "asOf": "Fri Oct 2",
- "about": "Re-simulated Friday Oct 2 (morning ET) with Wednesday and Thursday practice reports and the week's news. Steelers\u2013Browns is final and graded; its picks stay as they were at kickoff. Players listed as out are removed and 72% of their carries and targets go to teammates at their position, split by what each has done this season. Flags mark news the model still can't price: players who might not play, and Friday game statuses that come out this afternoon.",
- "bar": "Re-simulated Oct 2 with Thursday's practice reports. Friday game statuses come out this afternoon.",
- "outsNote": "Already out of this build. Their carries and targets went to the next men up at their position:",
+ "asOf": "Sun Oct 4",
+ "about": "Sunday-morning rebuild (8:30 a.m. ET). The simulation was re-run with Friday's final injury report, Saturday's moves, the London inactives and Tyson Bagent starting for CHI. Players who are out are removed, and the next men up get their carries and targets in the numbers. Questionable players are built as playing and flagged. Steelers–Browns is final and graded; its picks stay as they were at kickoff. New this run: sportsbooks have now posted yardage and catch lines, so those picks are measured against the posted line (over or under) instead of a milestone. The model's yardage projections run well below the books' lines for many lead players, so the big under numbers say more about the model than about a sure thing. Inactives for 1 p.m. games come about 11:30 a.m. ET and aren't in this.",
+ "bar": "Re-run Sunday morning: Jefferson, Keenan Allen, McLaurin and Rachaad White are out of the numbers, and Bagent starts for CHI. Still to come: Evans, McConkey, Coker and Parkinson are questionable (inactives about 90 minutes before kickoff). Yardage picks now use the books' posted lines, which is why unders show up on the board.",
+ "outsNote": "Out, and taken out of the numbers: their carries and targets went to the teammates behind them.",
  "outs": [
   {
    "n": "Breece Hall",
@@ -35,21 +35,6 @@
    "r": "ankle, not expected to play. Tyler Higbee picks up most of his targets."
   },
   {
-   "n": "Dallas Goedert",
-   "t": "PHI",
-   "r": "knee, missed Week 3, Wednesday and Thursday and is expected to miss multiple games. Johnny Mundt is the TE. Final status comes Friday."
-  },
-  {
-   "n": "DeVonta Smith",
-   "t": "PHI",
-   "r": "hamstring, missed Wednesday and Thursday; the Eagles don't expect him to play. Dontayvion Wicks moves up (16% to 22% of targets), Makai Lemon 13% to 18%."
-  },
-  {
-   "n": "Marquise Brown",
-   "t": "PHI",
-   "r": "ankle, missed Week 3, Wednesday and Thursday. Final status comes Friday."
-  },
-  {
    "n": "Jayden Reed",
    "t": "GB",
    "r": "neck surgery, out for the season. His targets go to Matthew Golden and Christian Watson."
@@ -60,121 +45,249 @@
    "r": "dislocated thumb, about three weeks. Undrafted rookie Jalon Daniels starts."
   },
   {
+   "n": "Dallas Goedert",
+   "t": "PHI",
+   "r": "knee, officially out. Johnny Mundt is the TE."
+  },
+  {
+   "n": "DeVonta Smith",
+   "t": "PHI",
+   "r": "hamstring, officially out. Dontayvion Wicks and Makai Lemon move up."
+  },
+  {
+   "n": "Marquise Brown",
+   "t": "PHI",
+   "r": "ankle, officially out."
+  },
+  {
    "n": "Caleb Williams",
    "t": "CHI",
-   "r": "hamstring. Case Keenum starts (Ben Johnson hasn't named him; Tyson Bagent cleared concussion protocol)."
+   "r": "hamstring. Tyson Bagent starts (reports Saturday); the rebuild uses him."
+  },
+  {
+   "n": "Justin Jefferson",
+   "t": "MIN",
+   "r": "ankle, ruled out Friday. Jordan Addison becomes the No. 1; Jalen Nailor and the TEs pick up the rest."
+  },
+  {
+   "n": "Keenan Allen",
+   "t": "IND",
+   "r": "groin, ruled out Saturday and inactive in London. More targets for Josh Downs and Tyler Warren."
+  },
+  {
+   "n": "Terry McLaurin",
+   "t": "WAS",
+   "r": "hamstring, inactive in London. Antonio Williams and Stefon Diggs move up."
+  },
+  {
+   "n": "Rachaad White",
+   "t": "WAS",
+   "r": "shoulder, ruled out Friday. Jacory Croskey-Merritt leads, with Austin Ekeler behind him."
+  },
+  {
+   "n": "Jadarian Price",
+   "t": "SEA",
+   "r": "chest, placed on IR. Emanuel Wilson and George Holani split the work."
+  },
+  {
+   "n": "Caleb Douglas",
+   "t": "MIA",
+   "r": "ankle, ruled out Friday."
+  },
+  {
+   "n": "Xavier Legette",
+   "t": "CAR",
+   "r": "knee, ruled out Friday."
+  },
+  {
+   "n": "Brenen Thompson",
+   "t": "LAC",
+   "r": "quad, ruled out Friday."
+  },
+  {
+   "n": "Charlie Kolar",
+   "t": "LAC",
+   "r": "forearm, ruled out Friday. Oronde Gadsden II is the TE."
   }
  ],
  "players": {
   "Justin Jefferson": {
-   "s": "risk",
-   "n": "Ankle sprain, missed Wednesday and Thursday. Built with him playing at a trimmed share. He likely needs to practice Friday to play; if he sits, Jordan Addison is the No. 1."
+   "s": "out",
+   "n": "Out: ankle, ruled out Friday. Jordan Addison becomes the No. 1; Jalen Nailor and the TEs pick up the rest."
   },
   "Jordan Addison": {
    "s": "up",
-   "n": "Becomes the No. 1 receiver if Jefferson sits. This build has Jefferson playing."
-  },
-  "Will Shipley": {
-   "s": "watch",
-   "n": "Foot, upgraded to limited Thursday; has a shot to play. Built with him playing."
+   "n": "Jefferson is out, so Addison is the No. 1 receiver. The rebuild gives him Jefferson's share (anytime TD 30% Friday, 44% now)."
   },
   "Jalen Coker": {
    "s": "watch",
-   "n": "Quad, upgraded to limited Thursday after missing Wednesday. Built with him playing."
-  },
-  "Xavier Legette": {
-   "s": "risk",
-   "n": "Knee, missed Wednesday and Thursday. Built with him playing."
+   "n": "Quad, questionable after a limited Friday. Built with him playing. SNF inactives come about 6:50 p.m. ET."
   },
   "Keon Coleman": {
    "s": "watch",
-   "n": "Ankle, limited Thursday after missing Wednesday. Built with him playing."
+   "n": "Off the final injury report. NE CB Christian Gonzalez is out; the matchups now account for that."
   },
   "Caleb Douglas": {
-   "s": "risk",
-   "n": "Ankle, missed Wednesday and Thursday after sitting out Week 3. Built with him playing."
+   "s": "out",
+   "n": "Out: ankle, ruled out Friday."
   },
   "Colby Parkinson": {
    "s": "risk",
-   "n": "Knee/shoulder, missed Wednesday and Thursday. Built with him playing."
+   "n": "Knee/shoulder, questionable after missing Thursday and Friday. Built with him playing."
   },
   "Charlie Kolar": {
-   "s": "risk",
-   "n": "Forearm, missed Wednesday and Thursday. Built with him playing."
+   "s": "out",
+   "n": "Out: forearm, ruled out Friday. Oronde Gadsden II is the TE."
   },
   "Brenen Thompson": {
-   "s": "risk",
-   "n": "Quad, missed Wednesday and Thursday. Built with him playing."
+   "s": "out",
+   "n": "Out: quad, ruled out Friday."
   },
   "Rachaad White": {
-   "s": "risk",
-   "n": "Shoulder, missed Wednesday and Thursday in London. Built with him playing; Jacory Croskey-Merritt gets more if he sits."
+   "s": "out",
+   "n": "Out: shoulder, ruled out Friday. Jacory Croskey-Merritt leads, with Austin Ekeler behind him."
   },
   "Austin Ekeler": {
-   "s": "watch",
-   "n": "Signed this week and may be active if Rachaad White can't go."
+   "s": "up",
+   "n": "Rachaad White is out, so Ekeler is the change-of-pace back."
   },
   "Tyjae Spears": {
    "s": "watch",
-   "n": "Ankle, limited Thursday; played through it last week. Built with him playing."
+   "n": "Ankle, questionable. Tony Pollard was cleared and gets the full load if Spears sits."
   },
   "Mike Evans": {
    "s": "risk",
-   "n": "Rib, missed Wednesday and Thursday (worked on the side). GM John Lynch says he'll make every attempt to play. Built with him playing."
+   "n": "Rib, questionable and a game-time decision ('It's my job'). Built with him playing. Inactives about 2:55 p.m. ET."
   },
   "Puka Nacua": {
    "s": "watch",
-   "n": "Back after missing two games (hip/groin), limited Wednesday and Thursday. Modeled at his usual share; a snap limit would make his numbers high."
+   "n": "Cleared off the final report and expected to play. Built at his usual share; a snap limit would make his numbers high."
   },
   "Nico Collins": {
    "s": "watch",
-   "n": "Back after missing two games, limited Wednesday and Thursday. Modeled at his usual share; a snap limit would make his numbers high."
+   "n": "Cleared off the final report and will play after a two-game absence. Built at his usual share; a snap limit would make his numbers high."
   },
   "Kene Nwangwu": {
    "s": "watch",
    "n": "No offensive snaps this season. His share comes mostly from the model's running-back average, so treat his number as high. Braelon Allen is the lead back, with Isaiah Davis mixed in."
   },
   "D'Andre Swift": {
-   "s": "risk",
-   "n": "New knee injury: added to the report Thursday as a DNP. Built with him playing at a trimmed share; Kyle Monangai leads the backfield if he sits."
+   "s": "watch",
+   "n": "Not on Friday's final injury report, so he's expected to play. Still built at a trimmed share after his Thursday DNP."
   },
   "Kyle Monangai": {
-   "s": "up",
-   "n": "Becomes the lead back if D'Andre Swift (knee) can't go. This build has Swift playing."
+   "s": "watch",
+   "n": "Swift is expected to play, so Monangai stays the No. 2 as built."
   },
   "Davante Adams": {
    "s": "watch",
    "n": "His Wednesday and Thursday DNPs were rest days, not an injury; he's expected to play and is modeled at his full share."
+  },
+  "Keenan Allen": {
+   "s": "out",
+   "n": "Out: groin, ruled out Saturday and inactive in London. Josh Downs and Tyler Warren should see more targets than shown."
+  },
+  "Terry McLaurin": {
+   "s": "out",
+   "n": "Out: hamstring, inactive in London. Antonio Williams and Stefon Diggs move up."
+  },
+  "Jadarian Price": {
+   "s": "out",
+   "n": "Out: chest, placed on IR. Emanuel Wilson and George Holani split the work."
+  },
+  "Josh Downs": {
+   "s": "up",
+   "n": "Keenan Allen is out; the rebuild moves his targets here."
+  },
+  "Tyler Warren": {
+   "s": "up",
+   "n": "Keenan Allen is out; the rebuild moves his targets here."
+  },
+  "Antonio Williams": {
+   "s": "up",
+   "n": "McLaurin is inactive, so the rookie moves into a bigger role (in the numbers now)."
+  },
+  "Stefon Diggs": {
+   "s": "up",
+   "n": "McLaurin is inactive; Diggs becomes Washington's top outside target (in the numbers now)."
+  },
+  "Jacory Croskey-Merritt": {
+   "s": "up",
+   "n": "Rachaad White is out; Croskey-Merritt leads the backfield (in the numbers now)."
+  },
+  "Emanuel Wilson": {
+   "s": "up",
+   "n": "Jadarian Price went to IR; Wilson leads the backfield (in the numbers now)."
+  },
+  "George Holani": {
+   "s": "up",
+   "n": "Jadarian Price went to IR; Holani picks up some of his work."
+  },
+  "Tre Harris": {
+   "s": "up",
+   "n": "Would be the top target if Ladd McConkey (questionable, foot) sits."
+  },
+  "Ladd McConkey": {
+   "s": "risk",
+   "n": "New foot injury: limited Wednesday, out Thursday, limited Friday; questionable. Built with him playing. Inactives about 2:55 p.m. ET."
+  },
+  "Zay Flowers": {
+   "s": "watch",
+   "n": "Questionable (hamstring), but the listing includes rest, which points to him playing. In the build."
+  },
+  "Chris Moore": {
+   "s": "watch",
+   "n": "Ankle, questionable."
+  },
+  "DJ Moore": {
+   "s": "watch",
+   "n": "Off the injury report. NE CB Christian Gonzalez is out; the matchups now account for that."
+  },
+  "Ja'Marr Chase": {
+   "s": "watch",
+   "n": "JAX CB Montaric Brown, the corner in his matchup, is questionable (hamstring). If he sits, the matchup gets easier."
+  },
+  "Xavier Legette": {
+   "s": "out",
+   "n": "Out: (knee)."
   }
  },
  "picks": {
-  "2026w4-mia-min-ml-min": {
-   "s": "watch",
-   "n": "Built with Jefferson playing; he missed Wednesday and Thursday. MIN stays a big favorite either way."
-  },
-  "2026w4-mia-min-ats-min": {
-   "s": "watch",
-   "n": "Built with Jefferson playing; he missed Wednesday and Thursday. If he sits, this is weaker than shown."
-  },
   "2026w4-ten-bal-td-derrick-henry": {
    "s": "watch",
    "n": "BAL lost both centers (Gwyn, Pocic) long-term: a small knock on short-yardage runs the model can't see yet."
   },
   "2026w4-la-phi-ats-phi": {
    "s": "watch",
-   "n": "Built with Smith, Goedert and Hollywood Brown out, Shipley playing and Puka Nacua back. Eagles' final statuses come Friday afternoon."
+   "n": "Confirmed: Smith, Goedert and Hollywood Brown out (as built). New: LA without DT Aaron Donald and CB Jaylen Watson (helps PHI); PHI without S Marcus Epps and LB Zack Baun (hurts PHI)."
   },
   "2026w4-la-phi-ml-phi": {
    "s": "watch",
-   "n": "Same as the PHI spread: Smith, Goedert and Hollywood Brown out, Puka Nacua back. Final statuses come Friday afternoon."
+   "n": "Same as the spread: Donald and Watson out for LA; Epps and Baun out for PHI. Roughly a wash."
   },
   "2026w4-la-phi-tot-over": {
    "s": "watch",
-   "n": "Built with Smith, Goedert and Hollywood Brown out and Puka Nacua back. Final statuses come Friday afternoon."
+   "n": "Defensive starters out on both sides (Donald, Watson; Epps, Baun). If anything, leans Over."
   },
   "2026w4-gb-tb-ats-tb": {
+   "s": "risk",
+   "n": "Jalon Daniels starts for TB (as built), and TB CB Benjamin Morrison is out (in the matchups now). The market is at GB -3.5; the model is close to a pick’em."
+  },
+  "2026w4-den-sf-ats-den": {
+   "s": "up",
+   "n": "SF is without edge rushers Nick Bosa and Mykel Williams and DT James Thompson Jr. Mike Evans is a game-time decision."
+  },
+  "2026w4-den-sf-ml-sf": {
+   "s": "risk",
+   "n": "SF is without Bosa, Mykel Williams and James Thompson Jr., and Evans is a game-time decision. Weaker than shown."
+  },
+  "2026w4-ten-bal-ats-bal": {
    "s": "watch",
-   "n": "Built with Jalon Daniels starting. The model has this a pick'em while the market moved to GB -3.5; the model rates an unknown rookie QB only a little below average."
+   "n": "BAL is without OLB Trey Hendrickson and both centers. Flowers is questionable but the listing includes rest."
+  },
+  "2026w4-lac-sea-tot-under": {
+   "s": "watch",
+   "n": "LAC's McConkey is questionable and built as playing; Thompson and Kolar are out of the numbers."
   }
  },
  "games": {
@@ -183,57 +296,58 @@
    "The model's Under 38.5 lost (51 points) and PIT win lost; CLE +2.5 won. Warren (93 rushing yards), Metcalf, Boston, Concepcion and Fannin hit their yardage lines."
   ],
   "ind-was": [
-   "Mariota starts again for WAS (in the model). Jayden Daniels was limited.",
-   "WAS RB Rachaad White (shoulder) missed Wednesday and Thursday; Austin Ekeler signed. S Nick Cross (in this build) and G Sam Cosmi are ruled out."
+   "Inactive in London: Keenan Allen (IND), Terry McLaurin, Rachaad White, Jayden Daniels (WAS). Marcus Mariota starts for WAS, as built.",
+   "Allen, McLaurin and White are out of the numbers in this rebuild. Downs, Tyler Warren, Antonio Williams, Diggs and Croskey-Merritt move up."
   ],
   "ten-bal": [
-   "Lamar Jackson and Zay Flowers were full participants Thursday. Flowers is in this build; the Sep 30 build had him out.",
-   "BAL lost centers Jovaughn Gwyn and Ethan Pocic long-term. TEN's Tony Pollard was full Thursday, Tyjae Spears limited."
+   "Final report: BAL OLB Trey Hendrickson out along with both centers (Gwyn, Pocic). Zay Flowers and Chris Moore questionable; Flowers' listing includes rest.",
+   "TEN: Tony Pollard cleared; Tyjae Spears and S Kevin Winston Jr. questionable."
   ],
   "ne-buf": [
-   "DJ Moore limited (shoulder), expected to play. Keon Coleman was limited Thursday.",
-   "NE CB Christian Gonzalez and RT Morgan Moses missed Wednesday; Drake Maye was a full participant."
+   "NE ruled out CB Christian Gonzalez and DT Christian Barmore (Channing Canada is questionable). The matchups no longer have Gonzalez covering anyone.",
+   "BUF CB Christian Benford (toe) is questionable; DL T.J. Sanders doubtful. Drake Maye is a full go."
   ],
   "nyj-chi": [
-   "Caleb Williams out; Case Keenum starts in this build (not officially named). D'Andre Swift (knee) was added to Thursday's report as a DNP.",
-   "NYJ without Breece Hall, Adonai Mitchell and TE Mason Taylor. Braelon Allen leads the backfield and Garrett Wilson's target share jumps to about 37%."
+   "Tyson Bagent starts for CHI (reports Saturday); the rebuild uses him instead of Case Keenum. CHI is also without slot CB Kyler Gordon and LB Noah Sewell.",
+   "D'Andre Swift is not on the final report and should play. NYJ: Hall, Adonai Mitchell and Mason Taylor out as built; TE Kenyon Sadiq questionable (back)."
   ],
   "jax-cin": [
-   "Jakobi Meyers limited (thumb) as usual. JAX RB LeQuint Allen Jr. limited (hip).",
-   "CIN S Kyle Dugger and DT B.J. Hill missed Wednesday."
+   "JAX CB Montaric Brown (in Ja'Marr Chase's matchup) is questionable. CIN ruled out WR Colbie Young and S Kyle Dugger; S Bryan Cook is questionable."
   ],
   "dal-hou": [
-   "Nico Collins is back (limited Wednesday, expected to play) and in this build. The Sep 30 build had him out."
+   "Nico Collins was cleared and plays. DAL ruled out CB Cobie Durant (now out of the matchups) and LB DeMarvion Overshown.",
+   "HOU without LB Azeez Al-Shaair and S M.J. Stewart; Jadeveon Clowney questionable."
   ],
   "la-phi": [
-   "LA gets Puka Nacua back (limited Wed/Thu; in this build); TE Terrance Ferguson is out. Davante Adams' two DNPs were rest days.",
-   "PHI: DeVonta Smith, Goedert and Hollywood Brown are out in this build (all DNP Wed/Thu; the team doesn't expect Smith to play). Shipley was limited Thursday. Final statuses Friday afternoon."
+   "PHI: Smith, Goedert and Hollywood Brown officially out (as built), plus S Marcus Epps and LB Zack Baun. Will Shipley is off the report.",
+   "LA: Puka Nacua cleared; DT Aaron Donald and CB Jaylen Watson out (Watson is out of the matchups now); TE Colby Parkinson questionable with Terrance Ferguson already out."
   ],
   "gb-tb": [
-   "Baker Mayfield (dislocated thumb) is out about three weeks; undrafted rookie Jalon Daniels starts. The model now has this a pick'em (TB 54% before); the market moved to GB -3.5 and the total to 38.5.",
-   "GB's Jayden Reed is out for the season (neck surgery); his targets go to Golden and Watson. Chris Godwin Jr. was a full participant Thursday."
+   "Jalon Daniels starts for TB (as built). TB also ruled out CB Benjamin Morrison (now out of the matchups); nickel Jacob Parrish is questionable (personal).",
+   "GB's Jayden Reed is out for the season (as built). Godwin and Bucky Irving are off TB's report."
   ],
   "mia-min": [
-   "Justin Jefferson (ankle) missed Wednesday and Thursday; this build has him playing. Friday's practice decides it.",
-   "MIA lost De'Von Achane for the season; Ollie Gordon II leads, with Jaylen Wright (full Thursday) in a smaller role."
+   "Justin Jefferson is OUT; the rebuild has him out and Addison as the No. 1. MIN is also without CB Charles Demmings and its punter.",
+   "MIA ruled out WR Caleb Douglas; Jaylen Wright and Chris Bell are off the report."
   ],
   "kc-lv": [
-   "Nothing material: Mahomes and Ashton Jeanty practiced fully. Brock Bowers is no longer on the report."
+   "KC LT Josh Simmons is out; LV G Jackson Powers-Johnson is out. Otherwise clean."
   ],
   "lac-sea": [
-   "LAC missed six on Wednesday, including CB Donte Jackson (concussion) and TE Charlie Kolar. Derwin James and Ladd McConkey were limited."
+   "SEA put RB Jadarian Price on IR; Emanuel Wilson and George Holani get his work.",
+   "LAC: Brenen Thompson and Charlie Kolar out; McConkey questionable (foot), as are DBs Derwin James, Elijah Molden and Donte Jackson (Jackson and James are in this build's SEA matchups)."
   ],
   "den-sf": [
-   "Mike Evans (rib) missed Wednesday and Thursday but worked on the side; the GM expects him to try to play. Christian McCaffrey's Wednesday DNP was a rest day."
+   "SF ruled out Nick Bosa, Mykel Williams and DT James Thompson Jr.: a thin pass rush the model can't see. Mike Evans (rib) is a game-time decision."
   ],
   "det-car": [
-   "CAR placed CBs Jaycee Horn and Mike Jackson on IR (in this build's matchups). Jalen Coker was limited Thursday, Xavier Legette missed again; Bryce Young, Chuba Hubbard and Darren Waller were full."
+   "CAR ruled out Xavier Legette; Jalen Coker is questionable. DET CB D.J. Reed (rib) is questionable. Sunday night: inactives about 6:50 p.m. ET."
   ],
   "atl-no": [
-   "NO RB Travis Etienne is out for multiple weeks; Alvin Kamara starts. The spread moved to ATL +2.5, which this build uses."
+   "Monday night. NO ruled out DEs Carl Granderson and Anfernee Jennings and LB Kaden Elliss; TE Noah Fant is questionable. Etienne out (as built)."
   ],
   "ari-nyg": [
-   "NYG RB Tyrone Tracy Jr. was limited Thursday; LT Andrew Thomas missed Wednesday."
+   "NYG have no injury designations. ARI ruled out S Dadrion Taylor-Demerson; Josh Sweat questionable."
   ]
  }
 }
