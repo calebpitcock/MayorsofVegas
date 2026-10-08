@@ -46,7 +46,7 @@ const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const imp=o=>o<0?-o/(-o+100):100/(o+100), am=p=>p>=.5?-Math.round(100*p/(1-p)):Math.round(100*(1-p)/p);
 const price=(o,src)=>o==null||isNaN(o)?null:{odds:Math.round(o),implied:+imp(o).toFixed(3),src};
 const EXT='/home/user/ext', TDP={}, PROPS={};
-try{ const t=JSON.parse(fs.readFileSync(EXT+'/jaredpatchett_NFL-Model/data/player_td.json'));
+try{ const t=JSON.parse(fs.readFileSync(EXT+'/jaredpatchett_NFL-Model/data/player_td.json','utf8').replace(/:\s*-?NaN\b/g,': null'));   // the upstream file sometimes carries bare NaN
   if(t.week===WEEK) for(const x of t.players){ const o=(x.market||{}).anytime_td_price; if(o!=null) TDP[x.player_id]={o:+o,asOf:t.generated_at.slice(0,10)}; } }catch(e){}
 try{ const rows=fs.readFileSync(EXT+'/nfl-player-prop-opportunity/data/latest/player_props.csv','utf8').trim().split('\n');
   const H=rows[0].split(','), ix=k=>H.indexOf(k), MK={player_reception_yds:'recYds',player_rush_yds:'rushYds',player_receptions:'rec'};

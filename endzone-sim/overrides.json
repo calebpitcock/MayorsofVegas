@@ -1,10 +1,6 @@
 {
- "week": 4,
+ "week": 5,
  "STARTER": {
-  "WAS": "Marcus Mariota",
-  "CHI": "Tyson Bagent",
-  "NYG": "Jameis Winston",
-  "MIN": "Kyler Murray",
   "TB": "Jalon Daniels"
  },
  "EARLY_EXIT": [
@@ -16,8 +12,16 @@
  ],
  "DEF_OUT": [
   [
-   "Nick Cross",
-   "WAS"
+   "Antoine Winfield Jr.",
+   "TB"
+  ],
+  [
+   "Benjamin Morrison",
+   "TB"
+  ],
+  [
+   "Cobie Durant",
+   "DAL"
   ]
  ]
 }

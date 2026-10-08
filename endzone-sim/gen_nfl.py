@@ -20,25 +20,14 @@ def pid_of(name, team=None):
     if len(m) > 1 and m.position.isin(['QB', 'RB', 'FB', 'WR', 'TE']).any(): m = m[m.position.isin(['QB', 'RB', 'FB', 'WR', 'TE'])]   # e.g. CLE LB Justin Jefferson
     return m.index[-1]
 
-# ---- this week's availability (Sunday Oct 4 morning: Friday's final report, Saturday moves, London inactives) ----
+# ---- this week's availability (Thursday Oct 8, Week 5 TNF TB @ DAL: Wednesday's final report; the Sunday games need their own lists) ----
 OUT = {  # confident enough to remove; the page lets the user restore anyone
-  'Jayden Daniels': 'elbow — inactive, Mariota starts', 'Caleb Williams': 'hamstring — out (grade 2, 3-4 weeks)',
-  'Jaxson Dart': 'knee — season-ending surgery', 'Baker Mayfield': 'thumb — dislocated, out about three weeks; Jalon Daniels starts',
-  'Jayden Reed': 'neck — season-ending surgery', "De'Von Achane": 'out for the season',
-  'Breece Hall': 'quad — out', 'Adonai Mitchell': 'finger — out, week-to-week', 'Mason Taylor': 'thumb — out, week-to-week',
-  'Travis Etienne': 'hamstring — out multiple weeks', 'Terrance Ferguson': 'ankle — out',
-  'Dallas Goedert': 'knee — out', 'Marquise Brown': 'ankle — out', 'DeVonta Smith': 'hamstring — out',
-  'Justin Jefferson': 'ankle — ruled out Friday', 'Keenan Allen': 'groin — ruled out Saturday, inactive in London',
-  'Terry McLaurin': 'hamstring — inactive in London', 'Rachaad White': 'shoulder — ruled out Friday',
-  'Jadarian Price': 'chest — placed on IR', 'Caleb Douglas': 'ankle — ruled out Friday', 'Xavier Legette': 'knee — ruled out Friday',
-  'Brenen Thompson': 'quad — ruled out Friday', 'Charlie Kolar': 'forearm — ruled out Friday', 'Colbie Young': 'ruled out Friday',
+  'Baker Mayfield': 'thumb — dislocated, out (official); Jalon Daniels starts',
 }
 # confirmed inactive after the official report listed them Questionable: the official status must not restore them
-CONFIRMED_OUT = {'Keenan Allen', 'Terry McLaurin'}
+CONFIRMED_OUT = set()
 QUESTIONABLE = {  # kept in; flagged
-  'Mike Evans': 'rib — questionable, game-time decision', 'Jalen Coker': 'quad — questionable, limited Friday',
-  'Colby Parkinson': 'knee/shoulder — questionable, missed Thu/Fri', 'Ladd McConkey': 'foot — questionable, limited Friday',
-  'Tyjae Spears': 'ankle — questionable', 'Zay Flowers': 'hamstring — questionable (listing includes rest)', 'Chris Moore': 'ankle — questionable',
+  'Jonathan Mingo': 'illness — questionable, did not practice',
 }
 # veteran rest days: on the report as DNP, but not injuries (the role correction would otherwise trim their shares)
 REST = ['Davante Adams', 'Christian McCaffrey']
@@ -83,7 +72,7 @@ QBWHY = {
   'CHI': "Caleb Williams (hamstring) out — Tyson Bagent starts (reports Saturday), with little recent sample behind Chicago's usage.",
   'NYG': "Dart is out for the season. Winston started Week 2 (11 of 29, 111 yards), so roughly half the sample is his.",
   'SEA': "Darnold is back from the glute injury (full practice, no game status, depth-chart QB1). He left Week 1 after 5 snaps and Lock started Week 2, so Seattle's 2026 sample is almost all Lock.",
-  'TB': "Baker Mayfield dislocated his right thumb (out about three weeks). Undrafted rookie Jalon Daniels makes his first NFL start with no regular-season snaps, so none of Tampa Bay's usage sample is his.",
+  'TB': "Baker Mayfield is still out with the dislocated right thumb. Undrafted rookie Jalon Daniels makes his second start; Week 4 was his first, so only one game of Tampa Bay's usage sample is his.",
   'MIN': "Murray is back from the concussion. He took 7 dropbacks in Week 1 before leaving; Wentz generated almost all of Minnesota's priors.",
 }
 
@@ -100,9 +89,11 @@ AGG = nb.coach_agg(SEASON, WEEK)          # head coach fourth-down aggressivenes
 import scheme_match as sm
 COV = sm.week_tables(SEASON, WEEK)        # coverage/blitz matchups (charting data)
 games = []
+ONLY = set(filter(None, (os.environ.get('EZGAMES') or '').upper().split(',')))   # e.g. EZGAMES=TB,DAL: just the games these teams play
 for r in L.itertuples():
     if pd.notna(r.home_score): continue          # already played
     a, h = r.away_team, r.home_team
+    if ONLY and not ({a, h} & ONLY): continue
     g = dict(id=f'{a}-{h}'.lower(), league='NFL', away=a, home=h, awayName=NAMES[a], homeName=NAMES[h],
              kick=f"{r.weekday[:3]} {int(r.gametime[:2])%12 or 12}:{r.gametime[3:]} ET" + (' · Brazil' if r.location == 'Neutral' else ''),
              spread=-float(r.spread_line), spreadSrc='book', total=float(r.total_line), totalSrc='book',
@@ -166,7 +157,8 @@ def fix(o):
     if isinstance(o, dict): return {('pass' if k == 'pass_' else 'as' if k == 'as_' else k): fix(v) for k, v in o.items()}
     if isinstance(o, list): return [fix(x) for x in o]
     return o
-_days = pd.to_datetime(L[L.home_score.isna()].gameday)
+_left = L[L.home_score.isna() & (L.away_team.isin(ONLY) | L.home_team.isin(ONLY) if ONLY else True)]
+_days = pd.to_datetime(_left.gameday)
 _lab = f"Week {WEEK}" + (f" · {_days.min():%b} {_days.min().day}" + (f"–{_days.max().day}" if _days.max() != _days.min() else "") if len(_days) else "")
 _old = old.get('data', old)
 slate = fix(dict(label=_lab, league='NFL', updated=pd.Timestamp.now('UTC').isoformat(), version=int(_old.get('version', 0)) + 1, engine=3,

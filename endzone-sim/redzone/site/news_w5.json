@@ -1,0 +1,70 @@
+{
+ "asOf": "Thu Oct 8",
+ "about": "Thursday-night run, tonight's game only (Buccaneers at Cowboys, 8:15 ET). Built with Wednesday's final injury report and today's book prices. The Sunday and Monday games aren't in this run yet. Players who are out are removed, and the next men up get their carries and targets in the numbers. Questionable players are built as playing and flagged. The model's yardage projections run below the books' lines for many lead players, so the big under numbers say more about the model than about a sure thing.",
+ "bar": "Tonight only: Jalon Daniels makes his second start for TB with Mayfield out. TB is also without S Antoine Winfield Jr. and CB Benjamin Morrison, so they're out of the Matchups tab. Inactives come about 6:45 p.m. ET; G Tyler Smith (DAL) is questionable and could make his season debut.",
+ "outsNote": "Out, and taken out of the numbers.",
+ "outs": [
+  {
+   "n": "Baker Mayfield",
+   "t": "TB",
+   "r": "dislocated right thumb, officially out. Jalon Daniels starts."
+  },
+  {
+   "n": "Antoine Winfield Jr.",
+   "t": "TB",
+   "r": "S, rib fracture, out (expected 2 to 4 weeks). Removed from the coverage matchups."
+  },
+  {
+   "n": "Benjamin Morrison",
+   "t": "TB",
+   "r": "CB, quad, out. Removed from the coverage matchups."
+  },
+  {
+   "n": "SirVocea Dennis",
+   "t": "TB",
+   "r": "LB, ankle/foot, out."
+  },
+  {
+   "n": "Cobie Durant",
+   "t": "DAL",
+   "r": "CB, hamstring, out. Removed from the coverage matchups."
+  },
+  {
+   "n": "DeMarvion Overshown",
+   "t": "DAL",
+   "r": "LB, hamstring, out."
+  },
+  {
+   "n": "Drew Shelton",
+   "t": "DAL",
+   "r": "T, hamstring, out."
+  }
+ ],
+ "players": {
+  "Jalon Daniels": {
+   "s": "watch",
+   "n": "Second NFL start. Only one game of Tampa Bay's usage sample is his, so the model leans partly on Mayfield-era priors."
+  },
+  "Jonathan Mingo": {
+   "s": "watch",
+   "n": "Illness, questionable after not practicing. He isn't in the model's main rotation for tonight."
+  }
+ },
+ "picks": {
+  "2026w5-tb-dal-ats-tb": {
+   "s": "watch",
+   "n": "The line moved: nflverse had DAL -8.5, DraftKings is DAL -9.5 now. The pick is graded against +9.5."
+  },
+  "2026w5-tb-dal-td-javonte-williams": {
+   "s": "watch",
+   "n": "Books have him at -190 (66%); the model says 37%. The other model in the price feed has him at 75%, so this is a big disagreement, not a lock either way."
+  }
+ },
+ "games": {
+  "tb-dal": [
+   "TB out: QB Baker Mayfield, S Antoine Winfield Jr., CB Benjamin Morrison, LB SirVocea Dennis. Rookie OLB Rueben Bain Jr. and TE Ko Kieft are back.",
+   "DAL out: CB Cobie Durant, LB DeMarvion Overshown, T Drew Shelton. Questionable: G Tyler Smith (thumb, practiced fully Wednesday) and WR Jonathan Mingo (illness).",
+   "Inactives about 6:45 p.m. ET. They aren't in this run."
+  ]
+ }
+}
