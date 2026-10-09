@@ -1,0 +1,17 @@
+{
+ "_about": "Trends reported by betting outlets this week (Oct 5-9) that the nflverse game file can't reproduce on its own (situational splits). Shown as 'Reported' with the outlet. Each is a fact about past games, not a prediction.",
+ "phi-jax": [["JAX has covered 14 of its last 21 games.", "SI"], ["PHI is 5-0 ATS in its last 5 games as a road underdog.", "Covers"], ["JAX is 9-1 ATS in its last 10 regular-season games.", "SportsBettingDime"]],
+ "lv-ne": [["LV is 6-0 ATS in its last six games against AFC opponents.", "Covers"], ["NE is 5-0 ATS in its last five games after a straight-up loss.", "Covers"], ["The Raiders have covered the last three meetings.", "SI"]],
+ "min-no": [["MIN is 7-0-1 ATS in its last eight games against NFC opponents.", "Covers"], ["NO is 7-0 ATS in its last seven games as an underdog.", "Covers"]],
+ "chi-gb": [["CHI is 7-0 ATS in its last seven games after gaining 350+ yards the week before.", "Covers"], ["GB is 6-2 ATS as a home underdog under Matt LaFleur.", "Covers"], ["The Bears have won two straight with backup quarterbacks.", "Covers"]],
+ "ind-pit": [["PIT is 4-0 ATS in its last four games as a home favorite.", "Covers"], ["IND is 4-0 ATS in its last four road games.", "Covers"], ["PIT is 7-3 ATS and the over is 7-3 in the last 10 meetings.", "SI"]],
+ "hou-ten": [["HOU is 7-0 ATS in its last seven Week 5 games.", "Covers"]],
+ "sf-sea": [["SEA is 6-0 ATS in its last six games against teams with a winning record.", "Covers"], ["SF is 3-4 straight up and ATS as an underdog (recent).", "Covers"], ["SF has allowed zero sacks on 113 pass attempts.", "SI"]],
+ "bal-atl": [["BAL is 3-7 ATS in its last 10 games.", "Covers"], ["The Ravens are 6-11 straight up without Lamar Jackson.", "NBC Sports"], ["ATL has scored 80 points in two straight wins since Michael Penix returned.", "NBC Sports"]],
+ "buf-la": [["The Rams have won six straight at home (5-1 ATS).", "Covers"], ["BUF is 4-2 ATS in the last six meetings.", "SI"]],
+ "det-ari": [["DET is 17-2 ATS after a loss in its last 19 such games.", "SportsBettingDime"], ["DET is 5-0-1 in the last six meetings; the under is 4-1 in the last five.", "SI"]],
+ "nyg-was": [["WAS games are 8-2 to the over in their last 10; NYG 7-3.", "SI"], ["Washington has won four straight meetings.", "SI"]],
+ "den-lac": [["Several outlets flag the under: both offenses are struggling; DEN scores a league-low 3.3 first-half points.", "Covers / WagerTalk"]],
+ "cle-nyj": [["Cleveland has won three straight, driven by its defense.", "ESPN"]],
+ "cin-mia": [["Miami is 1-2 ATS as a 6.5-point-plus underdog.", "FanDuel Research"]]
+}

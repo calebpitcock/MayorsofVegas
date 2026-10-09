@@ -1,0 +1,323 @@
+<style>
+/* research edition: facts lists, book-vs-desk tags, the defense style table and the method page */
+.bk{font-family:var(--f-cond);font-weight:600;font-size:12px;color:var(--mist);font-variant-numeric:tabular-nums}
+.bk b{color:var(--text);font-weight:700}
+.fxs{display:flex;flex-direction:column;gap:10px;padding:10px 14px 12px;border-bottom:1px solid var(--line)}
+.fxh{font-family:var(--f-cond);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 3px}
+.fx{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;color:#D6D9E3;font-size:13.5px}
+.fx li::marker{color:var(--red)}
+.fx .src{color:var(--dim);font-size:11.5px;margin-left:4px}
+.fx li.o::marker{color:var(--win)} .fx li.d::marker{color:var(--loss)}
+.fx li.o b{color:var(--win);font-weight:600} .fx li.d b{color:var(--loss);font-weight:600}
+.final{font-family:var(--f-cond);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--text);color:var(--bg);padding:1px 7px;border-radius:2px;margin-left:8px}
+.lines{font-family:var(--f-cond);font-weight:600;font-size:13px;letter-spacing:.04em;color:#E5E7EE;font-variant-numeric:tabular-nums}
+.lines b{color:var(--gold)}
+.kp{background:var(--panel2);border:1px solid var(--line);border-radius:4px}
+.kp summary{cursor:pointer;padding:8px 12px;font-family:var(--f-cond);font-weight:700;font-size:16px;list-style:none;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kp summary::-webkit-details-marker{display:none}
+.kp summary::before{content:"+";color:var(--gold);width:12px}
+.kp[open] summary::before{content:"–"}
+.kp .fx{padding:0 14px 10px 30px}
+.gsel{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+table.sty{width:100%;border-collapse:collapse;font-family:var(--f-cond);font-size:14px;font-variant-numeric:tabular-nums}
+table.sty th{font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mist);text-align:center;padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.sty th:first-child,table.sty td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
+table.sty td{text-align:center;padding:5px 6px;border-bottom:1px solid var(--line)}
+table.sty tr:last-child td{border-bottom:0}
+table.sty td.g{color:#06140C;background:var(--win)} table.sty td.g2{color:var(--win)}
+table.sty td.r{color:#1A0506;background:var(--loss)} table.sty td.r2{color:var(--loss)}
+table.sty th button{color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit}
+table.sty th button[aria-pressed="true"]{color:var(--gold)}
+.method{display:flex;flex-direction:column;gap:12px;color:#D6D9E3;font-size:14.5px}
+.method p{margin:0}
+.method h3{font-family:var(--f-cond);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:6px 0 0}
+.method ol,.method ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.method code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--panel2);padding:1px 5px;border-radius:2px}
+.rule{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px 14px}
+.rule table{width:100%;border-collapse:collapse;font-size:13.5px}
+.rule td{padding:5px 6px;border-top:1px solid var(--line);vertical-align:top}
+.rule td:first-child{font-family:var(--f-cond);font-weight:700;white-space:nowrap;color:var(--text)}
+.rule td.n{font-family:var(--f-cond);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--gold)}
+@media (max-width:480px){.fxs{padding:8px 10px}.kp summary{font-size:15px}table.sty{font-size:12.5px}}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div>
+      <div class="mark"><span class="rz"><span>Redzone</span></span><span class="desk">Desk</span></div>
+      <div class="wk" id="wk">Loading…</div>
+    </div>
+    <div class="recs" id="recs"></div>
+  </header>
+  <div class="ticker" aria-label="Lines"><div class="tk" id="ticker"></div></div>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-t="top" aria-selected="true">Top plays</button>
+    <button class="tab" role="tab" data-t="games" aria-selected="false">Games</button>
+    <button class="tab" role="tab" data-t="td" aria-selected="false">TDs</button>
+    <button class="tab" role="tab" data-t="yds" aria-selected="false">Yards</button>
+    <button class="tab" role="tab" data-t="mu" aria-selected="false">Matchups</button>
+    <button class="tab" role="tab" data-t="news" aria-selected="false">News</button>
+    <button class="tab" role="tab" data-t="mine" aria-selected="false">My picks</button>
+    <button class="tab" role="tab" data-t="record" aria-selected="false">Record</button>
+    <button class="tab" role="tab" data-t="how" aria-selected="false">How it's made</button>
+  </nav>
+  <main id="view"></main>
+</div>
+
+<script type="application/json" id="rzdata">{}</script>
+<script type="application/json" id="rzarchive">[]</script>
+<script type="application/json" id="rznews">{}</script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=x=>Math.round(100*x)+'%';
+const st={tab:'top',D:null,arch:[],open:new Set(),mine:{},grades:{},db:null,local:false,
+  td:{pos:'all',game:'all',sort:'value',all:false},yd:{game:'all',sort:'value'},game:'all',sty:'pa'};
+try{const t=localStorage.getItem('rzd-tab'); if(t) st.tab=t;}catch(e){}
+
+/* ---------- data: this week (research edition) + older weeks kept so tracked picks and the record still resolve ---------- */
+function load(){
+  st.D=JSON.parse(document.getElementById('rzdata').textContent);
+  st.arch=JSON.parse(document.getElementById('rzarchive').textContent);
+  if(!['top','games','td','yds','mu','news','mine','record','how'].includes(st.tab)) st.tab='top';
+}
+const allPicks=()=>{const m={}; for(const a of st.arch) for(const p of a.picks) m[p.id]={...p,week:a.week}; for(const p of st.D.picks) m[p.id]={...p,week:st.D.week}; return m;};
+function resultOf(id){ const m=st.mine[mineKey(id)]; if(m&&m.result) return m.result; return st.grades[id]||null; }
+
+/* ---------- storage: the page database (shared, so Claude can grade), else this device ---------- */
+async function initDb(){
+  let db=null; try{ db=await window.claude?.use?.('db'); }catch(e){}
+  if(!db){ st.local=true; try{ st.mine=JSON.parse(localStorage.getItem('rzd-mine')||'{}'); }catch(e){} render(); return; }
+  st.db=db;
+  db.collection('mine').onSnapshot(s=>{ const m={}; s.docs.forEach(d=>m[d.id]=d.data()); st.mine=m; render(); }, ()=>{});
+  db.collection('grades').onSnapshot(s=>{ const g={}; s.docs.forEach(d=>Object.assign(g,(d.data()||{}).results||{})); st.grades=g; render(); }, ()=>{});
+}
+async function saveMine(id,body){
+  if(st.local){ const k=mineKey(id); if(body) st.mine[k]=body; else delete st.mine[k]; try{localStorage.setItem('rzd-mine',JSON.stringify(st.mine));}catch(e){} render(); return; }
+  const ref=st.db.collection('mine').doc(mineKey(id));
+  try{ if(body) await ref.set(body); else await ref.delete(); }catch(e){ flash('Could not save. Try again in a moment.'); }
+}
+function flash(t){ const n=$('#wk'); const o=n.textContent; n.textContent=t; setTimeout(()=>n.textContent=o,2500); }
+const mineKey=id=>id.replace(/[^A-Za-z0-9_.~:@+-]/g,'-');
+const isTracked=id=>!!st.mine[mineKey(id)];
+function toggleTrack(p){
+  if(isTracked(p.id)) saveMine(p.id,null);
+  else saveMine(p.id,{id:p.id,week:p.week??st.D.week,type:p.type,text:p.text,game:p.game,prob:+p.prob.toFixed(3),odds:p.price?p.price.odds:null,addedAt:new Date().toISOString(),result:null});
+}
+
+/* ---------- records ---------- */
+function tally(ids){ const r={W:0,L:0,P:0,O:0}; ids.forEach(id=>{const x=resultOf(id); r[x||'O']++;}); return r; }
+const recTxt=r=>`${r.W}-${r.L}${r.P?'-'+r.P:''}`;
+const winPct=r=>r.W+r.L?Math.round(100*r.W/(r.W+r.L))+'%':'—';
+
+/* ---------- news ---------- */
+let NEWS={players:{},games:{}};
+try{NEWS=JSON.parse(document.getElementById('rznews').textContent);}catch(e){}
+NEWS.players=NEWS.players||{}; NEWS.games=NEWS.games||{};
+const NBL={out:'Out',risk:'At risk',watch:'Monitor',up:'Upside',stale:'Stale'};
+function pnews(p){ const t=p.player||p.n||p.text||''; for(const n in NEWS.players) if(t===n||t.startsWith(n+' ')) return NEWS.players[n]; return null; }
+const isOut=p=>p.out||(pnews(p)||{}).s==='out';
+const nbadge=x=>x?`<span class="nb ${x.s}">${NBL[x.s]}</span>`:'';
+const nline=x=>x?`<li class="news"><b>News ${esc(NEWS.asOf)}:</b> ${esc(x.n)}</li>`:'';
+
+/* ---------- small pieces ---------- */
+const fmtOdds=o=>(o>0?'+':'')+o;
+function oddsTag(p){ return p.price?`<span class="odds" title="${esc(p.price.src)}">${fmtOdds(p.price.odds)}</span>`:`<span class="odds none">Price pending</span>`; }
+const val=p=>p.book!=null?p.prob-p.book:0;
+function edgeTag(p){
+  if(p.type==='Winner'||p.type==='Spread') return `<span class="edge e0">Book number</span>`;
+  if(p.book==null) return '';
+  const d=Math.round(100*val(p)), c=d>=5?2:d>=2?1:d>-2?0:d>-5?-1:-2;
+  return `<span class="edge e${c}">${d>0?'+':''}${d} vs book</span><span class="bk">book <b>${pct(p.book)}</b></span>`;
+}
+function pickRow(p,{showTrack=true,label=null}={}){
+  const open=st.open.has(p.id), res=resultOf(p.id), on=isTracked(p.id), nx=pnews(p);
+  return `<div class="pick${open?' open':''}${isOut(p)?' scr':''}">
+    <button class="pbtn" data-open="${esc(p.id)}" aria-expanded="${open}">
+      <div class="prob${p.prob<.6?' mid':''}">${pct(p.prob)}</div>
+      <div class="body"><div class="ptxt">${esc(label||p.text)}</div>
+        <div class="meta">${p.type==='Anytime TD'&&label?`<span class="pos">${esc(p.team)} ${esc(p.pos||'')}</span>`:`<span class="chip${p.type==='Anytime TD'?' td':''}">${esc(p.type)}</span>`}${edgeTag(p)}${nbadge(nx)}${oddsTag(p)}<span>${esc(p.game)}</span>${res?`<span class="res ${res}">${{W:'Win',L:'Loss',P:'Push'}[res]}</span>`:''}</div></div>
+    </button>
+    ${showTrack?`<button class="track${on?' on':''}" data-track="${esc(p.id)}" aria-pressed="${on}">${on?'Tracked':'+ Track'}</button>`:'<span></span>'}
+    ${open?`<ul class="why">${nline(nx)}${(p.why||[]).map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
+  </div>`;
+}
+const EDGE={'Edge':2,'Slight edge':1,'Even':0,'Slightly tough':-1,'Tough':-2};
+function muRow(m){
+  const open=st.open.has(m.id), s=Math.round(100*m.score), nx=pnews({n:m.n});
+  return `<div class="pick mu${open?' open':''}${nx&&nx.s==='out'?' scr':''}"><button class="pbtn" data-open="${esc(m.id)}" aria-expanded="${open}" style="grid-column:1/-1">
+    <div class="prob${Math.abs(m.score)<.03?' mid':''}">${s>0?'+':''}${s}%</div>
+    <div class="body"><div class="ptxt">${esc(m.n)} <span style="color:var(--mist);font-weight:600">vs</span> ${esc(m.vs)}</div>
+      <div class="meta"><span class="edge e${EDGE[m.edge]}">${esc(m.edge)}</span>${nbadge(nx)}<span>${esc(m.off)} ${esc(m.pos)} · ${esc(m.role)} · ${esc(m.game)}</span></div></div></button>
+    ${open?`<ul class="why">${nline(nx)}${m.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}</div>`;
+}
+function lineTxt(g){
+  const s=g.line.spread, fav=s<0?g.home:g.away, n=Math.abs(s);
+  return n?`${fav} −${n}`:'Pick';
+}
+const fl=(items,cls='')=>items.length?`<ul class="fx">${items.map(f=>`<li class="${f.cls||cls}">${f.html||esc(f.text)}${f.src?`<span class="src">${esc(f.src)}</span>`:''}</li>`).join('')}</ul>`:'';
+function factsBlock(g){
+  const F=g.facts, side=t=>{const s=F.sides[t]; return [...s.team,...s.qb,...s.coach];};
+  const sty=t=>(F.styles[t]||[]).map(x=>({text:x.text,cls:x.side==='off'?'o':'d'}));
+  const blocks=[[`${g.away} ${g.awayName}`,side(g.away)],[`${g.home} ${g.homeName}`,side(g.home)],['Head to head',F.h2h],
+    ['Reported this week',(F.reported||[]).map(r=>({text:r.text,src:r.src}))],
+    [`${g.away} offense vs ${g.home} defense`,sty(g.away)],[`${g.home} offense vs ${g.away} defense`,sty(g.home)]];
+  return `<div class="fxs">${blocks.filter(b=>b[1].length).map(([h,it])=>`<div><div class="fxh">${esc(h)}</div>${fl(it)}</div>`).join('')}
+    ${(F.styles[g.away]||[]).length+(F.styles[g.home]||[]).length?`<p class="note" style="margin:0;font-size:12px">Green: the offense's habit meets a defensive weak spot. Red: it runs into a strength. 2026 plays only, ranks of 32.</p>`:''}</div>`;
+}
+const gamePicks=(g,type)=>st.D.picks.filter(p=>p.gameId===g.id&&p.type===type&&!isOut(p));
+function gameCard(g,full=true){
+  const gn=NEWS.games[g.id]||[];
+  const head=`<div class="ghead"><div class="teams">${g.final?`${g.away} <span class="s">${g.final.away}</span> · ${g.home} <span class="s">${g.final.home}</span><span class="final">Final</span>`:`${g.away} @ ${g.home}`}</div>
+    <div><div class="kick">${esc(g.kick)}</div><div class="lines">${esc(lineTxt(g))} · O/U ${g.line.total}${g.deskTotal!=null?` · Desk <b>${g.deskTotal}</b>`:''}</div></div></div>`;
+  if(g.final) return `<section class="game">${head}${gn.length?`<ul class="gnews">${gn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}${factsBlock(g)}<div class="gbody"><p class="note" style="margin:0">Played Thursday. These were the facts going in.</p></div></section>`;
+  const tds=gamePicks(g,'Anytime TD').sort((a,b)=>b.prob-a.prob).slice(0,6);
+  const yd=gamePicks(g,'Yards').sort((a,b)=>val(b)-val(a)).slice(0,4);
+  const scr=[...new Set(st.D.picks.filter(p=>p.gameId===g.id&&isOut(p)&&p.type==='Anytime TD').map(p=>p.player))];
+  const keys=(g.keys||[]).map(k=>`<details class="kp"><summary>${esc(k.name)} <span class="pos">${esc(k.team)} ${esc(k.pos)}</span>${nbadge(pnews({n:k.name}))}</summary>${fl(k.facts.map(t=>({text:t})))}</details>`).join('');
+  return `<section class="game">${head}
+    ${gn.length?`<ul class="gnews">${gn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+    ${full?factsBlock(g):''}
+    <div class="gbody">${[g.tot,g.ats,g.ml].map(p=>pickRow(p)).join('')}
+    <div class="sub">Touchdowns</div>${tds.map(p=>pickRow(p)).join('')}${scr.length?`<div class="scrl">Removed (out): ${scr.map(esc).join(', ')}</div>`:''}
+    ${yd.length?`<div class="sub">Yards: biggest moves off the book</div>${yd.map(p=>pickRow(p)).join('')}`:''}
+    ${full&&keys?`<div class="sub">Key players</div>${keys}`:''}
+    ${full&&(g.mu||[]).length?`<div class="sub">Coverage and run matchups</div>${g.mu.map(muRow).join('')}`:''}</div></section>`;
+}
+const gameSelect=(id,cur,withAll=true)=>`<select class="fsel" id="${id}" aria-label="Game">${withAll?`<option value="all">All games</option>`:''}${st.D.games.map(g=>`<option value="${esc(g.id)}"${cur===g.id?' selected':''}>${esc(g.away)} @ ${esc(g.home)}</option>`).join('')}</select>`;
+
+/* ---------- views ---------- */
+function render(){
+  const D=st.D; if(!D) return;
+  const P=Object.fromEntries(D.picks.map(p=>[p.id,p]));
+  $('#wk').textContent=`${D.label} · research edition · lines ${new Date(D.prices.td).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/New_York'})}${NEWS.asOf?' · news '+NEWS.asOf:''}`;
+  const allBoards=[...D.board,...st.arch.flatMap(a=>a.board)];
+  const mr=tally(D.board), my=tally(Object.values(st.mine).map(m=>m.id));
+  $('#recs').innerHTML=`<span class="rec">Desk <b>${recTxt(mr)}</b></span><span class="rec">Me <b>${recTxt(my)}</b></span>`;
+  $('#ticker').innerHTML=D.games.map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:
+    `<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>${esc(g.kick)} · O/U ${g.line.total}${g.deskTotal!=null?` → ${g.deskTotal}`:''}</small>`}</div>`).join('');
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===st.tab));
+  const v=$('#view');
+  if(st.tab==='top'){
+    const fl=D.board.filter(id=>pnews(P[id])).length;
+    v.innerHTML=`<p class="note">The biggest moves off the book this week. Every number starts at the sportsbook's price; the facts in each pick move it a little, and the tag shows by how much. Tap a pick to see each fact and what it was worth; <b>How it's made</b> has the rules.</p>
+      ${fl?`<div class="newsbar"><b>${fl} of ${D.board.length} have injury news.</b> The books already moved on it, so it is shown but not added. <button data-t="news">Read the news</button></div>`:''}
+      <div class="list">${D.board.map(id=>pickRow(P[id])).join('')}</div>`;
+  } else if(st.tab==='games'){
+    const gs=D.games.filter(g=>st.game==='all'||g.id===st.game);
+    v.innerHTML=`<div class="gsel"><span class="note">Every game: the trends, the head-to-head, how each offense's habits meet the other defense, key players and matchups.</span>${gameSelect('gsel',st.game)}</div>
+      <div class="list">${gs.map(g=>gameCard(g)).join('')}</div>`;
+  } else if(st.tab==='td'){
+    const T=st.td, all=D.picks.filter(p=>p.type==='Anytime TD'&&!isOut(p));
+    let rows=all.filter(p=>(T.pos==='all'||p.pos===T.pos)&&(T.game==='all'||p.gameId===T.game));
+    rows.sort(T.sort==='value'?(a,b)=>val(b)-val(a):(a,b)=>b.prob-a.prob);
+    const shown=T.all||T.game!=='all'?rows:rows.slice(0,30);
+    const chip=(k,x,lab)=>`<button class="fchip" data-td="${k}" data-v="${x}" aria-pressed="${T[k]===x}">${lab}</button>`;
+    v.innerHTML=`<p class="note">Every player with a posted anytime TD price. The big number is the Desk's chance; <b>book</b> is the price's implied chance; the tag is the difference. ${T.sort==='value'?'Sorted by the biggest move up from the book.':'Most likely first.'}</p>
+      <div class="filt"><span class="lab">Sort</span>${chip('sort','value','Vs book')}${chip('sort','prob','Most likely')}</div>
+      <div class="filt"><span class="lab">Pos</span>${chip('pos','all','All')}${['RB','WR','TE','QB'].map(x=>chip('pos',x,x)).join('')}${gameSelect('tdgame',T.game)}</div>
+      <div class="list">${shown.length?shown.map(p=>pickRow(p,{label:p.player})).join(''):'<div class="empty">No touchdown picks match.</div>'}</div>
+      ${shown.length<rows.length?`<button class="more" data-td="all" data-v="1">Show all ${rows.length}</button>`:''}`;
+  } else if(st.tab==='yds'){
+    const Y=st.yd; let rows=D.picks.filter(p=>p.type==='Yards'&&!isOut(p)&&(Y.game==='all'||p.gameId===Y.game));
+    rows.sort(Y.sort==='value'?(a,b)=>val(b)-val(a):(a,b)=>b.prob-a.prob);
+    const chip=(k,x,lab)=>`<button class="fchip" data-yd="${k}" data-v="${x}" aria-pressed="${Y[k]===x}">${lab}</button>`;
+    v.innerHTML=`<p class="note">Receiving and rushing yardage lines (DraftKings first, then FanDuel and BetMGM). The Desk takes the book's no-vig chance and moves it with the matchup facts; each pick shows the side the facts favor.</p>
+      <div class="filt"><span class="lab">Sort</span>${chip('sort','value','Vs book')}${chip('sort','prob','Most likely')}${gameSelect('ydgame',Y.game)}</div>
+      <div class="list">${rows.map(p=>pickRow(p)).join('')||'<div class="empty">No yardage lines posted for this game yet.</div>'}</div>`;
+  } else if(st.tab==='mu'){
+    const all=D.games.flatMap(g=>g.mu||[]), rec=all.filter(m=>m.role==='coverage'), rbs=all.filter(m=>m.pos==='RB');
+    const best=rec.filter(m=>m.score>=.03).sort((a,b)=>b.score-a.score).slice(0,15), worst=rec.filter(m=>m.score<=-.03).sort((a,b)=>a.score-b.score).slice(0,10);
+    const rbBest=rbs.filter(m=>m.score>=.03).sort((a,b)=>b.score-a.score).slice(0,10), rbWorst=rbs.filter(m=>m.score<=-.03).sort((a,b)=>a.score-b.score).slice(0,8);
+    const cv=D.coverage||[];
+    const S=D.styles, keys=[...S.keys,{key:'epa_pass',dfn:'all passes'},{key:'epa_rush',dfn:'all runs'}];
+    const sk=st.sty, rowsS=[...S.defense].sort((a,b)=>(a[sk+'_rk']??99)-(b[sk+'_rk']??99));
+    const cell=(r,k)=>{const rk=r[k+'_rk']; if(rk==null) return '<td>—</td>'; const c=rk<=4?'g':rk<=8?'g2':rk>=29?'r':rk>=25?'r2':''; return `<td class="${c}" title="${r[k]!=null?(r[k]>0?'+':'')+r[k].toFixed(2)+' EPA/play':''}">${rk}</td>`;};
+    v.innerHTML=`<p class="note">Receivers: his yards per target against man and against zone (2024-25 charting), weighed by how often this defense plays man and how many yards it allows in each. Backs: his inside/outside run mix against what this defense allows inside and outside this season. The number is the change to his yards per target or carry. Tap one for the details.</p>
+      <h2>Receivers: best coverage fits</h2><div class="list">${best.map(muRow).join('')}</div>
+      <h2>Receivers: toughest</h2><div class="list">${worst.map(muRow).join('')}</div>
+      <h2>Running backs: best run fits</h2><div class="list">${rbBest.map(muRow).join('')}</div>
+      <h2>Running backs: toughest</h2><div class="list">${rbWorst.map(muRow).join('')}</div>
+      <h2>Defenses vs offense styles</h2><p class="note">Each defense's rank of 32 in EPA allowed per play against each kind of play, 2026 only (four games, so small samples). 1 = best. Green: top 8. Red: bottom 8. Tap a column to sort; hover a cell for the EPA.</p>
+      <div class="tblwrap"><table class="sty"><thead><tr><th>Defense</th>${keys.map(k=>`<th><button data-sty="${k.key}" aria-pressed="${sk===k.key}">${esc(k.dfn)}</button></th>`).join('')}</tr></thead>
+      <tbody>${rowsS.map(r=>`<tr><td><b>${esc(r.team)}</b></td>${keys.map(k=>cell(r,k.key)).join('')}</tr>`).join('')}</tbody></table></div>
+      ${cv.length?`<h2>Coverage this week</h2><p class="note">How often each defense on the slate plays man, from 2025 charting (2026 charting isn't published until after the season; Cleveland and Detroit use reported 2026 numbers). Small numbers: change from 2025. Blitz is this season.</p>
+      <div class="tblwrap"><table class="cov"><thead><tr><th>Defense</th><th>vs</th><th>Man</th><th>Cover 1</th><th>Cover 3</th><th>Cover 2</th><th>Cover 4</th><th>Blitz</th></tr></thead><tbody>
+      ${cv.map(c=>{const d=Math.round(100*(c.man-c.man2025)); return `<tr><td><b>${esc(c.team)}</b></td><td>${esc(c.opp)}</td><td>${pct(c.man)} ${d?`<small class="${d>0?'up':'dn'}">${d>0?'+':''}${d}</small>`:''}</td><td>${pct(c.cov1)}</td><td>${pct(c.cov3)}</td><td>${pct(c.cov2)}</td><td>${pct(c.cov4)}</td><td>${c.blitz!=null?pct(c.blitz):'—'}</td></tr>`;}).join('')}
+      </tbody></table></div>`:''}`;
+  } else if(st.tab==='news'){
+    const fb=D.board.map(id=>P[id]).filter(p=>pnews(p));
+    const gm=Object.fromEntries(D.games.map(g=>[g.id,g]));
+    v.innerHTML=`<p class="note">${esc(NEWS.about||'')}</p>
+      ${fb.length?`<h2>Top plays with news</h2><div class="list">${fb.map(p=>pickRow(p)).join('')}</div>`:''}
+      ${(NEWS.outs||[]).length?`<h2>Ruled out or not expected to play</h2><p class="note">${esc(NEWS.bar||'')}</p><ul class="gnews" style="border-bottom:0;padding-left:22px">${NEWS.outs.map(o=>`<li><b>${esc(o.n)}</b>${o.t?' ('+esc(o.t)+')':''}${o.r?': '+esc(o.r):''}</li>`).join('')}</ul>`:''}
+      <h2>By game</h2><div class="list">${D.games.filter(g=>(NEWS.games[g.id]||[]).length).map(g=>`<section class="game"><div class="ghead"><div class="teams">${g.away} · ${g.home}</div><div class="kick">${esc(g.kick)}</div></div><ul class="gnews" style="border-bottom:0">${NEWS.games[g.id].map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>`).join('')}</div>
+      ${(NEWS.sources||[]).length?`<h2>Sources</h2><ul class="gnews" style="border-bottom:0;padding-left:22px;word-break:break-all">${NEWS.sources.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}`;
+  } else if(st.tab==='mine'){
+    const rows=Object.values(st.mine).sort((a,b)=>(b.addedAt||'').localeCompare(a.addedAt||'')), AP=allPicks();
+    v.innerHTML=(st.local?`<p class="note">Picks save on this device only in this view.</p>`:'')+(rows.length?`<div class="list">${rows.map(m=>{
+      const p=AP[m.id]||{...m,why:['This pick is from a week no longer on the board.']}; const r=resultOf(m.id);
+      return `<div class="pick${st.open.has(m.id)?' open':''}"><button class="pbtn" data-open="${esc(m.id)}" aria-expanded="${st.open.has(m.id)}"><div class="prob${m.prob<.6?' mid':''}">${pct(m.prob)}</div>
+        <div class="body"><div class="ptxt">${esc(m.text)}</div><div class="meta"><span class="chip">${esc(m.type)}</span>${m.odds!=null?`<span class="odds">${fmtOdds(m.odds)}</span>`:''}<span>Wk ${m.week} · ${esc(m.game)}</span><span class="res ${r||'O'}">${r?{W:'Win',L:'Loss',P:'Push'}[r]:'Open'}</span></div></div></button>
+        <div class="mine-acts">${['W','L','P'].map(x=>`<button data-res="${esc(m.id)}" data-v="${x}" aria-pressed="${m.result===x}" aria-label="Mark ${({W:'win',L:'loss',P:'push'})[x]}">${x}</button>`).join('')}<button data-track="${esc(m.id)}" aria-label="Remove">✕</button></div>
+        ${st.open.has(m.id)?`<ul class="why">${(p.why||[]).map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`
+      :`<div class="empty">No picks tracked yet. Open <b>Top plays</b> or <b>Games</b> and tap <b>+ Track</b> on any pick.</div>`);
+  } else if(st.tab==='record'){
+    const AP=allPicks(), my=Object.values(st.mine).map(m=>m.id);
+    const card=(k,r)=>`<div class="stat"><div class="k">${esc(k)}</div><div class="v">${recTxt(r)}<small>${winPct(r)}</small></div></div>`;
+    const types=ids=>[...new Set(ids.map(i=>(AP[i]||{}).type).filter(Boolean))];
+    const sect=(h,note,ids)=>`<h2>${esc(h)}</h2><p class="note">${note}</p><div class="grid">${card('All',tally(ids))}${types(ids).map(t=>card(t,tally(ids.filter(i=>AP[i].type===t)))).join('')}</div>`;
+    v.innerHTML=sect(`Week ${D.week}: research desk`,'This week\'s Top plays, graded after the games.',D.board)+
+      st.arch.slice().reverse().map(a=>sect(a.label,'Built by the old simulation model (retired).',a.board)).join('')+
+      `<h2>Me</h2><div class="grid">${card('My picks',tally(my))}${[...new Set(my.map(i=>(AP[i]||st.mine[mineKey(i)]||{}).type))].filter(Boolean).map(t=>card(t,tally(my.filter(i=>((AP[i]||st.mine[mineKey(i)]).type===t))))).join('')}</div>
+      <p class="note">Results fill in when Claude grades the week; you can also mark your own picks W, L or P.</p>`;
+  } else {
+    v.innerHTML=methodHtml(D);
+  }
+}
+function methodHtml(D){
+  const R=D.rules, row=(k,x,unit)=>`<tr><td>${esc(k)}</td><td>${esc(x.what||'')}</td><td class="n">${x.w!=null?'weight '+x.w:''}${x.cap!=null?` · cap ${unit==='pts'?'±'+x.cap+' pts':unit==='logit'?'±'+x.cap:'±'+Math.round(100*x.cap)+'% of line'}`:''}${x.hot!=null?`+${x.hot} / ${x.cold}`:''}</td></tr>`;
+  const tbl=(o,unit)=>`<table>${Object.entries(o).filter(([k,x])=>typeof x==='object'&&!Array.isArray(x)&&!k.startsWith('_')&&k!=='override_2026').map(([k,x])=>row(k.replace(/_/g,' '),x,unit)).join('')}</table>`;
+  return `<div class="method">
+  <p><b>There is no model on this page anymore.</b> No simulation, no team ratings, nothing fitted to past results. Every number is one of three things: a sportsbook price, a fact counted from games that already happened, or a small nudge from one of those facts with a fixed weight written down below.</p>
+  <h3>1. Start at the book</h3>
+  <ul><li><b>Anytime TDs:</b> the best price posted across US books (pulled ${esc(new Date(D.prices.td).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))} ET), turned into a chance: +150 is 40%.</li>
+  <li><b>Game totals:</b> the consensus total and its over/under prices, with the book's margin removed, so it starts near 50%.</li>
+  <li><b>Yardage over/unders:</b> DraftKings' line and prices (FanDuel, BetMGM, BetRivers, Bovada if DraftKings has none), margin removed.</li>
+  <li><b>Spreads and moneylines:</b> shown at the book's number. The Desk lists the facts but does not move sides.</li></ul>
+  <h3>2. Find the facts</h3>
+  <ul><li><b>Trends</b> from every game since 1999 with its closing line (nflverse): against the spread and over/under this season, current streaks, last 10/20, as favorite or underdog, home or road, after a win or loss, prime time, division games, head to head, and each starting QB's and head coach's record in the same spot. A trend only shows if it is lopsided over enough games (about 70/30 or more over 8+ games, or a streak of 4+); the season record and head-to-head always show.</li>
+  <li><b>Reported trends</b> from this week's betting previews (Covers, SI, NBC, FanDuel and others) that need data the game file doesn't have; each is labeled with the outlet.</li>
+  <li><b>Player facts</b> from play-by-play 2019-2026: this season's usage and red-zone share, TD streaks and droughts, history against this opponent, prime-time splits, and how often he has cleared this week's yardage line.</li>
+  <li><b>Coverage:</b> each receiver's yards per target against man and against zone, and against each shell (Cover 1, 3, 2, 4...), from 2024-25 charting; each defense's man rate and yards allowed vs man and zone. 2026 charting is published after the season, so last year's numbers stand in except where a 2026 number has been reported (Cleveland, Detroit).</li>
+  <li><b>Defense vs offense style:</b> 2026 EPA allowed per play against play-action, motion, deep passes, screens, inside and outside runs, shotgun and under-center runs and middle-of-field throws, ranked 1-32; and how much each offense leans on each one.</li>
+  <li><b>News:</b> injuries and lineup changes from team sites and national outlets. The book prices were posted after this news, so it is shown but not added.</li></ul>
+  <h3>3. Nudge, with the weights in the open</h3>
+  <p>Each fact that bears on a pick moves it by a fixed weight, and each move has a cap so one hot stat can't run away. Small samples (four games of 2026) are pulled toward the league average first: four games' worth for per-game stats, ten red-zone trips, fifteen targets, forty carries. Every pick lists each fact and what it was worth.</p>
+  <div class="rule"><b>Anytime TD</b> <span class="note">${esc(R.td._about)}</span>${tbl(R.td,'logit')}</div>
+  <div class="rule"><b>Game totals</b> <span class="note">${esc(R.total._about)}</span>${tbl(R.total,'pts')}</div>
+  <div class="rule"><b>Yardage over/unders</b> <span class="note">${esc(R.yards._about)}</span>${tbl(R.yards,'line')}</div>
+  <h3>4. What goes on Top plays</h3>
+  <p>The TDs, totals and yardage picks the facts moved most off the book: TDs at least 2 points above the book, totals at least 2 points, yardage at least 4 points, largest first.</p>
+  <h3>What this isn't</h3>
+  <p>None of this was tested on past weeks; you asked for facts, not a backtest. Books already know most of these facts, which is why the weights are small. Treat a +5 as "the facts lean this way", not as a guaranteed edge.</p>
+  <p class="note">Built by <code>endzone-sim/redzone/desk/build.py</code> from nflverse play-by-play, participation and FTN charting, nflverse schedules and lines, DraftKings-led props (nfl-player-prop-opportunity) and best-price anytime TD odds (NFL-Model's live pull). Generated ${esc(new Date(D.generated).toLocaleString('en-US',{timeZone:'America/New_York'}))} ET.</p></div>`;
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-t],[data-open],[data-track],[data-res],[data-td],[data-yd],[data-sty]'); if(!t) return;
+  if(t.dataset.sty){ st.sty=t.dataset.sty; render(); return; }
+  if(t.dataset.td){ const k=t.dataset.td; st.td[k]=k==='all'?true:t.dataset.v; if(k!=='all') st.td.all=false; render(); return; }
+  if(t.dataset.yd){ st.yd[t.dataset.yd]=t.dataset.v; render(); return; }
+  if(t.dataset.t){ st.tab=t.dataset.t; try{localStorage.setItem('rzd-tab',st.tab);}catch(e){} render(); window.scrollTo(0,0); return; }
+  if(t.dataset.open){ const id=t.dataset.open; st.open.has(id)?st.open.delete(id):st.open.add(id); render(); return; }
+  const AP=allPicks();
+  if(t.dataset.track){ const id=t.dataset.track; toggleTrack(AP[id]||st.mine[mineKey(id)]||{id}); return; }
+  if(t.dataset.res){ const m=st.mine[mineKey(t.dataset.res)]; if(!m) return; saveMine(m.id,{...m,result:m.result===t.dataset.v?null:t.dataset.v}); }
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='tdgame'){ st.td.game=e.target.value; st.td.all=false; render(); }
+  if(e.target.id==='ydgame'){ st.yd.game=e.target.value; render(); }
+  if(e.target.id==='gsel'){ st.game=e.target.value; render(); }
+});
+try{ load(); render(); initDb(); }catch(err){ $('#wk').textContent='Picks file missing. Ask Claude to republish the Redzone Desk.'; }
+</script>
