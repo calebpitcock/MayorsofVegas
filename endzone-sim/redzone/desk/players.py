@@ -112,7 +112,18 @@ def coverage_tables(D, seasons, pbp):
     a = tt.groupby(['defteam', 'man']).yds.mean().unstack()
     dd['ypt_man'] = dd.defteam.map(a[True])
     dd['ypt_zone'] = dd.defteam.map(a[False])
-    return r, sh, dd, lg
+    # passers: yards per attempt and EPA per attempt by man/zone and by single-high/two-high shell
+    hi = {'COVER_0', 'COVER_1', 'COVER_3'}
+    lo = {'COVER_2', 'COVER_4', 'COVER_6', 'COVER_9', '2_MAN'}
+    t['shell'] = np.where(t.defense_coverage_type.isin(hi), 'hi', np.where(t.defense_coverage_type.isin(lo), 'lo', None))
+    q = t[t.passer_player_id.notna()]
+    qb = pd.concat([
+        q.groupby(['passer_player_id', 'man']).agg(n=('play_id', 'size'), yds=('yds', 'sum'), epa=('epa', 'sum'), td=('pass_touchdown', 'sum'))
+         .unstack('man').pipe(lambda x: x.set_axis([f'{a}_{"man" if b else "zone"}' for a, b in x.columns], axis=1)),
+        q[q.shell.notna()].groupby(['passer_player_id', 'shell']).agg(n=('play_id', 'size'), yds=('yds', 'sum'))
+         .unstack('shell').pipe(lambda x: x.set_axis([f'{a}_{b}' for a, b in x.columns], axis=1))], axis=1).fillna(0)
+    lg['qb_ypa_man'], lg['qb_ypa_zone'] = q[q.man].yds.mean(), q[~q.man].yds.mean()
+    return r, sh, dd, lg, qb
 
 
 # ---------------------------------------------------------------- defense vs offense style ------------------------

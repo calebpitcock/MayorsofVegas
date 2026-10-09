@@ -150,7 +150,7 @@ for (player, mk, home, away), grp in pp.groupby(['Player', 'Market Key', 'Home',
 PROPS_AT = pp['Last Update'].max()
 
 # ------------------------------------------------------------------ league tables ---------------------------------
-cov_r, cov_sh, cov_d, cov_lg = pl.coverage_tables(D, [2024, 2025], pbp)
+cov_r, cov_sh, cov_d, cov_lg, cov_qb = pl.coverage_tables(D, [2024, 2025], pbp)
 cov_r = cov_r.set_index('pid')
 cov_d = cov_d.set_index('defteam')
 # 2026 coverage from Sharp Football (through Week 4), moved onto the scale of the charting behind the receiver splits
@@ -323,6 +323,49 @@ def coverage_matchup(pid, pos, name, team, opp, gname):
     lean = 'man-heavy' if sr.man_rk <= 8 else 'zone-heavy' if sr.man_rk >= 25 else 'mixed'
     return mu_row(pid, name, pos, team, opp, gname, f"{opp} {lean} coverage ({sr['Man Rate']:.0f}% man, {sr['Middle Closed Rate']:.0f}% single-high)",
                   'coverage', score, why)
+
+
+def coverage_facts(off, dfn, qb, mus):
+    """Coverage matchup facts for one offense: its QB vs this defense's 2026 coverage mix, the defense itself, and the best
+    and worst receiver fits. cls 'o' = favors the offense, 'd' = favors the defense."""
+    out = []
+    if dfn not in SH.index:
+        return out
+    sr, m, h = SH.loc[dfn], MAN[dfn][0], HI[dfn]
+    k = 60
+    pid = BYNAME.get((norm(qb), off)) if isinstance(qb, str) else None
+    if pid is not None and pid in cov_qb.index and cov_qb.loc[pid, ['n_man', 'n_zone']].sum() >= 60:
+        r = cov_qb.loc[pid]
+        ypa = (r.yds_man + r.yds_zone) / (r.n_man + r.n_zone)
+        ym, yz = pl.shrink(r.yds_man, r.n_man, ypa, k), pl.shrink(r.yds_zone, r.n_zone, ypa, k)
+        fit_mz = math.log((m * ym + (1 - m) * yz) / ypa)
+        nh, nl = r.get('n_hi', 0), r.get('n_lo', 0)
+        fit_hi = math.log((h * pl.shrink(r.get('yds_hi', 0), nh, ypa, k) + (1 - h) * pl.shrink(r.get('yds_lo', 0), nl, ypa, k)) / ypa) if nh + nl >= 60 else 0.0
+        fit = (fit_mz + fit_hi) / 2
+        vm, vz = r.yds_man / max(1, r.n_man), r.yds_zone / max(1, r.n_zone)
+        lean = (f"{dfn} is man-heavy ({sr['Man Rate']:.0f}% man, {pl.ordinal(sr.man_rk)} of 32)" if sr.man_rk <= 8 else
+                f"{dfn} is zone-heavy ({sr['Zone Rate']:.0f}% zone, {pl.ordinal(33 - sr.man_rk)} most)" if sr.man_rk >= 25 else
+                f"{dfn} is near average ({sr['Man Rate']:.0f}% man, {pl.ordinal(sr.man_rk)} of 32)")
+        shell = (f" {dfn} sits in single-high {sr['Middle Closed Rate']:.0f}% of the time ({pl.ordinal(sr.hi_rk)} of 32)." if sr.hi_rk <= 8 or sr.hi_rk >= 25 else '')
+        verdict = ('a wash' if abs(fit) < .01 else f"{'helps' if fit > 0 else 'hurts'} him ({100 * fit:+.0f}% on yards per attempt)")
+        txt = (f"{qb} 2024-25: {vm:.1f} yds/att vs man ({int(r.n_man)} att, {r.epa_man / max(1, r.n_man):+.2f} EPA/att), "
+               f"{vz:.1f} vs zone ({int(r.n_zone)}, {r.epa_zone / max(1, r.n_zone):+.2f})"
+               + (f"; {r.yds_hi / max(1, nh):.1f} vs single-high, {r.yds_lo / max(1, nl):.1f} vs two-high" if nh + nl >= 60 else '')
+               + f". {lean}.{shell} Coverage mix {verdict}.")
+        out.append(dict(text=txt, cls='o' if fit >= .02 else 'd' if fit <= -.02 else '', score=fit))
+    elif isinstance(qb, str):
+        out.append(dict(text=f"{qb}: fewer than 60 charted attempts in 2024-25, so no man/zone split.", cls='', score=0))
+    rk = lambda c: pl.ordinal(int(cov_d[c].rank().get(dfn, 0)))
+    out.append(dict(text=f"{dfn} defense 2026 (Sharp, through Week 4): man {sr['Man Rate']:.1f}% ({pl.ordinal(sr.man_rk)} of 32), zone {sr['Zone Rate']:.1f}%, "
+                         f"single-high {sr['Middle Closed Rate']:.1f}% ({pl.ordinal(sr.hi_rk)}), two-high {sr['Middle Open Rate']:.1f}%. "
+                         f"Last year it allowed {cov_d.loc[dfn, 'ypt_man']:.1f} yds/target vs man ({rk('ypt_man')} fewest) and {cov_d.loc[dfn, 'ypt_zone']:.1f} vs zone ({rk('ypt_zone')} fewest).",
+                    cls='', score=0))
+    mine = sorted([x for x in mus if x['off'] == off and x['role'] == 'coverage'], key=lambda x: -x['score'])
+    for x in [x for x in mine if x['score'] >= .02][:3] + [x for x in reversed(mine) if x['score'] <= -.02][:2]:
+        first = x['why'][0].split(': ', 1)[-1]
+        out.append(dict(text=f"{x['n']} ({x['pos']}): {first.rstrip('.')}; {x['edge'].lower()} vs this coverage, {100 * x['score']:+.0f}% on his yards per target.",
+                        cls='o' if x['score'] >= .03 else 'd' if x['score'] <= -.03 else '', score=x['score']))
+    return out
 
 
 def run_matchup(pid, name, team, opp, gname):
@@ -589,6 +632,7 @@ for g in slate.itertuples():
                     yp['out'] = True
                 picks.append(yp)
     game['mu'] = sorted(mus, key=lambda m: -m['score'])
+    game['facts']['coverage'] = {away: coverage_facts(away, home, g.away_qb_name, mus), home: coverage_facts(home, away, g.home_qb_name, mus)}
     game['keys'] = keys
     for t, o in ((away, home), (home, away)):
         if o in SH.index:

@@ -159,11 +159,13 @@ const fl=(items,cls='')=>items.length?`<ul class="fx">${items.map(f=>`<li class=
 function factsBlock(g){
   const F=g.facts, side=t=>{const s=F.sides[t]; return [...s.team,...s.qb,...s.coach];};
   const sty=t=>(F.styles[t]||[]).map(x=>({text:x.text,cls:x.side==='off'?'o':'d'}));
+  const cov=t=>((F.coverage||{})[t]||[]).map(x=>({text:x.text,cls:x.cls}));
   const blocks=[[`${g.away} ${g.awayName}`,side(g.away)],[`${g.home} ${g.homeName}`,side(g.home)],['Head to head',F.h2h],
     ['Reported this week',(F.reported||[]).map(r=>({text:r.text,src:r.src}))],
-    [`${g.away} offense vs ${g.home} defense`,sty(g.away)],[`${g.home} offense vs ${g.away} defense`,sty(g.home)]];
+    [`${g.away} offense vs ${g.home} defense`,sty(g.away)],[`${g.home} offense vs ${g.away} defense`,sty(g.home)],
+    [`${g.away} passing vs ${g.home} coverage`,cov(g.away)],[`${g.home} passing vs ${g.away} coverage`,cov(g.home)]];
   return `<div class="fxs">${blocks.filter(b=>b[1].length).map(([h,it])=>`<div><div class="fxh">${esc(h)}</div>${fl(it)}</div>`).join('')}
-    ${(F.styles[g.away]||[]).length+(F.styles[g.home]||[]).length?`<p class="note" style="margin:0;font-size:12px">Green: the offense's habit meets a defensive weak spot. Red: it runs into a strength. 2026 plays only, ranks of 32.</p>`:''}</div>`;
+    ${(F.styles[g.away]||[]).length+(F.styles[g.home]||[]).length?`<p class="note" style="margin:0;font-size:12px">Green: favors the offense (its habit meets a weak spot, or its QB/receivers do better against the coverage this defense plays). Red: favors the defense. Styles are 2026 plays; coverage splits are 2024-25 charting against 2026 coverage rates.</p>`:''}</div>`;
 }
 const gamePicks=(g,type)=>st.D.picks.filter(p=>p.gameId===g.id&&p.type===type&&!isOut(p));
 function gameCard(g,full=true){
