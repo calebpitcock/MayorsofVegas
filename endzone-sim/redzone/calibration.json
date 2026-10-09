@@ -1,0 +1,43 @@
+{
+ "_about": "Results calibration for the Redzone Desk's yardage and catch distributions (no sportsbook input). Fitted on 2026 weeks [2, 3, 4] (hist0).",
+ "weeks": [
+  2,
+  3,
+  4
+ ],
+ "trust": 0.15,
+ "fit": {
+  "recYds|WR": {
+   "s": 1.24,
+   "w": 1.0
+  },
+  "recYds|TE": {
+   "s": 0.94,
+   "w": 1.05
+  },
+  "recYds|RB": {
+   "s": 0.78,
+   "w": 1.3
+  },
+  "rushYds|RB": {
+   "s": 0.88,
+   "w": 1.1
+  },
+  "rushYds|QB": {
+   "s": 0.82,
+   "w": 1.1
+  },
+  "rec|WR": {
+   "s": 1.1,
+   "w": 1.05
+  },
+  "rec|TE": {
+   "s": 0.98,
+   "w": 1.15
+  },
+  "rec|RB": {
+   "s": 0.98,
+   "w": 1.15
+  }
+ }
+}

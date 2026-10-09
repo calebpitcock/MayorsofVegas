@@ -29,6 +29,7 @@ CONFIRMED_OUT = set()
 QUESTIONABLE = {  # kept in; flagged
   'Jonathan Mingo': 'illness — questionable, did not practice',
 }
+if os.environ.get('EZBTWEEK'): OUT, CONFIRMED_OUT, QUESTIONABLE = {}, set(), {}   # backtest: the official report and weekly roster only
 # veteran rest days: on the report as DNP, but not injuries (the role correction would otherwise trim their shares)
 REST = ['Davante Adams', 'Christian McCaffrey']
 # skill players in OUT stay on the slate marked out, so the engine's scratch rule hands their carries and targets to the
@@ -65,7 +66,7 @@ b.practice_override = {pid_of(n): 'Full Participation in Practice' for n in REST
 for _n in QUESTIONABLE:
     try: b.status_override[pid_of(_n)] = 'Questionable'
     except Exception: pass
-STARTER = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'overrides.json')))['STARTER']   # shared with gm/game_live.py
+STARTER = {} if os.environ.get('EZBTWEEK') else json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'overrides.json')))['STARTER']   # shared with gm/game_live.py
 TIER = {'WAS': -1, 'CHI': -1, 'NYG': 0, 'MIN': 1, 'TB': -1}
 QBWHY = {
   'WAS': "Daniels dislocated his elbow; Mariota starts. He threw 17 of Washington's 40 dropbacks in Week 2 after Daniels left, so the priors are about 20% his.",
@@ -91,7 +92,7 @@ COV = sm.week_tables(SEASON, WEEK)        # coverage/blitz matchups (charting da
 games = []
 ONLY = set(filter(None, (os.environ.get('EZGAMES') or '').upper().split(',')))   # e.g. EZGAMES=TB,DAL: just the games these teams play
 for r in L.itertuples():
-    if pd.notna(r.home_score): continue          # already played
+    if pd.notna(r.home_score) and not os.environ.get('EZBTWEEK'): continue          # already played
     a, h = r.away_team, r.home_team
     if ONLY and not ({a, h} & ONLY): continue
     g = dict(id=f'{a}-{h}'.lower(), league='NFL', away=a, home=h, awayName=NAMES[a], homeName=NAMES[h],
@@ -157,7 +158,7 @@ def fix(o):
     if isinstance(o, dict): return {('pass' if k == 'pass_' else 'as' if k == 'as_' else k): fix(v) for k, v in o.items()}
     if isinstance(o, list): return [fix(x) for x in o]
     return o
-_left = L[L.home_score.isna() & (L.away_team.isin(ONLY) | L.home_team.isin(ONLY) if ONLY else True)]
+_left = L[(L.home_score.isna() | bool(os.environ.get('EZBTWEEK'))) & (L.away_team.isin(ONLY) | L.home_team.isin(ONLY) if ONLY else True)]
 _days = pd.to_datetime(_left.gameday)
 _lab = f"Week {WEEK}" + (f" · {_days.min():%b} {_days.min().day}" + (f"–{_days.max().day}" if _days.max() != _days.min() else "") if len(_days) else "")
 _old = old.get('data', old)

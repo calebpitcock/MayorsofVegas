@@ -90,7 +90,7 @@ def test():
 
 def live(path, week):
     S = json.load(open(path)); F = json.load(open(os.path.join(HERE, 'finishing_fit.json')))
-    CFG = json.load(open(os.path.join(HERE, 'config.json'))); W = CFG.get('finishing', {}).get('weight', 1.0)
+    CFG = json.load(open(os.environ.get('EZRZCFG') or os.path.join(HERE, 'config.json'))); W = CFG.get('finishing', {}).get('weight', 1.0)
     R, lt, lgl = rates(2026, week)
     cg = F['goal_line_pass']['coef']
     q = team_games(2025).groupby('posteam')[['trips', 'td']].sum(); lq = q.td.sum() / q.trips.sum()

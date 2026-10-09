@@ -11,7 +11,7 @@ import json, os, sys, numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(HERE, '..'))
 import nfl_build as nb
 D = nb.D; S0 = 2026; REP = {'OAK': 'LV', 'SD': 'LAC', 'STL': 'LA', 'LAR': 'LA'}
-CFG = json.load(open(os.path.join(HERE, 'config.json'))); W = CFG.get('matchups', {}).get('weight', 1.0)
+CFG = json.load(open(os.environ.get('EZRZCFG') or os.path.join(HERE, 'config.json'))); W = CFG.get('matchups', {}).get('weight', 1.0)
 clip = lambda x, lo, hi: float(min(hi, max(lo, x)))
 K = dict(tgt=35.0)          # pseudo-targets of league-average coverage
 
@@ -68,7 +68,7 @@ def main(path, week):
     # ---- who is available and in which role ----
     dc = pd.read_csv(f'{D}/depth_charts_{S0}.csv', low_memory=False); dc = dc[dc.dt == dc.dt.max()]
     dc = dc[dc.pos_abb.isin(['LCB', 'RCB', 'NB', 'FS', 'SS'])].dropna(subset=['gsis_id']).sort_values('pos_rank')
-    wk = pd.read_csv(f'{D}/roster_weekly_{S0}.csv', low_memory=False); wk = wk[wk.week == wk.week.max()]
+    wk = pd.read_csv(f'{D}/roster_weekly_{S0}.csv', low_memory=False); wk = wk[wk.week == (week if (wk.week == week).any() else wk.week.max())]
     act = set(wk[wk.status == 'ACT'].gsis_id.dropna())
     out = set()
     fi = f'{D}/injuries_{S0}.csv'

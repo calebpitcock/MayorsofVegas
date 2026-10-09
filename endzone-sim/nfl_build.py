@@ -243,7 +243,7 @@ class Builder:
         fw = f'{D}/roster_weekly_{season}.csv'
         self.ACT = None
         if os.path.exists(fw):
-            rw = pd.read_csv(fw, low_memory=False); rw = rw[rw.week == rw.week.max()]
+            rw = pd.read_csv(fw, low_memory=False); rw = rw[rw.week == (int(os.environ.get('EZBTWEEK') or 0) or rw.week.max())]
             self.ACT = set(rw[rw.status == 'ACT'].gsis_id.dropna())
             self.ACT_TEAM = rw[rw.status == 'ACT'].dropna(subset=['gsis_id']).set_index('gsis_id').team.to_dict()
 
@@ -251,6 +251,9 @@ class Builder:
         """This week's starting QB for the live slate: the latest depth chart's QB1 when he is on the active roster and
         not ruled out (official Out/Doubtful or the caller's list), else whoever took the most dropbacks last week.
         The dropback rule alone keeps a fill-in as the starter after the regular QB returns (e.g. Lock for Darnold)."""
+        if os.environ.get('EZBTWEEK'):      # backtest: the QB who actually started (live runs set this from the news)
+            q = self.Q[(self.Q.posteam == team) & (self.Q.season == self.season) & (self.Q.week == week)]
+            if len(q): return q.groupby('pid').db.sum().idxmax()
         f = f'{D}/depth_charts_{self.season}.csv'
         if os.path.exists(f) and self.ACT is not None:
             d = pd.read_csv(f, usecols=['dt', 'team', 'gsis_id', 'pos_abb', 'pos_rank'], low_memory=False)

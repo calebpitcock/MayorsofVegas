@@ -2,6 +2,9 @@
 team's recent numbers were produced with, so a starter change can be measured against it."""
 import numpy as np, pandas as pd
 T0 = pd.read_parquet('team_games.parquet'); Q0 = pd.read_parquet('qb_games.parquet')
+import os
+_BT = int(os.environ.get('EZBTWEEK') or 0)          # backtest: only games before this 2026 week
+if _BT: T0 = T0[(T0.season < 2026) | (T0.week < _BT)]; Q0 = Q0[(Q0.season < 2026) | (Q0.week < _BT)]
 G0 = pd.read_csv('../../data/games.csv'); G0 = G0[(G0.game_type == 'REG') & (G0.season >= 2012)]
 ORDER = G0[['game_id', 'gameday']].drop_duplicates()
 STATS = ['epa', 'pepa', 'repa', 'sr']

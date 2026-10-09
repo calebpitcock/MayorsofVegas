@@ -49,7 +49,7 @@ def main(slate_path):
         c = model4.ST['CARRY'] if x['season'] != SEASON else 1.0
         return x['x'] * c / (x['w'] * c + model4.ST['M0'])
     TEAMS = sorted(mr)
-    def starter(t): return name2pid.get(ov['STARTER'].get(t)) or b.live_starter(t, WEEK)
+    def starter(t): return (None if rt._BT else name2pid.get(ov['STARTER'].get(t))) or b.live_starter(t, WEEK)
     parts = {}
     for t in TEAMS:
         o, dd = team(t); q = starter(t); rq = qbr(q); u = used[t]['x'] / used[t]['w'] if t in used and used[t]['w'] > 0 else -0.02

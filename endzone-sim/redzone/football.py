@@ -12,7 +12,7 @@ import json, os, sys, numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(HERE, '..'); sys.path.insert(0, ROOT)
 import nfl_build as nb, scheme_match as sm
 D = nb.D; S0 = 2026
-CFG = json.load(open(os.path.join(HERE, 'config.json'))); W = CFG['stats']
+CFG = json.load(open(os.environ.get('EZRZCFG') or os.path.join(HERE, 'config.json'))); W = CFG['stats']
 REP = {'OAK': 'LV', 'SD': 'LAC', 'STL': 'LA', 'LAR': 'LA'}
 LEAGUE_JS = dict(man=.33, blitz=.25, mofc=.48)          # scheme.js LEAGUE: the engine's coverage baseline
 clip = lambda x, lo, hi: float(min(hi, max(lo, x)))
@@ -121,7 +121,7 @@ def main(path, week):
     rc = rc.assign(tgt=rc.receiving_drop / (rc.receiving_drop_pct.replace(0, np.nan) / (1 if rc.receiving_drop_pct.max() <= 1 else 100))).dropna(subset=['tgt'])
     drops, lg_drop = shrunk(rc, 'gid', 'receiving_drop', 'tgt', 60)
     # ---- coverage this season (coverage_2026.py) ----
-    cov = json.load(open(os.path.join(HERE, 'coverage_2026.json')))['teams']
+    cov = json.load(open(os.environ.get('EZCOVJSON') or os.path.join(HERE, 'coverage_2026.json')))['teams']
     lg_man = np.mean([v['man'] for v in cov.values()]); lg_hi = np.mean([v['hi'] for v in cov.values()])
     COV = sm.week_tables(S0, week)
     for t, v in cov.items(): COV['man']['d'][t] = v['man']

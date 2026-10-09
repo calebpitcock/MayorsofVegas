@@ -12,7 +12,7 @@ import json, os, sys, numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(HERE, '..'); sys.path.insert(0, ROOT)
 import nfl_build as nb, formation
 D = nb.D
-CFG = json.load(open(os.path.join(HERE, 'config.json')))
+CFG = json.load(open(os.environ.get('EZRZCFG') or os.path.join(HERE, 'config.json')))
 SEASON = 2026
 COLS = ['game_id', 'play_id', 'season', 'season_type', 'week', 'posteam', 'defteam', 'play_type', 'yardline_100', 'pass_attempt',
         'sack', 'two_point_attempt', 'qb_scramble', 'qb_kneel', 'rusher_player_id', 'receiver_player_id', 'air_yards',
@@ -120,7 +120,7 @@ def main(path, week):
                 p['ypr'] = round(p['ypr'] * m, 2); rz.update(yac=round(y, 2), yprx=round(m, 3))
             # player vs this defense
             h = pg[(pg.pid == pid) & (pg.defteam == opp_t) & pg.b_ry.notna()].tail(5)
-            if len(h):
+            if len(h) and W['player_vs_team_history']:
                 n = len(h); shr = n / (n + 2.0); base = last8.loc[pid] if pid in last8.index else None
                 dry, drec, dtd = float((h.ry - h.b_ry).mean()), float((h.recy - h.b_recy).mean()), float((h.td - h.b_td).mean())
                 pv = dict(n=n, ry=round(dry, 1), recy=round(drec, 1), td=round(dtd, 3), opp=opp_t)

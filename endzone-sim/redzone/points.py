@@ -10,7 +10,7 @@ Run from gm/ after game_live.py.  Usage: python3 ../redzone/points.py ../slate.j
 import json, os, sys, numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(HERE, '..')); sys.path.insert(0, '.')
 import ratings2 as rt
-CFG = json.load(open(os.path.join(HERE, 'config.json')))
+CFG = json.load(open(os.environ.get('EZRZCFG') or os.path.join(HERE, 'config.json')))
 SEASON = 2026; P = dict(HG=14.0, CARRY=0.85, M0=3.0); HFA = 1.8
 REP = {'OAK': 'LV', 'SD': 'LAC', 'STL': 'LA'}
 
@@ -34,8 +34,8 @@ def fit_points(pre, G):
     coef = np.linalg.solve((A * w[:, None]).T @ A + np.diag([0, 1, 1, 1, 1, 0]), (A * w[:, None]).T @ (X.pts - X.lg).values)
     return coef
 
-def history(G, h, a, ch, ca):
-    past = G[G.home_score.notna() & (G.season < SEASON + 1)].sort_values(['season', 'week'])
+def history(G, h, a, ch, ca, week=99):
+    past = G[G.home_score.notna() & ((G.season < SEASON) | (G.week < week))].sort_values(['season', 'week'])
     tv = past[((past.home_team == h) & (past.away_team == a)) | ((past.home_team == a) & (past.away_team == h))].tail(3)
     # margin for h, venue removed
     tm = [(r.result - (0 if r.location == 'Neutral' else HFA)) * (1 if r.home_team == h else -1) for r in tv.itertuples()]
@@ -81,16 +81,16 @@ def main(path, week):
         total = pts_h + pts_a + CFG['qb_total_weight'] * (qh + qa)
         m = g['gm']['m']
         why = [x for x in (g['gm'].get('why') or '').split('; ') if x]
-        hs = history(G, h, a, r.home_coach, r.away_coach)
+        hs = history(G, h, a, r.home_coach, r.away_coach, week)
         adj = []
-        if hs['team']:
+        if hs['team'] and CFG['team_history']:          # a factor set to 0 is left out of the reasons too
             v = CFG['team_history'] * float(np.mean(hs['team'])); m += v
             adj.append(dict(k='team', pts=round(v, 2), text=f"Last {len(hs['team'])} meetings: {h if np.mean(hs['team']) > 0 else a} by {abs(np.mean(hs['team'])):.1f} a game on average ({'; '.join(hs['teamGames'])})"))
-        if hs['coach'] and r.home_coach != r.away_coach:
+        if hs['coach'] and r.home_coach != r.away_coach and CFG['coach_history']:
             v = CFG['coach_history'] * float(np.mean(hs['coach'])); m += v
             adj.append(dict(k='coach', pts=round(v, 2), text=f"{r.home_coach} vs {r.away_coach}: {r.home_coach if np.mean(hs['coach']) > 0 else r.away_coach}'s teams by {abs(np.mean(hs['coach'])):.1f} a game in their last {hs['coachN']} meetings"))
         oh_, oa_ = CFG['offense_vs_defense_history'] * hs['od'][h], CFG['offense_vs_defense_history'] * hs['od'][a]
-        if hs['od'][h] or hs['od'][a]:
+        if (hs['od'][h] or hs['od'][a]) and CFG['offense_vs_defense_history']:
             m += oh_ - oa_; total += oh_ + oa_
             adj.append(dict(k='od', pts=round(oh_ - oa_, 2), text=f"Scoring in recent meetings vs season average: {h} {hs['od'][h]:+.1f}, {a} {hs['od'][a]:+.1f} points"))
         for t, sign in ((h, 1), (a, -1)):

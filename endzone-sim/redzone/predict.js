@@ -3,7 +3,7 @@
 // Usage: node redzone/predict.js slate.json out.json
 const E=require('../harness.js'), fs=require('fs'), path=require('path');
 const [,,inF,outF]=process.argv;
-const S=JSON.parse(fs.readFileSync(inF)), CFG=JSON.parse(fs.readFileSync(path.join(__dirname,'config.json')));
+const S=JSON.parse(fs.readFileSync(inF)), CFG=JSON.parse(fs.readFileSync(process.env.EZRZCFG||path.join(__dirname,'config.json')));
 const CAL=JSON.parse(fs.readFileSync(path.join(__dirname,'..','td_cal_nfl.json')));
 const lg=q=>{q=Math.min(.999,Math.max(.001,q));return Math.log(q/(1-q));}, sg=z=>1/(1+Math.exp(-z));
 const pct=x=>Math.round(100*x)+'%', sgn=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(1), NAME={RB:'running backs',WR:'wide receivers',TE:'tight ends',QB:'quarterbacks'};
@@ -59,7 +59,17 @@ try{ const rows=fs.readFileSync(EXT+'/nfl-player-prop-opportunity/data/latest/pl
     PROPS[k]={line,over:avg('Over'),under:avg('Under'),books:new Set(at.map(x=>x.book)).size}; } }catch(e){}
 const priceWhy=(pr,prob)=>pr?`Book price ${pr.odds>0?'+':''}${pr.odds} (${pr.src}) implies ${pct(pr.implied)}; the model says ${pct(prob)}`:'No book price posted yet for this pick';
 const fmtSpread=x=>x===0?'PK':(x>0?'+':'')+x;
-const games=[], picks=[];
+/* results calibration (redzone/calibrate.py): per stat and position, X' = s*(median + w*(X - median)) for every yardage and
+   catch distribution, fitted on what actually happened (no sportsbook input); at a posted line the model's distance from
+   50% is scaled by `trust`, the share of it that held up when it disagreed with a line. */
+let RCAL=null; try{ RCAL=JSON.parse(fs.readFileSync(path.join(__dirname,'calibration.json'))); }catch(e){}
+function calHist(h,off,c){ if(!c) return h; let tot=0; for(const x of h) tot+=x; if(!tot) return h;
+  let acc=0, m=0; for(let i=0;i<h.length;i++){ acc+=h[i]; if(acc>=tot/2){ m=i-off; break; } }
+  const o=new Array(h.length).fill(0);
+  for(let i=0;i<h.length;i++){ if(!h[i]) continue; const v=c.s*(m+c.w*((i-off)-m)), j=Math.min(h.length-1,Math.max(0,Math.round(v)+off)); o[j]+=h[i]; }
+  return o; }
+const trustP=q=>RCAL&&RCAL.trust!=null?sg(RCAL.trust*lg(q)):q;
+const games=[], picks=[], DUMP=process.env.EZDUMP?[]:null;   // EZDUMP=file: every player's simulated distributions (redzone/backtest.py)
 for(const g of S.games){
   let k=E.calibrateV3(g,ctx,{N:4000,trust:1});
   /* finishing drives (finishing.py): move each team's red-zone TD rate by its tested amount (rzdev), then re-solve the
@@ -110,6 +120,10 @@ for(const g of S.games){
   for(const p of r.players){ if(p.field||p.hidden) continue;
     const src=g.players.find(x=>x.n===p.n)||{}, rz=src.rz||{}, side=p.side===H?'home':'away', opp=p.side===H?A:H, dp=(g.defp||{})[side]||{};
     const td=sg(CAL.slope*lg(p.pModel)+(CAL[p.pos]||0));
+    if(DUMP) DUMP.push({gid:g.id,id:src.id,n:p.n,t:p.t,pos:p.pos,td,tdRaw:p.pModel,mu:src.mu?src.mu.score:null,cov:src.cov??null,
+      rec:Array.from({length:16},(_,k)=>+E.histAtLeast(p.hist.rec,0,k).toFixed(4)),recYds:Array.from({length:201},(_,k)=>+E.histAtLeast(p.hist.recYds,15,k).toFixed(4)),
+      rushYds:Array.from({length:201},(_,k)=>+E.histAtLeast(p.hist.rushYds,40,k).toFixed(4))});
+    if(RCAL) for(const [key,off] of [['recYds',15],['rushYds',40],['rec',0]]) p.hist[key]=calHist(p.hist[key],off,RCAL.fit[key+'|'+p.pos]);
     const why=[];
     const role=[]; if(src.rec>=.04) role.push(`${pct(src.rec)} of ${p.t} targets`); if(src.rush>=.04) role.push(`${pct(src.rush)} of ${p.t} designed carries`);
     if(role.length) why.push(`Role: ${role.join(' and ')}`);
@@ -136,7 +150,7 @@ for(const g of S.games){
     if(src.flag) why.push(`Injury: ${src.flag}`);
     why.push(`${p.t} projected ${side==='home'?sc.home:sc.away} points`);
     const m=p.mean;
-    pl.push({n:p.n,t:p.t,pos:p.pos,td,rec:+m.REC.toFixed(1),recY:Math.round(m.RCY),rushY:Math.round(m.RY),passY:Math.round(m.PY),
+    pl.push({n:p.n,t:p.t,pos:p.pos,td,rec:+(RCAL?E.histMean(p.hist.rec,0):m.REC).toFixed(1),recY:Math.round(RCAL?E.histMean(p.hist.recYds,15):m.RCY),rushY:Math.round(RCAL?E.histMean(p.hist.rushYds,40):m.RY),passY:Math.round(m.PY),
       medRec:E.histQuantile(p.hist.recYds,15,.5),medRush:E.histQuantile(p.hist.rushYds,40,.5)});
     const base=`${p.n} (${p.t} ${p.pos})`;
     const tp=TDP[src.id], tdP=tp?price(tp.o,`best US price, ${tp.asOf}`):null;
@@ -147,7 +161,7 @@ for(const g of S.games){
       // a posted book line: pick the side the model likes at that line, priced at the books' average
       const bk=PROPS[p.n+'|'+key];
       if(bk&&(bk.over!=null||bk.under!=null)){
-        const o=E.histOver(p.hist[key],off,bk.line), pOv=o.over/((1-o.push)||1), s=pOv>=.5?'over':'under', pr=Math.max(pOv,1-pOv);
+        const o=E.histOver(p.hist[key],off,bk.line), pOv=trustP(o.over/((1-o.push)||1)), s=pOv>=.5?'over':'under', pr=Math.max(pOv,1-pOv);
         const bp=price(bk[s],`average of ${bk.books} books`);
         gp.push({id:`${gid}-${key}-${slug(p.n)}-${s}-${bk.line}`,type:key==='rec'?'Catches':'Yards',game:label,gameId:g.id,player:p.n,team:p.t,stat:key,side:s,line:bk.line,
           text:`${p.n} ${s} ${bk.line} ${lab}`,prob:pr,price:bp,why:[`${s==='over'?'Over':'Under'} hits ${pct(pr)} of simulations; projection ${E.histQuantile(p.hist[key],off,.5)} ${lab}`,priceWhy(bp,pr),...why]});
@@ -179,5 +193,6 @@ for(const g of S.games) for(const side of ['away','home']){ const c=((g.rzfb||{}
 coverage.sort((a,b)=>b.man-a.man);
 const out={season:SEASON,week:WEEK,label:S.label,generated:new Date().toISOString(),config:CFG,games,board:board.map(p=>p.id),picks,coverage};
 fs.writeFileSync(outF,JSON.stringify(out));
+if(DUMP) fs.writeFileSync(process.env.EZDUMP,JSON.stringify(DUMP));
 console.log(`${games.length} games, ${picks.length} picks, board ${board.length}`);
 board.forEach(p=>console.log(`${pct(p.prob).padStart(4)}  ${p.type.padEnd(10)} ${p.text}  (${p.game})`));

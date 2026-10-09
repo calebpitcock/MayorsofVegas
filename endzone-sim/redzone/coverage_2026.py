@@ -132,7 +132,7 @@ def main(week=4):
         p = np.clip(prior.mean() + pred(b, mu, sd, e[cols]), .03, .85)   # league level carried from 2025
         for t, v in zip(e.index, p): out['teams'].setdefault(t, {})[k] = round(float(v), 3); out['teams'][t][k + '2025'] = round(float(prior[t]), 3)
         for n, r in res.items(): print(k, f"{n:34s} rmse {r['rmse']:.4f} (last season only {r['rmse_last_season']:.4f}) {r['by_season']}" + ('  <- chosen' if n == best else ''))
-    json.dump(out, open(os.path.join(HERE, 'coverage_2026.json'), 'w'), indent=1)
+    json.dump(out, open(os.environ.get('EZCOVJSON') or os.path.join(HERE, 'coverage_2026.json'), 'w'), indent=1)
     print('teams', len(out['teams']))
 
 if __name__ == '__main__': main(int(sys.argv[1]) if len(sys.argv) > 1 else 4)

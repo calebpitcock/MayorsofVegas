@@ -7,6 +7,7 @@ HF = dict(K=40.0, SEASONS=6)   # team home field: NOT used. Season-to-season r =
 F4 = ['off_epa', 'off_sr', 'def_epa', 'def_sr', 'st', 'mkt', 'qb', 'qbd', 'qb2', 'rest', 'div', 'neutral']
 def st_ratings():
     S = pd.read_parquet('st_games.parquet').merge(rt.ORDER, on='game_id').sort_values(['gameday', 'game_id'])
+    if rt._BT: S = S[~S.game_id.str.startswith('2026_') | (S.game_id.str[5:7].astype(int) < rt._BT)]
     st, pre = {}, {}; d = 0.5 ** (1 / ST['HL'])
     for (gd, gid), grp in S.groupby(['gameday', 'game_id'], sort=False):
         for r in grp.itertuples():

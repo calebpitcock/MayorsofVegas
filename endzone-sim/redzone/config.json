@@ -1,5 +1,5 @@
 {
- "_about": "Redzone Desk weights. Every factor here was tested and rejected for the DraftKings-anchored Endzone Sim; the user asked to use all of them with significant weight and to keep sportsbook numbers out of the model. 0 turns a factor off; 1 is full strength.",
+ "_about": "Redzone Desk weights. 0 turns a factor off; 1 is full strength. Sportsbook numbers stay out of the model. 2026-10-08 backtest (weeks 2-4 rebuilt as of each week, redzone/bt.sh + backtest.py): the four history factors made player props and TDs measurably worse (player vs this defense most of all), so they are off; coverage/scheme at 2x and 3x was worse than 1x, so it stays at 1x.",
  "books_weight": 0.0,
  "ez_targets": 1.0,
  "inside5_carries": 1.0,
@@ -7,11 +7,11 @@
  "yac_over_expected": 1.0,
  "pass_rate_over_expected": 0.6,
  "td_location_defense": 2.0,
- "team_history": 0.30,
- "coach_history": 0.20,
- "offense_vs_defense_history": 0.30,
- "player_vs_team_history": 1.0,
- "new_coach_rating_reset": 0.40,
+ "team_history": 0.0,
+ "coach_history": 0.0,
+ "offense_vs_defense_history": 0.0,
+ "player_vs_team_history": 0.0,
+ "new_coach_rating_reset": 0.4,
  "new_coach_usage_discount": true,
  "formation": 1.0,
  "formation_damp": 1.0,
@@ -21,9 +21,25 @@
  "matchup_weight": 1.0,
  "qb_total_weight": 0.5,
  "coverage_shells": true,
- "matchups": {"_about": "db_matchups.py: receiver vs likely corner/safety (coverage stats, size, speed, style). 1 = full strength.", "weight": 1.0},
- "stats": {"_about": "football.py: the user's 10 added stats and this season's coverage. 1 = full strength.",
-   "coverage_matchups": 1.0, "pass_rush": 1.0, "separation": 1.0, "run_blocking": 1.0, "ryoe": 1.0, "qb": 1.0, "drops": 1.0,
-   "big_plays": 1.0, "play_style": 1.0, "air_yards": 1.0, "turnovers": 1.0, "weather": 1.0, "matchup_points": 1.0},
+ "matchups": {
+  "_about": "db_matchups.py: receiver vs likely corner/safety (coverage stats, size, speed, style). 1 = full strength.",
+  "weight": 1.0
+ },
+ "stats": {
+  "_about": "football.py: the user's 10 added stats and this season's coverage. 1 = full strength.",
+  "coverage_matchups": 1.0,
+  "pass_rush": 1.0,
+  "separation": 1.0,
+  "run_blocking": 1.0,
+  "ryoe": 1.0,
+  "qb": 1.0,
+  "drops": 1.0,
+  "big_plays": 1.0,
+  "play_style": 1.0,
+  "air_yards": 1.0,
+  "turnovers": 1.0,
+  "weather": 1.0,
+  "matchup_points": 1.0
+ },
  "sims": 20000
 }

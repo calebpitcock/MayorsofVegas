@@ -120,7 +120,7 @@ def test():
 
 def live(path, week):
     S = json.load(open(path)); fitj = json.load(open(os.path.join(HERE, 'rb_fit.json'))); c = fitj['coef']
-    CFG = json.load(open(os.path.join(HERE, 'config.json'))); W = CFG.get('matchups', {}).get('rb_weight', 1.0)
+    CFG = json.load(open(os.environ.get('EZRZCFG') or os.path.join(HERE, 'config.json'))); W = CFG.get('matchups', {}).get('rb_weight', 1.0)
     P = profiles(2026, week); lg = P['lg']; n_mu = 0
     for g in S['games']:
         g.setdefault('mu', [])
