@@ -31,12 +31,13 @@ N = NormalDist()
 # ------------------------------------------------------------------ the rules (every weight on the page) ---------
 RULES = {
     'td': {
-        '_about': 'Every fact below is from this season (2026) only. Anytime TD. Start: implied chance of the best available price. Each fact moves the log-odds by at most its cap; the sum is capped at +/-0.30 (about +/-6 points on a 30% player).',
+        '_about': 'Anytime TD. Start: implied chance of the best available price. Each fact moves the log-odds by at most its cap; the sum is capped at +/-0.30 (about +/-6 points on a 30% player).',
         'funnel': {'w': 0.6, 'cap': 0.15, 'shrink_games': 4,
                    'what': "TDs this defense has allowed to the player's position per game this season vs the league, pulled 4 games toward average"},
         'matchup': {'w': 1.0, 'cap': 0.10, 'what': "coverage fit (pass catchers: this defense's 2026 yards per target allowed to his position, his 2026 yards vs the blitz x its blitz rate, his 2026 yards vs man-heavy or zone-heavy defenses) or run fit (RB: his 2026 inside/outside mix x yards this defense allows inside/outside)"},
         'red_zone_d': {'w': 0.5, 'cap': 0.06, 'shrink_trips': 10, 'what': "share of opponents' red-zone trips this defense turns into TDs vs the league"},
-        'form': {'hot': 0.04, 'cold': -0.04, 'what': 'scored in 3+ straight games this season (+) or no TD in any game this season with 4+ games played (-)'},
+        'vs_team': {'w': 0.15, 'cap': 0.05, 'min_games': 2, 'what': 'his TDs per game against this opponent since 2019 vs his own rate'},
+        'form': {'hot': 0.04, 'cold': -0.04, 'what': 'scored in 3+ straight games (+) or no TD in 6+ straight (-)'},
         'total_cap': 0.30,
     },
     'total': {
@@ -44,6 +45,7 @@ RULES = {
         'red_zone': {'w': 0.5, 'cap': 2.0, 'shrink_trips': 10, 'pts_per_td_swing': 4.0, 'what': 'both offenses\' red-zone TD rate vs the other defense\'s TD rate allowed, times red-zone trips per game'},
         'pace': {'w': 0.5, 'cap': 1.5, 'pts_per_play': 0.33, 'what': 'combined plays per game (offense run + defense faced) vs the league'},
         'ou_form': {'w': 0.15, 'cap': 1.5, 'what': 'how far both teams\' games have landed over/under the closing total this season'},
+        'h2h': {'w': 0.15, 'cap': 1.0, 'what': 'last 6 meetings, points vs the closing total'},
         'sd': 13.0,
         'total_cap': 4.0,
     },
@@ -51,10 +53,11 @@ RULES = {
         '_about': 'Player yardage over/under. Start: DraftKings (else FanDuel/BetMGM/...) no-vig over chance. Facts move his expected yards; P(over) = no-vig chance shifted by yards / SD, SD = 0.55 x line + 12 (receiving) or 0.45 x line + 12 (rushing). Sum capped at 15% of the line.',
         'def_pos': {'w': 0.5, 'cap': 0.10, 'shrink_games': 4, 'what': 'yards this defense allows to the position per game vs league'},
         'matchup': {'w': 0.6, 'cap': 0.08, 'what': 'coverage fit or run fit, as above'},
-        'hit_rate': {'w': 0.15, 'cap': 0.05, 'min_games': 3, 'what': 'share of his games this season over this exact line'},
+        'hit_rate': {'w': 0.15, 'cap': 0.05, 'min_games': 4, 'what': 'share of his 2025-26 games over this exact line'},
+        'vs_team': {'w': 0.10, 'cap': 0.04, 'min_games': 2, 'what': 'his yards per game against this opponent vs the line'},
         'total_cap': 0.15,
     },
-    'coverage': {'shrink_targets': 15, 'season': 'this season only (2026 play-by-play and FTN charting; Sharp Football team tables through Week 4)',
+    'coverage': {'_about': 'Coverage matchups are the one part of the Desk that is current season only.', 'shrink_targets': 15, 'season': 'this season only (2026 play-by-play and FTN charting; Sharp Football team tables through Week 4)',
                  'groups': "man-heavy = top 10 in Sharp's 2026 man rate, zone-heavy = bottom 10; a player's split is his yards per target against each group this season",
                  'blitz': 'blitz = 5+ pass rushers (FTN charting, 2026)'},
 }
@@ -101,7 +104,7 @@ T = tr.team_games(G)
 slate = G[(G.season == SEASON) & (G.week == WEEK)].sort_values(['gameday', 'gametime', 'game_id'])
 prime_ids = set(G[G.gametime >= '19:00'].game_id)
 
-pbp = pl.load_pbp(D, [SEASON])
+pbp = pl.load_pbp(D, range(2019, SEASON + 1))
 PG = pl.player_games(pbp, prime_ids)
 TG = pl.team_game_totals(pbp[pbp.season == SEASON])
 
@@ -188,13 +191,13 @@ LG_RZ = OFF.rztd.sum() / OFF.trips.sum()
 LG_TRIPS = OFF.trips.sum() / OFF.g.sum()
 LG_PLAYS = OFF.plays.sum() / OFF.g.sum()
 
-# run direction: yards per carry this defense allows inside / outside, and each back's inside share (this season)
+# run direction: yards per carry this defense allows inside / outside (this season), and each back's inside share (2025-26)
 ru = pbp[(pbp.rush_attempt == 1) & (pbp.qb_scramble != 1) & pbp.run_location.notna() & (pbp.two_point_attempt != 1)].copy()
 ru['inside'] = ru.run_gap.isin(['guard']) | (ru.run_location == 'middle')
 r26 = ru[(ru.season == SEASON) & (ru.season_type == 'REG')]
 LG_YPC = r26.groupby('inside').yards_gained.mean()
 DYPC = r26.groupby(['defteam', 'inside']).yards_gained.agg(['sum', 'size']).unstack('inside')
-RB_IN = r26.groupby('rusher_player_id').inside.agg(['mean', 'size'])
+RB_IN = ru[ru.season >= SEASON - 1].groupby('rusher_player_id').inside.agg(['mean', 'size'])
 
 
 def def_ypc(team, inside):
@@ -236,24 +239,35 @@ def player_facts(pid, team, opp, prime):
         num['rz_share'] = rz / trz if trz else 0
     else:
         f.append('No offensive touches yet in 2026 (injury, new role or rookie).')
-    # TD streak / drought this season, games he got the ball in
-    seq = s26.td.tolist()
+    # TD streak / drought across seasons, games he got the ball in
+    seq = me.td.tolist()
     if seq:
-        run, hot = 0, seq[-1] > 0
+        run = 0
+        hot = seq[-1] > 0
         for x in reversed(seq):
             if (x > 0) == hot:
                 run += 1
             else:
                 break
         num['streak'] = run if hot else -run
-        num['games'] = len(seq)
-        scored = int((s26.td > 0).sum())
+        last10 = me.tail(10)
         if hot and run >= 2:
-            f.append(f"Has scored in {run} straight games; TDs in {scored} of {len(seq)} games this season.")
-        elif scored == 0:
-            f.append(f"No TD yet this season ({len(seq)} games).")
+            f.append(f"Has scored in {run} straight games; TDs in {int((last10.td > 0).sum())} of his last {len(last10)}.")
+        elif not hot and run >= 4:
+            f.append(f"No TD in his last {run} games.")
         else:
-            f.append(f"Scored in {scored} of {len(seq)} games this season.")
+            f.append(f"Scored in {int((last10.td > 0).sum())} of his last {len(last10)} games.")
+    vs = me[me.defteam == opp]
+    if len(vs) >= 2:
+        avg_all = me[me.season >= SEASON - 2].scrimY.mean()
+        f.append(f"Vs {opp} since 2019: {len(vs)} games, {vs.scrimY.mean():.0f} scrimmage yds per game (his 2024-26 average {avg_all:.0f}), {int(vs.td.sum())} TD.")
+        num['vs'] = dict(n=len(vs), td_pg=vs.td.mean(), base_td=me[me.season >= SEASON - 2].td.mean(), recY=vs.recY.mean(), rushY=vs.rushY.mean())
+    if prime:
+        pr = me[(me.season >= SEASON - 3) & me.prime]
+        if len(pr) >= 3:
+            np_ = me[(me.season >= SEASON - 3) & ~me.prime]
+            f.append(f"Prime time since {SEASON - 3}: {pr.scrimY.mean():.0f} scrimmage yds and {pr.td.mean():.2f} TD per game in {len(pr)} games "
+                     f"(other games {np_.scrimY.mean():.0f} and {np_.td.mean():.2f}).")
     return f, num, pos, name
 
 
@@ -360,13 +374,13 @@ def coverage_facts(off, dfn, qb, mus):
 
 
 def run_matchup(pid, name, team, opp, gname):
-    if pid not in RB_IN.index or RB_IN.loc[pid, 'size'] < 12 or opp not in DYPC.index:
+    if pid not in RB_IN.index or RB_IN.loc[pid, 'size'] < 25 or opp not in DYPC.index:
         return None
     sin = RB_IN.loc[pid, 'mean']
     di, ni = def_ypc(opp, True)
     do, no = def_ypc(opp, False)
     score = sin * math.log(di / LG_YPC[True]) + (1 - sin) * math.log(do / LG_YPC[False])
-    why = [f"Run mix 2026: {sin:.0%} inside (middle/guard), {1 - sin:.0%} outside ({int(RB_IN.loc[pid, 'size'])} carries).",
+    why = [f"Run mix 2025-26: {sin:.0%} inside (middle/guard), {1 - sin:.0%} outside ({int(RB_IN.loc[pid, 'size'])} carries).",
            f"{opp} 2026: {DYPC.loc[opp, ('sum', True)] / max(1, ni):.1f} yds/carry allowed inside ({ni} carries; league {LG_YPC[True]:.1f}), "
            f"{DYPC.loc[opp, ('sum', False)] / max(1, no):.1f} outside ({no}; league {LG_YPC[False]:.1f}). Pulled 40 carries toward league average.",
            f"Effect: {100 * score:+.0f}% on his yards per carry."]
@@ -408,11 +422,17 @@ def td_pick(pid, info, facts, num, mu, opp, gname, gtxt):
         d = clip(R['red_zone_d']['w'] * (r - LG_RZ) / LG_RZ, R['red_zone_d']['cap'])
         dl += d
         why.append(f"{opp} red zone: {int(dd.rztd)} TDs on {int(dd.trips)} trips allowed ({dd.rztd / max(1, dd.trips):.0%}; league {LG_RZ:.0%}): {pts(p0, d):+.1f} pts.")
+    v = num.get('vs')
+    if v and v['n'] >= R['vs_team']['min_games'] and v['base_td'] > 0:
+        d = clip(R['vs_team']['w'] * math.log((v['td_pg'] + .1) / (v['base_td'] + .1)), R['vs_team']['cap'])
+        dl += d
+        why.append(f"Vs {opp}: {v['td_pg']:.2f} TD/game in {v['n']} games vs his {v['base_td']:.2f} since 2024: {pts(p0, d):+.1f} pts.")
     st = num.get('streak', 0)
-    if st >= 3 or (st < 0 and -st == num.get('games', 0) and -st >= 4):
+    if st >= 3 or st <= -6:
         d = R['form']['hot'] if st >= 3 else R['form']['cold']
         dl += d
-        why.append(f"Form: {'scored in ' + str(st) + ' straight' if st > 0 else 'no TD in ' + str(-st) + ' games this season'}: {pts(p0, d):+.1f} pts.")
+        why.append(f"Form: {'scored in ' + str(st) + ' straight' if st > 0 else 'no TD in ' + str(-st) + ' straight'}: {pts(p0, d):+.1f} pts.")
+
     dl = clip(dl, R['total_cap'])
     p = sig(logit(p0) + dl)
     why.append(f"Desk: {p:.0%} ({100 * (p - p0):+.1f} pts vs the book).")
@@ -445,7 +465,7 @@ def yards_pick(pid, mk, prop, pos, num, mu, opp, gname, gtxt):
         d = clip(R['matchup']['w'] * mu['score'], R['matchup']['cap']) * line
         shift += d
         why.append(f"{'Coverage' if mu['role'] == 'coverage' else 'Run'} fit vs {opp} ({mu['edge'].lower()}): {d:+.1f} yds.")
-    hist = PG[(PG.pid == pid) & (PG.season == SEASON)]
+    hist = PG[(PG.pid == pid) & (PG.season >= SEASON - 1)]
     # a line far above what he has been producing means a new role (starter out, trade): his old games don't apply
     role_change = len(hist) and line > 1.6 * max(1.0, hist.tail(6)[col].mean())
     if role_change:
@@ -455,7 +475,14 @@ def yards_pick(pid, mk, prop, pos, num, mu, opp, gname, gtxt):
         h26 = hist[hist.season == SEASON]
         d = clip(R['hit_rate']['w'] * (hr - .5), R['hit_rate']['cap']) * line
         shift += d
-        why.append(f"Over {line} in {int((hist[col] > line).sum())} of {len(hist)} games this season: {d:+.1f} yds.")
+        h26 = hist[hist.season == SEASON]
+        why.append(f"Over {line} in {int((h26[col] > line).sum())} of {len(h26)} games this season and {int((hist[col] > line).sum())} of {len(hist)} since 2025: {d:+.1f} yds.")
+    v = num.get('vs')
+    if v and v['n'] >= R['vs_team']['min_games']:
+        vy = v['recY'] if rec else v['rushY']
+        d = clip(R['vs_team']['w'] * (vy - line) / line, R['vs_team']['cap']) * line
+        shift += d
+        why.append(f"Vs {opp}: {vy:.0f} {lab} yds per game in {v['n']} games: {d:+.1f} yds.")
     shift = clip(shift, R['total_cap'] * line)
     p_over = N.cdf(N.inv_cdf(min(max(p0, .01), .99)) + shift / sd)
     side = 'over' if p_over >= .5 else 'under'
@@ -503,6 +530,11 @@ def total_pick(g, away, home, gname, gtxt):
         d = clip(R['ou_form']['w'] * ou, R['ou_form']['cap'])
         adj += d
         why.append(f"This season both teams' games average {ou:+.1f} pts vs the closing total ({away} {T[(T.season == SEASON) & (T.team == away) & (T.date < g.gameday)].ou.mean():+.1f}, {home} {T[(T.season == SEASON) & (T.team == home) & (T.date < g.gameday)].ou.mean():+.1f}): {d:+.1f} pts.")
+    h = T[(T.team == home) & (T.opp == away) & (T.date < g.gameday)].tail(6)
+    if len(h) >= 3 and h.ou.notna().all():
+        d = clip(R['h2h']['w'] * h.ou.mean(), R['h2h']['cap'])
+        adj += d
+        why.append(f"Last {len(h)} meetings: {h.total.mean():.1f} pts per game, {h.ou.mean():+.1f} vs the closing total: {d:+.1f} pts.")
     adj = clip(adj, R['total_cap'])
     desk = line + adj
     p_over = N.cdf(N.inv_cdf(p0) + adj / R['sd'])
@@ -548,13 +580,14 @@ for g in slate.itertuples():
     away, home = tr.FRANCHISE.get(g.away_team, g.away_team), tr.FRANCHISE.get(g.home_team, g.home_team)
     gname, gtxt = gid(away, home), f'{away} @ {home}'
     prime = tr.primetime(g.gametime)
-    Tb = T[(T.season == SEASON) & (T.date < g.gameday)]
+    Tb = T[T.date < g.gameday]
     # ---- game facts
     side_facts = {}
     for team, opp, qb, coach in ((away, home, g.away_qb_name, g.away_coach), (home, away, g.home_qb_name, g.home_coach)):
-        side_facts[team] = dict(team=tr.pick(tr.season_facts(Tb, team, opp, g), 4),
-                                qb=tr.pick(tr.qb_season_facts(Tb, qb, team, g), 2), coach=[])
-    h2h = []  # no meetings yet this season
+        side_facts[team] = dict(team=tr.pick(tr.team_facts(Tb, team, opp, g), 5),
+                                qb=tr.pick(tr.qb_facts(Tb, qb, team, opp, g), 3),
+                                coach=tr.pick(tr.coach_facts(Tb, coach, team, g), 2))
+    h2h = tr.pick(tr.h2h_facts(Tb, away, home, g), 3)
     styles = {away: pl.style_facts(O, Dd, slg, away, home)[:4], home: pl.style_facts(O, Dd, slg, home, away)[:4]}
     reported = [dict(text=t, src=s) for t, s in REPORTED.get(gname, [])]
     flat = [f['text'] for t in (away, home) for k in ('team', 'qb', 'coach') for f in side_facts[t][k]] + [f['text'] for f in h2h]

@@ -1,5 +1,5 @@
-"""Player, coverage and defense-style facts from this season's nflverse play-by-play and FTN charting (play-action, motion,
-shotgun, blitz). Current season only.
+"""Player, coverage and defense-style facts from nflverse play-by-play (2019-2026) and FTN charting (play-action, motion,
+shotgun, blitz). Coverage splits and defense styles use the current season only; player game logs span every season.
 
 All of these are counts and averages of plays that already happened, with the sample size attached. Nothing is
 simulated. The few places a number is pulled toward the league average ("shrunk") are marked; that only keeps a
