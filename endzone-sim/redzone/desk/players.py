@@ -1,5 +1,5 @@
-"""Player, coverage and defense-style facts from nflverse play-by-play (2019-2026), participation (man/zone charting,
-2023-2025) and FTN charting (play-action, motion, shotgun; 2025-2026).
+"""Player, coverage and defense-style facts from this season's nflverse play-by-play and FTN charting (play-action, motion,
+shotgun, blitz). Current season only.
 
 All of these are counts and averages of plays that already happened, with the sample size attached. Nothing is
 simulated. The few places a number is pulled toward the league average ("shrunk") are marked; that only keeps a
@@ -71,59 +71,29 @@ def shrink(num, den, prior, k):
     return (num + k * prior) / (den + k)
 
 
-# ---------------------------------------------------------------- coverage (man/zone) -----------------------------
+# ---------------------------------------------------------------- this season's passes -------------------------
 
-def coverage_tables(D, seasons, pbp):
-    """Targets joined to the man/zone charting. Returns (receiver splits, defense splits, league numbers)."""
-    parts = []
-    for s in seasons:
-        pa = pd.read_parquet(f'{D}/pbp_participation_{s}.parquet',
-                             columns=['nflverse_game_id', 'play_id', 'defense_man_zone_type', 'defense_coverage_type'])
-        parts.append(pa)
-    pa = pd.concat(parts).rename(columns={'nflverse_game_id': 'game_id'})
-    t = pbp[(pbp.pass_attempt == 1) & (pbp.sack != 1) & (pbp.two_point_attempt != 1) & pbp.season.isin(seasons)]
-    t = t.merge(pa, on=['game_id', 'play_id'], how='inner')
-    t = t[t.defense_man_zone_type.isin(['MAN_COVERAGE', 'ZONE_COVERAGE'])].copy()
-    t['man'] = t.defense_man_zone_type == 'MAN_COVERAGE'
+def season_passes(pbp, ftn, season):
+    """Every pass attempt this season with FTN's blitz flag (5+ rushers). One row per throw: passer, target, defense,
+    yards (0 if incomplete), EPA, TD. This is the base for every coverage split on the page (this season only)."""
+    t = pbp[(pbp.season == season) & (pbp.season_type == 'REG') & (pbp.pass_attempt == 1) & (pbp.sack != 1) &
+            (pbp.two_point_attempt != 1)].copy()
+    f = ftn.rename(columns={'nflverse_game_id': 'game_id', 'nflverse_play_id': 'play_id'})[['game_id', 'play_id', 'n_pass_rushers']]
+    f['play_id'] = pd.to_numeric(f.play_id, errors='coerce')
+    t = t.merge(f, on=['game_id', 'play_id'], how='left')
+    t['blitz'] = np.where(t.n_pass_rushers.notna(), t.n_pass_rushers >= 5, np.nan)
     t['yds'] = np.where(t.complete_pass == 1, t.yards_gained, 0)
-    tt = t[t.receiver_player_id.notna()]
-    lg = dict(ypt_man=tt[tt.man].yds.mean(), ypt_zone=tt[~tt.man].yds.mean(), man=t.man.mean())
-    # receivers
-    r = tt.groupby(['receiver_player_id', 'man']).agg(n=('play_id', 'size'), yds=('yds', 'sum'),
-                                                       td=('pass_touchdown', 'sum'), c=('complete_pass', 'sum')).unstack('man').fillna(0)
-    r.columns = [f'{a}_{"man" if b else "zone"}' for a, b in r.columns]
-    r = r.reset_index().rename(columns={'receiver_player_id': 'pid'})
-    # share of the team's targets vs man / vs zone, only in games he was targeted
-    tg = tt.groupby(['game_id', 'posteam', 'man']).size().rename('team_n').reset_index()
-    pg = tt.groupby(['game_id', 'posteam', 'receiver_player_id', 'man']).size().rename('n').reset_index()
-    pg = pg.merge(tg, on=['game_id', 'posteam', 'man'])
-    played = pg[['game_id', 'posteam', 'receiver_player_id']].drop_duplicates()
-    den = played.merge(tg, on=['game_id', 'posteam']).groupby(['receiver_player_id', 'man']).team_n.sum().unstack().fillna(0)
-    num = pg.groupby(['receiver_player_id', 'man']).n.sum().unstack().fillna(0)
-    share = (num / den).rename(columns={True: 'share_man', False: 'share_zone'}).reset_index().rename(columns={'receiver_player_id': 'pid'})
-    r = r.merge(share, on='pid', how='left')
-    # by shell
-    sh = tt.groupby(['receiver_player_id', 'defense_coverage_type']).agg(n=('play_id', 'size'), yds=('yds', 'sum')).reset_index()
-    # defenses
-    dd = t.groupby('defteam').agg(dropbacks=('play_id', 'size'), man=('man', 'mean')).reset_index()
-    for k, v in t.groupby(['defteam', 'defense_coverage_type']).size().unstack(fill_value=0).div(
-            t.groupby('defteam').size(), axis=0).items():
-        dd[f'shell_{k}'] = dd.defteam.map(v)
-    a = tt.groupby(['defteam', 'man']).yds.mean().unstack()
-    dd['ypt_man'] = dd.defteam.map(a[True])
-    dd['ypt_zone'] = dd.defteam.map(a[False])
-    # passers: yards per attempt and EPA per attempt by man/zone and by single-high/two-high shell
-    hi = {'COVER_0', 'COVER_1', 'COVER_3'}
-    lo = {'COVER_2', 'COVER_4', 'COVER_6', 'COVER_9', '2_MAN'}
-    t['shell'] = np.where(t.defense_coverage_type.isin(hi), 'hi', np.where(t.defense_coverage_type.isin(lo), 'lo', None))
-    q = t[t.passer_player_id.notna()]
-    qb = pd.concat([
-        q.groupby(['passer_player_id', 'man']).agg(n=('play_id', 'size'), yds=('yds', 'sum'), epa=('epa', 'sum'), td=('pass_touchdown', 'sum'))
-         .unstack('man').pipe(lambda x: x.set_axis([f'{a}_{"man" if b else "zone"}' for a, b in x.columns], axis=1)),
-        q[q.shell.notna()].groupby(['passer_player_id', 'shell']).agg(n=('play_id', 'size'), yds=('yds', 'sum'))
-         .unstack('shell').pipe(lambda x: x.set_axis([f'{a}_{b}' for a, b in x.columns], axis=1))], axis=1).fillna(0)
-    lg['qb_ypa_man'], lg['qb_ypa_zone'] = q[q.man].yds.mean(), q[~q.man].yds.mean()
-    return r, sh, dd, lg, qb
+    return t
+
+
+def split(t, who, flag):
+    """Attempts/targets, yards and EPA for one player id column, split by a boolean column."""
+    x = t[t[who].notna() & t[flag].notna()].copy()
+    x[flag] = x[flag].astype(bool)
+    g = x.groupby([who, flag]).agg(n=('play_id', 'size'), yds=('yds', 'sum'), epa=('epa', 'sum'), td=('pass_touchdown', 'sum'))
+    g = g.unstack(flag).fillna(0)
+    g.columns = [f'{a}_{"y" if b else "n"}' for a, b in g.columns]
+    return g
 
 
 # ---------------------------------------------------------------- defense vs offense style ------------------------

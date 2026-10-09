@@ -1,17 +1,123 @@
 {
- "_about": "Trends reported by betting outlets this week (Oct 5-9) that the nflverse game file can't reproduce on its own (situational splits). Shown as 'Reported' with the outlet. Each is a fact about past games, not a prediction.",
- "phi-jax": [["JAX has covered 14 of its last 21 games.", "SI"], ["PHI is 5-0 ATS in its last 5 games as a road underdog.", "Covers"], ["JAX is 9-1 ATS in its last 10 regular-season games.", "SportsBettingDime"]],
- "lv-ne": [["LV is 6-0 ATS in its last six games against AFC opponents.", "Covers"], ["NE is 5-0 ATS in its last five games after a straight-up loss.", "Covers"], ["The Raiders have covered the last three meetings.", "SI"]],
- "min-no": [["MIN is 7-0-1 ATS in its last eight games against NFC opponents.", "Covers"], ["NO is 7-0 ATS in its last seven games as an underdog.", "Covers"]],
- "chi-gb": [["CHI is 7-0 ATS in its last seven games after gaining 350+ yards the week before.", "Covers"], ["GB is 6-2 ATS as a home underdog under Matt LaFleur.", "Covers"], ["The Bears have won two straight with backup quarterbacks.", "Covers"]],
- "ind-pit": [["PIT is 4-0 ATS in its last four games as a home favorite.", "Covers"], ["IND is 4-0 ATS in its last four road games.", "Covers"], ["PIT is 7-3 ATS and the over is 7-3 in the last 10 meetings.", "SI"]],
- "hou-ten": [["HOU is 7-0 ATS in its last seven Week 5 games.", "Covers"]],
- "sf-sea": [["SEA is 6-0 ATS in its last six games against teams with a winning record.", "Covers"], ["SF is 3-4 straight up and ATS as an underdog (recent).", "Covers"], ["SF has allowed zero sacks on 113 pass attempts.", "SI"]],
- "bal-atl": [["BAL is 3-7 ATS in its last 10 games.", "Covers"], ["The Ravens are 6-11 straight up without Lamar Jackson.", "NBC Sports"], ["ATL has scored 80 points in two straight wins since Michael Penix returned.", "NBC Sports"]],
- "buf-la": [["The Rams have won six straight at home (5-1 ATS).", "Covers"], ["BUF is 4-2 ATS in the last six meetings.", "SI"]],
- "det-ari": [["DET is 17-2 ATS after a loss in its last 19 such games.", "SportsBettingDime"], ["DET is 5-0-1 in the last six meetings; the under is 4-1 in the last five.", "SI"]],
- "nyg-was": [["WAS games are 8-2 to the over in their last 10; NYG 7-3.", "SI"], ["Washington has won four straight meetings.", "SI"]],
- "den-lac": [["Several outlets flag the under: both offenses are struggling; DEN scores a league-low 3.3 first-half points.", "Covers / WagerTalk"]],
- "cle-nyj": [["Cleveland has won three straight, driven by its defense.", "ESPN"]],
- "cin-mia": [["Miami is 1-2 ATS as a 6.5-point-plus underdog.", "FanDuel Research"]]
+ "_about": "Facts reported by outlets this week (Oct 5-9) about THIS season only. Multi-season trends (last 10, last 21, since a coach was hired) are left out: the Desk uses current-season data only.",
+ "phi-jax": [
+  [
+   "The Jaguars defense has allowed 53 points all season.",
+   "ClutchPoints"
+  ],
+  [
+   "The line moved two points toward Jacksonville after the Eagles' offensive-line news (Johnson retired, Jurgens traded).",
+   "Inquirer"
+  ]
+ ],
+ "lv-ne": [
+  [
+   "The Raiders have covered all four games this season.",
+   "Covers"
+  ]
+ ],
+ "min-no": [
+  [
+   "New Orleans has scored 24+ in all four games and throws on about two-thirds of its snaps.",
+   "Covers / Football Nation"
+  ]
+ ],
+ "chi-gb": [
+  [
+   "The Bears have won two straight with backup quarterbacks; their defense has held three straight opponents to 12 or fewer.",
+   "Covers"
+  ],
+  [
+   "The Packers are winless against the spread this season.",
+   "FanDuel Research"
+  ]
+ ],
+ "ind-pit": [
+  [
+   "Pittsburgh played Thursday in Week 4; Indianapolis is back from London with no bye.",
+   "Covers"
+  ]
+ ],
+ "hou-ten": [
+  [
+   "Both teams are winless; Houston is 0-4 against the spread.",
+   "FanDuel Research"
+  ]
+ ],
+ "sf-sea": [
+  [
+   "Seattle has allowed the fewest passing yards in the league.",
+   "SI"
+  ],
+  [
+   "San Francisco has allowed zero sacks on 113 pass attempts.",
+   "SI"
+  ]
+ ],
+ "bal-atl": [
+  [
+   "Atlanta has the league's No. 1 run defense (48.3 rushing yards allowed per game).",
+   "Falcons.com"
+  ],
+  [
+   "Atlanta has scored 80 points in two straight wins since Michael Penix returned.",
+   "NBC Sports"
+  ],
+  [
+   "Derrick Henry has 23+ carries in three of four games.",
+   "NBC Sports"
+  ]
+ ],
+ "buf-la": [
+  [
+   "Buffalo leads the league in scoring but allows 26+ points per game; it lost for the first time last week, as a 6.5-point favorite.",
+   "SI"
+  ]
+ ],
+ "det-ari": [
+  [
+   "Detroit has allowed 17 touchdowns, most in the NFL; Arizona is 29th in points allowed (29.3).",
+   "SI"
+  ],
+  [
+   "Detroit is playing man 15.7% of the time this season, with Cover 3 on 47.7% of snaps.",
+   "Detroit News (TruMedia)"
+  ]
+ ],
+ "nyg-was": [
+  [
+   "Jayden Daniels returns from the dislocated elbow.",
+   "SI"
+  ]
+ ],
+ "den-lac": [
+  [
+   "Denver scores a league-low 3.3 first-half points per game; the Chargers are 0-4.",
+   "Covers / WagerTalk"
+  ],
+  [
+   "Bo Nix ranks 35th of 38 qualifying QBs by PFF grade.",
+   "Covers"
+  ]
+ ],
+ "cle-nyj": [
+  [
+   "Cleveland has won three straight, driven by its defense; the Jets scored 12 in Week 4.",
+   "ESPN / Covers"
+  ],
+  [
+   "Cleveland plays man on an NFL-high 50% of dropbacks (Next Gen Stats).",
+   "ESPN"
+  ]
+ ],
+ "cin-mia": [
+  [
+   "Miami is averaging about 11.5 points per game.",
+   "Bleacher Report"
+  ],
+  [
+   "The total fell from 48.5 to about 42.5 on the Bengals' receiver injuries.",
+   "Predictem"
+  ]
+ ]
 }

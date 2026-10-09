@@ -160,12 +160,12 @@ function factsBlock(g){
   const F=g.facts, side=t=>{const s=F.sides[t]; return [...s.team,...s.qb,...s.coach];};
   const sty=t=>(F.styles[t]||[]).map(x=>({text:x.text,cls:x.side==='off'?'o':'d'}));
   const cov=t=>((F.coverage||{})[t]||[]).map(x=>({text:x.text,cls:x.cls}));
-  const blocks=[[`${g.away} ${g.awayName}`,side(g.away)],[`${g.home} ${g.homeName}`,side(g.home)],['Head to head',F.h2h],
+  const blocks=[[`${g.away} ${g.awayName}`,side(g.away)],[`${g.home} ${g.homeName}`,side(g.home)],['Head to head this season',F.h2h],
     ['Reported this week',(F.reported||[]).map(r=>({text:r.text,src:r.src}))],
     [`${g.away} offense vs ${g.home} defense`,sty(g.away)],[`${g.home} offense vs ${g.away} defense`,sty(g.home)],
     [`${g.away} passing vs ${g.home} coverage`,cov(g.away)],[`${g.home} passing vs ${g.away} coverage`,cov(g.home)]];
   return `<div class="fxs">${blocks.filter(b=>b[1].length).map(([h,it])=>`<div><div class="fxh">${esc(h)}</div>${fl(it)}</div>`).join('')}
-    ${(F.styles[g.away]||[]).length+(F.styles[g.home]||[]).length?`<p class="note" style="margin:0;font-size:12px">Green: favors the offense (its habit meets a weak spot, or its QB/receivers do better against the coverage this defense plays). Red: favors the defense. Styles are 2026 plays; coverage splits are 2024-25 charting against 2026 coverage rates.</p>`:''}</div>`;
+    ${(F.styles[g.away]||[]).length+(F.styles[g.home]||[]).length?`<p class="note" style="margin:0;font-size:12px">Green: favors the offense (its habit meets a weak spot, or its QB/receivers do better against the coverage this defense plays). Red: favors the defense. Everything is this season.</p>`:''}</div>`;
 }
 const gamePicks=(g,type)=>st.D.picks.filter(p=>p.gameId===g.id&&p.type===type&&!isOut(p));
 function gameCard(g,full=true){
@@ -235,7 +235,7 @@ function render(){
     const S=D.styles, keys=[...S.keys,{key:'epa_pass',dfn:'all passes'},{key:'epa_rush',dfn:'all runs'}];
     const sk=st.sty, rowsS=[...S.defense].sort((a,b)=>(a[sk+'_rk']??99)-(b[sk+'_rk']??99));
     const cell=(r,k)=>{const rk=r[k+'_rk']; if(rk==null) return '<td>—</td>'; const c=rk<=4?'g':rk<=8?'g2':rk>=29?'r':rk>=25?'r2':''; return `<td class="${c}" title="${r[k]!=null?(r[k]>0?'+':'')+r[k].toFixed(2)+' EPA/play':''}">${rk}</td>`;};
-    v.innerHTML=`<p class="note">Receivers: his yards per target against man vs zone and against single-high vs two-high shells (2024-25 charting), weighed by how often this defense plays each this season (Sharp Football, through Week 4) and how many yards it allowed in each last year. Backs: his inside/outside run mix against what this defense allows inside and outside this season. The number is the change to his yards per target or carry. Tap one for the details.</p>
+    v.innerHTML=`<p class="note">Pass catchers: this defense's 2026 yards per target allowed to his position, plus his own 2026 yards per target against the blitz (weighed by this defense's blitz rate) and against man-heavy or zone-heavy defenses (when this defense is one). All this season. Backs: his inside/outside run mix against what this defense allows inside and outside this season. The number is the change to his yards per target or carry. Tap one for the details.</p>
       <h2>Receivers: best coverage fits</h2><div class="list">${best.map(muRow).join('')}</div>
       <h2>Receivers: toughest</h2><div class="list">${worst.map(muRow).join('')}</div>
       <h2>Running backs: best run fits</h2><div class="list">${rbBest.map(muRow).join('')}</div>
@@ -243,9 +243,9 @@ function render(){
       <h2>Defenses vs offense styles</h2><p class="note">Each defense's rank of 32 in EPA allowed per play against each kind of play, 2026 only (four games, so small samples). 1 = best. Green: top 8. Red: bottom 8. Tap a column to sort; hover a cell for the EPA.</p>
       <div class="tblwrap"><table class="sty"><thead><tr><th>Defense</th>${keys.map(k=>`<th><button data-sty="${k.key}" aria-pressed="${sk===k.key}">${esc(k.dfn)}</button></th>`).join('')}</tr></thead>
       <tbody>${rowsS.map(r=>`<tr><td><b>${esc(r.team)}</b></td>${keys.map(k=>cell(r,k.key)).join('')}</tr>`).join('')}</tbody></table></div>
-      ${cv.length?`<h2>Coverage this week</h2><p class="note">Every defense on the slate, this season through Week 4 (Sharp Football Analysis, updated Oct 6). Middle closed = single-high shells (Cover 0/1/3); middle open = two-high (Cover 2/4/6). Rank of 32 in small type; "2025" is last year's man-rate rank from nflverse charting. Blitz is 5+ rushers, this season.</p>
-      <div class="tblwrap"><table class="cov"><thead><tr><th>Defense</th><th>vs</th><th>Man</th><th>Zone</th><th>Single-high</th><th>Two-high</th><th>2025</th><th>Blitz</th></tr></thead><tbody>
-      ${cv.map(c=>`<tr><td><b>${esc(c.team)}</b></td><td>${esc(c.opp)}</td><td>${pct(c.man)} <small class="up">${c.manRk}</small></td><td>${pct(c.zone)}</td><td>${pct(c.hi)} <small class="up">${c.hiRk}</small></td><td>${pct(c.lo)}</td><td><small class="dn">${c.manRk2025}</small></td><td>${c.blitz!=null?pct(c.blitz):'—'}</td></tr>`).join('')}
+      ${cv.length?`<h2>Coverage this week</h2><p class="note">Every defense on the slate, this season. Man, zone, single-high (Cover 0/1/3) and two-high (Cover 2/4/6) rates and yards per target allowed by position are Sharp Football Analysis through Week 4; small type is the rank of 32. Blitz is FTN charting (5+ rushers).</p>
+      <div class="tblwrap"><table class="cov"><thead><tr><th>Defense</th><th>vs</th><th>Man</th><th>Zone</th><th>1-high</th><th>2-high</th><th>Blitz</th><th>YPT WR</th><th>TE</th><th>RB</th><th>Out</th><th>Slot</th></tr></thead><tbody>
+      ${cv.map(c=>`<tr><td><b>${esc(c.team)}</b></td><td>${esc(c.opp)}</td><td>${pct(c.man)} <small class="up">${c.manRk}</small></td><td>${pct(c.zone)}</td><td>${pct(c.hi)} <small class="up">${c.hiRk}</small></td><td>${pct(c.lo)}</td><td>${c.blitz!=null?pct(c.blitz):'—'}</td><td>${c.wr.toFixed(1)}</td><td>${c.te.toFixed(1)}</td><td>${c.rb.toFixed(1)}</td><td>${c.out.toFixed(1)}</td><td>${c.slot.toFixed(1)}</td></tr>`).join('')}
       </tbody></table></div>`:''}`;
   } else if(st.tab==='news'){
     const fb=D.board.map(id=>P[id]).filter(p=>pnews(p));
@@ -288,14 +288,15 @@ function methodHtml(D){
   <li><b>Yardage over/unders:</b> DraftKings' line and prices (FanDuel, BetMGM, BetRivers, Bovada if DraftKings has none), margin removed.</li>
   <li><b>Spreads and moneylines:</b> shown at the book's number. The Desk lists the facts but does not move sides.</li></ul>
   <h3>2. Find the facts</h3>
-  <ul><li><b>Trends</b> from every game since 1999 with its closing line (nflverse): against the spread and over/under this season, current streaks, last 10/20, as favorite or underdog, home or road, after a win or loss, prime time, division games, head to head, and each starting QB's and head coach's record in the same spot. A trend only shows if it is lopsided over enough games (about 70/30 or more over 8+ games, or a streak of 4+); the season record and head-to-head always show.</li>
-  <li><b>Reported trends</b> from this week's betting previews (Covers, SI, NBC, FanDuel and others) that need data the game file doesn't have; each is labeled with the outlet.</li>
-  <li><b>Player facts</b> from play-by-play 2019-2026: this season's usage and red-zone share, TD streaks and droughts, history against this opponent, prime-time splits, and how often he has cleared this week's yardage line.</li>
-  <li><b>Coverage:</b> each receiver's yards per target against man and against zone, and against each shell (Cover 1, 3, 2, 4...), plus single-high (Cover 0/1/3) vs two-high (Cover 2/4/6) shells, from 2024-25 charting (nflverse). Each defense's 2026 man, zone, single-high and two-high rates come from Sharp Football Analysis (through Week 4). Sharp classifies coverage differently and its man rates run lower (league 18% vs 40% in the charting), so each defense keeps its distance from Sharp's average and is placed on the charting scale before it meets the receiver's splits. Yards allowed vs man and zone are still 2025.</li>
+  <p><b>Current season only.</b> Every stat, matchup and nudge uses 2026 games. Nothing from last season or earlier is on the page or in any number.</p>
+  <ul><li><b>Trends</b> from this season's games with their closing lines (nflverse): record straight up, against the spread and over/under; streaks of 2+; as favorite or underdog; home or road; prime time; average margin against the spread and the total; points for and against; rest; and the starting QB's record this season.</li>
+  <li><b>Reported facts</b> from this week's previews (Covers, SI, NBC, FanDuel and others) about this season only, each labeled with the outlet.</li>
+  <li><b>Player facts</b> from 2026 play-by-play: usage and red-zone share, TDs this season and current streaks, and how often he has cleared this week's yardage line.</li>
+  <li><b>Coverage:</b> each defense's 2026 man, zone, single-high and two-high rates, yards per target allowed to WRs, TEs and RBs and to outside and slot receivers, and box and sub-package rates (Sharp Football Analysis, through Week 4); its 2026 blitz rate (FTN charting, 5+ rushers). Each QB's and pass catcher's 2026 numbers against man-heavy defenses (Sharp's top 10 in man rate) and zone-heavy defenses (bottom 10), and against the blitz and no blitz. Nobody publishes free play-by-play man/zone tags during the season, so a player's man/zone split is built from the defenses he has faced this season. Small samples are pulled toward his own average (15 targets, 30 attempts).</li>
   <li><b>Defense vs offense style:</b> 2026 EPA allowed per play against play-action, motion, deep passes, screens, inside and outside runs, shotgun and under-center runs and middle-of-field throws, ranked 1-32; and how much each offense leans on each one.</li>
   <li><b>News:</b> injuries and lineup changes from team sites and national outlets. The book prices were posted after this news, so it is shown but not added.</li></ul>
   <h3>3. Nudge, with the weights in the open</h3>
-  <p>Each fact that bears on a pick moves it by a fixed weight, and each move has a cap so one hot stat can't run away. Small samples (four games of 2026) are pulled toward the league average first: four games' worth for per-game stats, ten red-zone trips, fifteen targets, forty carries. Every pick lists each fact and what it was worth.</p>
+  <p>Each fact that bears on a pick moves it by a fixed weight, and each move has a cap so one hot stat can't run away. Small samples (four games) are pulled toward the league average first: four games' worth for per-game stats, ten red-zone trips, fifteen targets, forty carries. Every pick lists each fact and what it was worth.</p>
   <div class="rule"><b>Anytime TD</b> <span class="note">${esc(R.td._about)}</span>${tbl(R.td,'logit')}</div>
   <div class="rule"><b>Game totals</b> <span class="note">${esc(R.total._about)}</span>${tbl(R.total,'pts')}</div>
   <div class="rule"><b>Yardage over/unders</b> <span class="note">${esc(R.yards._about)}</span>${tbl(R.yards,'line')}</div>
@@ -303,7 +304,7 @@ function methodHtml(D){
   <p>The TDs, totals and yardage picks the facts moved most off the book: TDs at least 2 points above the book, totals at least 2 points, yardage at least 4 points, largest first.</p>
   <h3>What this isn't</h3>
   <p>None of this was tested on past weeks; you asked for facts, not a backtest. Books already know most of these facts, which is why the weights are small. Treat a +5 as "the facts lean this way", not as a guaranteed edge.</p>
-  <p class="note">Built by <code>endzone-sim/redzone/desk/build.py</code> from nflverse play-by-play, participation and FTN charting, nflverse schedules and lines, DraftKings-led props (nfl-player-prop-opportunity) and best-price anytime TD odds (NFL-Model's live pull). Generated ${esc(new Date(D.generated).toLocaleString('en-US',{timeZone:'America/New_York'}))} ET.</p></div>`;
+  <p class="note">Built by <code>endzone-sim/redzone/desk/build.py</code> from 2026 nflverse play-by-play and FTN charting, Sharp Football Analysis team tables, nflverse schedules and lines, DraftKings-led props (nfl-player-prop-opportunity) and best-price anytime TD odds (NFL-Model's live pull). Generated ${esc(new Date(D.generated).toLocaleString('en-US',{timeZone:'America/New_York'}))} ET.</p></div>`;
 }
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-t],[data-open],[data-track],[data-res],[data-td],[data-yd],[data-sty]'); if(!t) return;
