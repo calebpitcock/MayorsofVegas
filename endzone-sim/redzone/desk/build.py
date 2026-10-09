@@ -57,9 +57,10 @@ RULES = {
         'vs_team': {'w': 0.10, 'cap': 0.04, 'min_games': 2, 'what': 'his yards per game against this opponent vs the line'},
         'total_cap': 0.15,
     },
-    'coverage': {'shrink_targets': 15, 'seasons': '2024-25 man/zone charting (nflverse participation)',
-                 'override_2026': {'CLE': [0.50, 'NFL Next Gen Stats via ESPN: man on an NFL-high 50% of dropbacks this season'],
-                                   'DET': [0.157, 'TruMedia via Detroit News: man 15.7% this season (31.8% last year), Cover 3 up to 47.7%']}},
+    'coverage': {'shrink_targets': 15, 'seasons': '2024-25 receiver splits (nflverse participation charting)',
+                 'source_2026': 'Sharp Football Analysis, NFL Man & Zone Coverage Rates (page updated Oct 6 2026, through Week 4): sharp_coverage_2026.csv',
+                 'scale': "Sharp's man rate runs lower than the charting behind the receiver splits (league 18% vs 40% on targeted throws), so each defense keeps its distance from Sharp's league average and is placed on the charting scale (log-odds shift). Same for middle-closed (single-high) vs middle-open (two-high).",
+                 'fit': 'coverage fit = average of the man/zone fit and the single-high/two-high fit'},
 }
 
 BOOK_ORDER = ['DraftKings', 'FanDuel', 'BetMGM', 'BetRivers', 'Bovada', 'BetOnline.ag']
@@ -152,9 +153,23 @@ PROPS_AT = pp['Last Update'].max()
 cov_r, cov_sh, cov_d, cov_lg = pl.coverage_tables(D, [2024, 2025], pbp)
 cov_r = cov_r.set_index('pid')
 cov_d = cov_d.set_index('defteam')
-MAN = {t: (cov_d.loc[t, 'man'], '2025 charting') for t in cov_d.index}
-for t, (m, note) in RULES['coverage']['override_2026'].items():
-    MAN[t] = (m, note)
+# 2026 coverage from Sharp Football (through Week 4), moved onto the scale of the charting behind the receiver splits
+FULL = {v: k for k, v in tr.NAMES.items()}
+SH = pd.read_csv(os.path.join(H, 'sharp_coverage_2026.csv'))
+SH['team'] = SH.Team.map(lambda s: FULL[s.split()[-1]])
+SH = SH.set_index('team')
+SH['mz'] = SH['Man Rate'] / (SH['Man Rate'] + SH['Zone Rate'])
+SH['hi'] = SH['Middle Closed Rate'] / (SH['Middle Closed Rate'] + SH['Middle Open Rate'])
+SH['man_rk'] = SH['Man Rate'].rank(ascending=False, method='min').astype(int)
+SH['hi_rk'] = SH['Middle Closed Rate'].rank(ascending=False, method='min').astype(int)
+HI_SHELLS, LO_SHELLS = {'COVER_0', 'COVER_1', 'COVER_3'}, {'COVER_2', 'COVER_4', 'COVER_6', 'COVER_9', '2_MAN'}
+_sh = cov_sh.groupby('defense_coverage_type').n.sum()
+LG_HI = _sh[_sh.index.isin(HI_SHELLS)].sum() / _sh[_sh.index.isin(HI_SHELLS | LO_SHELLS)].sum()
+to_scale = lambda x, lg_src, lg_dst: sig(logit(lg_dst) + logit(x) - logit(lg_src))
+MAN, HI = {}, {}
+for t in SH.index:
+    MAN[t] = (to_scale(SH.loc[t, 'mz'], SH.mz.mean(), cov_lg['man']), SH.loc[t])
+    HI[t] = to_scale(SH.loc[t, 'hi'], SH.hi.mean(), LG_HI)
 
 ftn = pd.read_parquet(f'{D}/ftn_charting_{SEASON}.parquet')
 O, Dd, slg = pl.style_tables(pbp, ftn, SEASON)
@@ -272,8 +287,14 @@ def coverage_matchup(pid, pos, name, team, opp, gname):
     ypt = (r.yds_man + r.yds_zone) / (nm + nz)
     ym = pl.shrink(r.yds_man, nm, ypt, k)
     yz = pl.shrink(r.yds_zone, nz, ypt, k)
-    m, src = MAN[opp]
-    fit = math.log((m * ym + (1 - m) * yz) / ypt)
+    m, sr = MAN[opp]
+    h = HI[opp]
+    fit_mz = math.log((m * ym + (1 - m) * yz) / ypt)
+    s = cov_sh[cov_sh.receiver_player_id == pid]
+    nh, yh = s[s.defense_coverage_type.isin(HI_SHELLS)].n.sum(), s[s.defense_coverage_type.isin(HI_SHELLS)].yds.sum()
+    nl, yl = s[s.defense_coverage_type.isin(LO_SHELLS)].n.sum(), s[s.defense_coverage_type.isin(LO_SHELLS)].yds.sum()
+    fit_hi = math.log((h * pl.shrink(yh, nh, ypt, k) + (1 - h) * pl.shrink(yl, nl, ypt, k)) / ypt) if nh + nl >= 20 else 0.0
+    fit = (fit_mz + fit_hi) / 2
     dm = pl.shrink(cov_d.loc[opp, 'ypt_man'] * 60, 60, cov_lg['ypt_man'], 60) if pd.notna(cov_d.loc[opp, 'ypt_man']) else cov_lg['ypt_man']
     dz = pl.shrink(cov_d.loc[opp, 'ypt_zone'] * 150, 150, cov_lg['ypt_zone'], 150) if pd.notna(cov_d.loc[opp, 'ypt_zone']) else cov_lg['ypt_zone']
     q = 0.5 * math.log((m * dm + (1 - m) * dz) / (m * cov_lg['ypt_man'] + (1 - m) * cov_lg['ypt_zone']))
@@ -284,7 +305,11 @@ def coverage_matchup(pid, pos, name, team, opp, gname):
            f"{r.yds_zone / max(1, nz):.1f} vs zone ({int(nz)} targets, {int(r.td_zone)} TD)."]
     if pd.notna(r.get('share_man')) and pd.notna(r.get('share_zone')):
         why.append(f"He drew {r.share_man:.0%} of his team's targets against man and {r.share_zone:.0%} against zone in games he played.")
-    why.append(f"{opp} played man on {m:.0%} of dropbacks ({src}; league {cov_lg['man']:.0%}).")
+    if nh + nl >= 20:
+        why.append(f"Vs single-high shells (Cover 0/1/3): {yh / max(1, nh):.1f} yds/target ({int(nh)}); vs two-high (Cover 2/4/6, 2-Man): {yl / max(1, nl):.1f} ({int(nl)}).")
+    why.append(f"{opp} this season (Sharp Football, through Week 4): man {sr['Man Rate']:.1f}% ({pl.ordinal(sr.man_rk)} of 32), zone {sr['Zone Rate']:.1f}%, "
+               f"middle closed {sr['Middle Closed Rate']:.1f}% ({pl.ordinal(sr.hi_rk)} of 32), middle open {sr['Middle Open Rate']:.1f}%. "
+               f"On the scale of his splits that is about {m:.0%} man and {h:.0%} single-high (league {cov_lg['man']:.0%} and {LG_HI:.0%}).")
     why.append(f"{opp} in 2025 allowed {cov_d.loc[opp, 'ypt_man']:.1f} yds/target vs man ({pl.ordinal(rk_m)} fewest) and {cov_d.loc[opp, 'ypt_zone']:.1f} vs zone ({pl.ordinal(rk_z)} fewest).")
     sh = cov_sh[(cov_sh.receiver_player_id == pid) & (cov_sh.n >= 10)].copy()
     if len(sh) >= 2:
@@ -294,8 +319,9 @@ def coverage_matchup(pid, pos, name, team, opp, gname):
         use = lambda c: cov_d.loc[opp].get(f'shell_{c}', np.nan)
         why.append(f"Best shell: {lab(best.defense_coverage_type)} ({best.ypt:.1f} yds/target, {int(best.n)} targets; {opp} used it on {use(best.defense_coverage_type):.0%} in 2025). "
                    f"Worst: {lab(worst.defense_coverage_type)} ({worst.ypt:.1f}; {opp} {use(worst.defense_coverage_type):.0%}).")
-    why.append(f"Effect: coverage fit {100 * fit:+.0f}%, defense quality {100 * q:+.0f}% on his yards per target.")
-    return mu_row(pid, name, pos, team, opp, gname, f"{opp} {'man' if m >= .5 else 'zone'}-leaning secondary ({m:.0%} man)",
+    why.append(f"Effect: coverage fit {100 * fit:+.0f}% (man/zone {100 * fit_mz:+.0f}%, single/two-high {100 * fit_hi:+.0f}%), defense quality {100 * q:+.0f}% on his yards per target.")
+    lean = 'man-heavy' if sr.man_rk <= 8 else 'zone-heavy' if sr.man_rk >= 25 else 'mixed'
+    return mu_row(pid, name, pos, team, opp, gname, f"{opp} {lean} coverage ({sr['Man Rate']:.0f}% man, {sr['Middle Closed Rate']:.0f}% single-high)",
                   'coverage', score, why)
 
 
@@ -565,11 +591,12 @@ for g in slate.itertuples():
     game['mu'] = sorted(mus, key=lambda m: -m['score'])
     game['keys'] = keys
     for t, o in ((away, home), (home, away)):
-        if o in cov_d.index:
-            m, src = MAN[o]
-            coverage_rows.append(dict(team=o, opp=t, man=round(m, 3), man2025=round(cov_d.loc[o, 'man'], 3), lgMan=round(cov_lg['man'], 3),
-                                      src=src, cov1=round(cov_d.loc[o].get('shell_COVER_1', 0), 3), cov3=round(cov_d.loc[o].get('shell_COVER_3', 0), 3),
-                                      cov2=round(cov_d.loc[o].get('shell_COVER_2', 0), 3), cov4=round(cov_d.loc[o].get('shell_COVER_4', 0), 3),
+        if o in SH.index:
+            r = SH.loc[o]
+            coverage_rows.append(dict(team=o, opp=t, man=round(r['Man Rate'] / 100, 3), zone=round(r['Zone Rate'] / 100, 3),
+                                      hi=round(r['Middle Closed Rate'] / 100, 3), lo=round(r['Middle Open Rate'] / 100, 3),
+                                      manRk=int(r.man_rk), hiRk=int(r.hi_rk),
+                                      manRk2025=int(cov_d.man.rank(ascending=False, method='min').get(o, 0)),
                                       blitz=round(Dd.loc[o, 'blitz'], 3) if o in Dd.index else None))
     out_games.append(game)
 
