@@ -152,6 +152,11 @@
    "n": "Ed Oliver",
    "t": "BUF",
    "r": "knee; ruled out for Monday"
+  },
+  {
+   "n": "Marvin Harrison Jr.",
+   "t": "ARI",
+   "r": "inactive; being traded"
   }
  ],
  "players": {
@@ -338,6 +343,10 @@
   "Alvin Kamara": {
    "s": "watch",
    "n": "Questionable (back); limited but practiced all week, expected to play."
+  },
+  "Marvin Harrison Jr.": {
+   "s": "out",
+   "n": "Inactive for Week 5: he is being traded (reported Sunday morning; not yet on the official report)."
   }
  },
  "games": {
@@ -391,6 +400,7 @@
    "Denver scores a league-low 3.3 first-half points per game."
   ],
   "det-ari": [
+   "Marvin Harrison Jr. is inactive: he is being traded (reported Sunday morning). Arizona's TD and yardage prices on this page are from Friday, before the news, so his targets going to Michael Wilson, Trey McBride and the other receivers aren't priced in yet.",
    "DET CB Rock Ya-Sin is out; Detroit has allowed 17 touchdowns, most in the NFL.",
    "Arizona is 29th in points allowed (29.3 per game)."
   ],
