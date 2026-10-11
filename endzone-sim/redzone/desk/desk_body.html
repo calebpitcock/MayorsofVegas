@@ -111,6 +111,7 @@ const recTxt=r=>`${r.W}-${r.L}${r.P?'-'+r.P:''}`;
 const winPct=r=>r.W+r.L?Math.round(100*r.W/(r.W+r.L))+'%':'—';
 
 /* ---------- news ---------- */
+const fmtd=s=>new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/New_York'});
 let NEWS={players:{},games:{}};
 try{NEWS=JSON.parse(document.getElementById('rznews').textContent);}catch(e){}
 NEWS.players=NEWS.players||{}; NEWS.games=NEWS.games||{};
@@ -192,7 +193,7 @@ const gameSelect=(id,cur,withAll=true)=>`<select class="fsel" id="${id}" aria-la
 function render(){
   const D=st.D; if(!D) return;
   const P=Object.fromEntries(D.picks.map(p=>[p.id,p]));
-  $('#wk').textContent=`${D.label} · research edition · lines ${new Date(D.prices.td).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/New_York'})}${NEWS.asOf?' · news '+NEWS.asOf:''}`;
+  $('#wk').textContent=`${D.label} · research edition · ${D.prices.lines_at?'TD prices '+fmtd(D.prices.td)+' · lines '+fmtd(D.prices.lines_at):'lines '+fmtd(D.prices.td)}${NEWS.asOf?' · news '+NEWS.asOf:''}`;
   const allBoards=[...D.board,...st.arch.flatMap(a=>a.board)];
   const mr=tally(D.board), my=tally(Object.values(st.mine).map(m=>m.id));
   $('#recs').innerHTML=`<span class="rec">Desk <b>${recTxt(mr)}</b></span><span class="rec">Me <b>${recTxt(my)}</b></span>`;

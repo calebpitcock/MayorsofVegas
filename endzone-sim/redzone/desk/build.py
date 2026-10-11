@@ -673,7 +673,7 @@ for t in Dd.index:
 
 data = dict(season=SEASON, week=WEEK, label=f'Week {WEEK} · Oct 8–12', edition='research',
             generated=datetime.now(timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z'),
-            prices=dict(td=TD_AT, props=PROPS_AT, lines='nflverse schedule consensus'),
+            prices=dict(td=TD_AT, props=PROPS_AT, lines='nflverse schedule consensus', lines_at=datetime.fromtimestamp(os.path.getmtime(f'{D}/games.csv'), timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')),
             rules=RULES, games=out_games, board=board, picks=picks, coverage=coverage_rows,
             styles=dict(keys=[dict(key=k, off=o, dfn=d) for k, o, d in pl.STYLE], lg={k: round(float(v), 3) for k, v in slg.items() if pd.notna(v)}, defense=dtab))
 os.makedirs(os.path.join(H, 'site'), exist_ok=True)
