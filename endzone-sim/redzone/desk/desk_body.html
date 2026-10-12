@@ -173,7 +173,7 @@ function gameCard(g,full=true){
   const gn=NEWS.games[g.id]||[];
   const head=`<div class="ghead"><div class="teams">${g.final?`${g.away} <span class="s">${g.final.away}</span> · ${g.home} <span class="s">${g.final.home}</span><span class="final">Final</span>`:`${g.away} @ ${g.home}`}</div>
     <div><div class="kick">${esc(g.kick)}</div><div class="lines">${esc(lineTxt(g))} · O/U ${g.line.total}${g.deskTotal!=null?` · Desk <b>${g.deskTotal}</b>`:''}</div></div></div>`;
-  if(g.final) return `<section class="game">${head}${gn.length?`<ul class="gnews">${gn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}${factsBlock(g)}<div class="gbody"><p class="note" style="margin:0">Played Thursday. These were the facts going in.</p></div></section>`;
+  if(g.final) return `<section class="game">${head}${gn.length?`<ul class="gnews">${gn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}${factsBlock(g)}<div class="gbody"><p class="note" style="margin:0">Final. These were the facts going in.</p></div></section>`;
   const tds=gamePicks(g,'Anytime TD').sort((a,b)=>b.prob-a.prob).slice(0,6);
   const yd=gamePicks(g,'Yards').sort((a,b)=>val(b)-val(a)).slice(0,4);
   const scr=[...new Set(st.D.picks.filter(p=>p.gameId===g.id&&isOut(p)&&p.type==='Anytime TD').map(p=>p.player))];
@@ -187,7 +187,9 @@ function gameCard(g,full=true){
     ${full&&keys?`<div class="sub">Key players</div>${keys}`:''}
     ${full&&(g.mu||[]).length?`<div class="sub">Coverage and run matchups</div>${g.mu.map(muRow).join('')}`:''}</div></section>`;
 }
-const gameSelect=(id,cur,withAll=true)=>`<select class="fsel" id="${id}" aria-label="Game">${withAll?`<option value="all">All games</option>`:''}${st.D.games.map(g=>`<option value="${esc(g.id)}"${cur===g.id?' selected':''}>${esc(g.away)} @ ${esc(g.home)}</option>`).join('')}</select>`;
+const liveGames=()=>st.D.games.filter(g=>!g.final);
+const liveTeams=()=>new Set(liveGames().flatMap(g=>[g.away,g.home]));
+const gameSelect=(id,cur,withAll=true)=>`<select class="fsel" id="${id}" aria-label="Game">${withAll?`<option value="all">All games</option>`:''}${liveGames().map(g=>`<option value="${esc(g.id)}"${cur===g.id?' selected':''}>${esc(g.away)} @ ${esc(g.home)}</option>`).join('')}</select>`;
 
 /* ---------- views ---------- */
 function render(){
@@ -195,19 +197,20 @@ function render(){
   const P=Object.fromEntries(D.picks.map(p=>[p.id,p]));
   $('#wk').textContent=`${D.label} · research edition · ${D.prices.lines_at?'TD prices '+fmtd(D.prices.td)+' · lines '+fmtd(D.prices.lines_at):'lines '+fmtd(D.prices.td)}${NEWS.asOf?' · news '+NEWS.asOf:''}`;
   const allBoards=[...D.board,...st.arch.flatMap(a=>a.board)];
-  const mr=tally(D.board), my=tally(Object.values(st.mine).map(m=>m.id));
+  const wkBoard=[...new Set([...st.arch.filter(a=>a.week===D.week&&a.research).flatMap(a=>a.board),...D.board])];
+  const mr=tally(wkBoard), my=tally(Object.values(st.mine).map(m=>m.id));
   $('#recs').innerHTML=`<span class="rec">Desk <b>${recTxt(mr)}</b></span><span class="rec">Me <b>${recTxt(my)}</b></span>`;
-  $('#ticker').innerHTML=D.games.map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:
+  $('#ticker').innerHTML=[...liveGames(),...D.games.filter(g=>g.final)].map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:
     `<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>${esc(g.kick)} · O/U ${g.line.total}${g.deskTotal!=null?` → ${g.deskTotal}`:''}</small>`}</div>`).join('');
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===st.tab));
   const v=$('#view');
   if(st.tab==='top'){
     const fl=D.board.filter(id=>pnews(P[id])).length;
-    v.innerHTML=`<p class="note">The biggest moves off the book this week. Every number starts at the sportsbook's price; the facts in each pick move it a little, and the tag shows by how much. Tap a pick to see each fact and what it was worth; <b>How it's made</b> has the rules.</p>
+    v.innerHTML=`${D.slateNote?`<div class="newsbar">${D.slateNote}</div>`:''}<p class="note">The biggest moves off the book${D.slateNote?' on what is left to play':' this week'}. Every number starts at the sportsbook's price; the facts in each pick move it a little, and the tag shows by how much. Tap a pick to see each fact and what it was worth; <b>How it's made</b> has the rules.</p>
       ${fl?`<div class="newsbar"><b>${fl} of ${D.board.length} have injury news.</b> The books already moved on it, so it is shown but not added. <button data-t="news">Read the news</button></div>`:''}
       <div class="list">${D.board.map(id=>pickRow(P[id])).join('')}</div>`;
   } else if(st.tab==='games'){
-    const gs=D.games.filter(g=>st.game==='all'||g.id===st.game);
+    const gs=liveGames().filter(g=>st.game==='all'||g.id===st.game);
     v.innerHTML=`<div class="gsel"><span class="note">Every game: the trends, the head-to-head, how each offense's habits meet the other defense, key players and matchups.</span>${gameSelect('gsel',st.game)}</div>
       <div class="list">${gs.map(g=>gameCard(g)).join('')}</div>`;
   } else if(st.tab==='td'){
@@ -219,7 +222,7 @@ function render(){
     v.innerHTML=`<p class="note">Every player with a posted anytime TD price. The big number is the Desk's chance; <b>book</b> is the price's implied chance; the tag is the difference. ${T.sort==='value'?'Sorted by the biggest move up from the book.':'Most likely first.'}</p>
       <div class="filt"><span class="lab">Sort</span>${chip('sort','value','Vs book')}${chip('sort','prob','Most likely')}</div>
       <div class="filt"><span class="lab">Pos</span>${chip('pos','all','All')}${['RB','WR','TE','QB'].map(x=>chip('pos',x,x)).join('')}${gameSelect('tdgame',T.game)}</div>
-      <div class="list">${shown.length?shown.map(p=>pickRow(p,{label:p.player})).join(''):'<div class="empty">No touchdown picks match.</div>'}</div>
+      <div class="list">${shown.length?shown.map(p=>pickRow(p,{label:p.player})).join(''):`<div class="empty">${all.length?'No touchdown picks match.':'No anytime TD prices posted for '+liveGames().map(g=>g.away+' @ '+g.home).join(', ')+' yet.'}</div>`}</div>
       ${shown.length<rows.length?`<button class="more" data-td="all" data-v="1">Show all ${rows.length}</button>`:''}`;
   } else if(st.tab==='yds'){
     const Y=st.yd; let rows=D.picks.filter(p=>p.type==='Yards'&&!isOut(p)&&(Y.game==='all'||p.gameId===Y.game));
@@ -253,8 +256,8 @@ function render(){
     const gm=Object.fromEntries(D.games.map(g=>[g.id,g]));
     v.innerHTML=`<p class="note">${esc(NEWS.about||'')}</p>
       ${fb.length?`<h2>Top plays with news</h2><div class="list">${fb.map(p=>pickRow(p)).join('')}</div>`:''}
-      ${(NEWS.outs||[]).length?`<h2>Ruled out or not expected to play</h2><p class="note">${esc(NEWS.bar||'')}</p><ul class="gnews" style="border-bottom:0;padding-left:22px">${NEWS.outs.map(o=>`<li><b>${esc(o.n)}</b>${o.t?' ('+esc(o.t)+')':''}${o.r?': '+esc(o.r):''}</li>`).join('')}</ul>`:''}
-      <h2>By game</h2><div class="list">${D.games.filter(g=>(NEWS.games[g.id]||[]).length).map(g=>`<section class="game"><div class="ghead"><div class="teams">${g.away} · ${g.home}</div><div class="kick">${esc(g.kick)}</div></div><ul class="gnews" style="border-bottom:0">${NEWS.games[g.id].map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>`).join('')}</div>
+      ${(NEWS.outs||[]).filter(o=>!o.t||liveTeams().has(o.t)).length?`<h2>Ruled out or not expected to play</h2><p class="note">${esc(NEWS.bar||'')}</p><ul class="gnews" style="border-bottom:0;padding-left:22px">${NEWS.outs.filter(o=>!o.t||liveTeams().has(o.t)).map(o=>`<li><b>${esc(o.n)}</b>${o.t?' ('+esc(o.t)+')':''}${o.r?': '+esc(o.r):''}</li>`).join('')}</ul>`:''}
+      <h2>By game</h2><div class="list">${liveGames().filter(g=>(NEWS.games[g.id]||[]).length).map(g=>`<section class="game"><div class="ghead"><div class="teams">${g.away} · ${g.home}</div><div class="kick">${esc(g.kick)}</div></div><ul class="gnews" style="border-bottom:0">${NEWS.games[g.id].map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>`).join('')}</div>
       ${(NEWS.sources||[]).length?`<h2>Sources</h2><ul class="gnews" style="border-bottom:0;padding-left:22px;word-break:break-all">${NEWS.sources.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}`;
   } else if(st.tab==='mine'){
     const rows=Object.values(st.mine).sort((a,b)=>(b.addedAt||'').localeCompare(a.addedAt||'')), AP=allPicks();
@@ -270,8 +273,8 @@ function render(){
     const card=(k,r)=>`<div class="stat"><div class="k">${esc(k)}</div><div class="v">${recTxt(r)}<small>${winPct(r)}</small></div></div>`;
     const types=ids=>[...new Set(ids.map(i=>(AP[i]||{}).type).filter(Boolean))];
     const sect=(h,note,ids)=>`<h2>${esc(h)}</h2><p class="note">${note}</p><div class="grid">${card('All',tally(ids))}${types(ids).map(t=>card(t,tally(ids.filter(i=>AP[i].type===t)))).join('')}</div>`;
-    v.innerHTML=sect(`Week ${D.week}: research desk`,'This week\'s Top plays, graded after the games.',D.board)+
-      st.arch.slice().reverse().map(a=>sect(a.label,'Built by the old simulation model (retired).',a.board)).join('')+
+    v.innerHTML=sect(D.boardLabel||`Week ${D.week}: research desk`,'This week\'s Top plays, graded after the games.',D.board)+
+      st.arch.slice().reverse().map(a=>sect(a.label,a.note||'Built by the old simulation model (retired).',a.board)).join('')+
       `<h2>Me</h2><div class="grid">${card('My picks',tally(my))}${[...new Set(my.map(i=>(AP[i]||st.mine[mineKey(i)]||{}).type))].filter(Boolean).map(t=>card(t,tally(my.filter(i=>((AP[i]||st.mine[mineKey(i)]).type===t))))).join('')}</div>
       <p class="note">Results fill in when Claude grades the week; you can also mark your own picks W, L or P.</p>`;
   } else {

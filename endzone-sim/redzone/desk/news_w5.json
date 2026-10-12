@@ -1,6 +1,6 @@
 {
- "asOf": "Sun Oct 11, morning",
- "about": "Injury and lineup news gathered from team sites, NFL.com, Yahoo, SI, Covers, Rotowire and NFL insiders on Oct 8-11 (London inactives included; inactives for the 1:00 games post about 11:30 ET). Spreads, totals and moneylines were refreshed Sunday morning; anytime TD prices are from Fri Oct 9 and yardage lines from Thu Oct 8, the latest the free price feeds have posted. The news is shown next to each pick but is not added to the Desk numbers (books already moved on it).",
+ "asOf": "Mon Oct 12, afternoon",
+ "about": "Monday night only: every other Week 5 game is final and graded under Record. BUF @ LA news is the final injury reports (filed Saturday) plus Monday coverage; inactives post about 90 minutes before kickoff (6:45 ET). Spread, total and moneyline are the consensus as of Monday; yardage lines are DraftKings from Sun Oct 11. No anytime TD prices have been posted for this game in the free feeds yet. The news is shown next to each pick but is not added to the Desk numbers (books already moved on it).",
  "bar": "Players ruled out are dimmed and dropped from the TD and Games tabs.",
  "outs": [
   {
@@ -149,14 +149,19 @@
    "r": "knee"
   },
   {
-   "n": "Ed Oliver",
-   "t": "BUF",
-   "r": "knee; ruled out for Monday"
-  },
-  {
    "n": "Marvin Harrison Jr.",
    "t": "ARI",
    "r": "inactive; being traded"
+  },
+  {
+   "n": "Ed Oliver",
+   "t": "BUF",
+   "r": "knee"
+  },
+  {
+   "n": "Josh Palmer",
+   "t": "BUF",
+   "r": "shoulder, hurt in Friday practice"
   }
  ],
  "players": {
@@ -254,7 +259,7 @@
   },
   "DJ Moore": {
    "s": "risk",
-   "n": "Questionable (shoulder) for Monday night."
+   "n": "Questionable (shoulder). He aggravated an AC joint sprain against New England and was limited in practice; one analyst calls him on the doubtful side of questionable. If he sits, Kincaid, Shakir and Coleman pick up the targets."
   },
   "Brock Bowers": {
    "s": "watch",
@@ -347,6 +352,18 @@
   "Marvin Harrison Jr.": {
    "s": "out",
    "n": "Inactive for Week 5: he is being traded (reported Sunday morning; not yet on the official report)."
+  },
+  "Josh Palmer": {
+   "s": "out",
+   "n": "Out (shoulder), hurt in Friday's practice."
+  },
+  "Christian Benford": {
+   "s": "up",
+   "n": "Back from the toe injury and expected to start."
+  },
+  "Aaron Donald": {
+   "s": "up",
+   "n": "Expected to play after missing last week (back)."
   }
  },
  "games": {
@@ -416,8 +433,9 @@
    "Atlanta has the league's No. 1 run defense (48.3 rushing yards allowed per game); Atlanta is 2-5 all time vs Baltimore."
   ],
   "buf-la": [
-   "BUF: Ed Oliver ruled out; DJ Moore (shoulder) questionable; Josh Palmer out; CBs Christian Benford, Dee Alford and Te'Cory Couch on the report.",
-   "LA: Sean McVay was optimistic about Aaron Donald's return; CB Jaylen Watson could be back.",
+   "BUF final report: Ed Oliver (knee) and WR Josh Palmer (shoulder, hurt in Friday's practice) are out. DJ Moore (shoulder), CB Dee Alford (ankle) and DL Landon Jackson (knee) are questionable.",
+   "CB Christian Benford (toe) practiced fully and is expected to start after missing last week.",
+   "LA final report: only S Quentin Lake (hip) is questionable. Aaron Donald (back) is expected to play after missing last week; Tyler Higbee and Alaric Jackson had rest days but carry no game status.",
    "Buffalo leads the league in scoring but allows 26+ points per game; it lost its first game last week to New England."
   ],
   "tb-dal": [
@@ -426,6 +444,12 @@
   ]
  },
  "sources": [
+  "https://www.buffalobills.com/news/buffalo-bills-injury-report-vs-rams-week-5",
+  "https://sports.yahoo.com/articles/bills-vs-rams-injury-buffalo-210424467.html",
+  "https://buffalowdown.com/bills-vs-rams-final-week-5-injury-report-before-critical-mnf-matchup-01m4hk69em43",
+  "https://www.rotoballer.com/player-news/bills-not-ruling-out-dj-moore-for-week-5/1961432",
+  "https://clutchpoints.com/nfl/buffalo-bills/bills-news-dj-moore-status-rams-cloudy-practice-absence",
+  "nflverse injuries_2026 (official Week 5 report)",
   "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-friday-oct-9",
   "https://www.nfl.com/news/ravens-qb-lamar-jackson-ankle-out-falcons-tyler-huntley-start",
   "https://sports.yahoo.com/fantasy/article/nfl-injury-report-week-5-latest-news-updates-on-jamarr-chase-saquon-barkley-for-fantasy-football-182157011.html",

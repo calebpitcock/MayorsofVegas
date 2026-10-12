@@ -638,6 +638,36 @@ for g in slate.itertuples():
                 if name in OUT:
                     yp['out'] = True
                 picks.append(yp)
+    # ---- players with a posted yardage line but no TD price yet (e.g. a Monday game before its TD board opens)
+    td_ids, done = {pid for pid, _ in priced}, set()
+    for (pn, mk), prop in sorted(PROPS.items(), key=lambda kv: -kv[1]['line']):
+        if not any(tr.NAMES[t] in (prop['home'] + '|' + prop['away']) for t in (away, home)):
+            continue
+        team = next((t for t in (away, home) if (pn, t) in BYNAME), None)
+        if team is None or BYNAME[(pn, team)] in td_ids:
+            continue
+        pid = BYNAME[(pn, team)]
+        opp = home if team == away else away
+        facts, num, pos, name = player_facts(pid, team, opp, prime)
+        if mk == 'player_rush_yds' and pos not in ('RB', 'QB'):
+            continue
+        mu = next((m for m in mus if m['pid'] == pid), None)
+        if pid not in done:
+            done.add(pid)
+            if pos in ('WR', 'TE'):
+                mu = coverage_matchup(pid, pos, name, team, opp, gname)
+            elif pos in ('RB', 'FB'):
+                mu = run_matchup(pid, name, team, opp, gname)
+            if mu:
+                mu['game'] = gtxt
+                mu['side'] = 'away' if team == away else 'home'
+                mus.append(mu)
+            if len([k for k in keys if k['team'] == team]) < 6 or pos == 'QB':
+                keys.append(dict(pid=pid, name=name, team=team, pos=pos, facts=facts))
+        yp = yards_pick(pid, mk, prop, pos, num, mu, opp, gname, gtxt)
+        if name in OUT:
+            yp['out'] = True
+        picks.append(yp)
     game['mu'] = sorted(mus, key=lambda m: -m['score'])
     game['facts']['coverage'] = {away: coverage_facts(away, home, g.away_qb_name, mus), home: coverage_facts(home, away, g.home_qb_name, mus)}
     game['keys'] = keys
@@ -671,11 +701,21 @@ for t in Dd.index:
         row[c + '_rk'] = int(Dd.loc[t, c + '_rk'])
     dtab.append(row)
 
+live_g = [g for g in out_games if 'final' not in g]
+extra = {}
+if live_g and len(live_g) < len(out_games):
+    left = ', '.join(f"{g['away']} @ {g['home']}" for g in live_g)
+    extra = dict(slateNote=f"<b>{len(out_games) - len(live_g)} of {len(out_games)} games are final.</b> Only {left} is left to play, so every pick below is from it. "
+                           "The earlier games' board and your tracked picks are graded under <b>Record</b> and <b>My picks</b>.",
+                 boardLabel=f"Week {WEEK}: {left}")
+    if all(g['kick'].startswith('Mon') for g in live_g):
+        extra['label'] = f'Week {WEEK} · Monday night'
 data = dict(season=SEASON, week=WEEK, label=f'Week {WEEK} · Oct 8–12', edition='research',
             generated=datetime.now(timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z'),
             prices=dict(td=TD_AT, props=PROPS_AT, lines='nflverse schedule consensus', lines_at=datetime.fromtimestamp(os.path.getmtime(f'{D}/games.csv'), timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')),
             rules=RULES, games=out_games, board=board, picks=picks, coverage=coverage_rows,
             styles=dict(keys=[dict(key=k, off=o, dfn=d) for k, o, d in pl.STYLE], lg={k: round(float(v), 3) for k, v in slg.items() if pd.notna(v)}, defense=dtab))
+data.update(extra)
 os.makedirs(os.path.join(H, 'site'), exist_ok=True)
 
 
