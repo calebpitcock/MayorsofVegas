@@ -1,6 +1,6 @@
 {
- "asOf": "Mon Oct 12, 6 PM ET",
- "about": "Monday night only: every other Week 5 game is final and graded under Record. BUF @ LA news is the final injury reports (filed Saturday) plus Monday coverage; inactives post about 90 minutes before kickoff (6:45 ET). Spread, total and moneyline are the consensus as of Monday; yardage lines are DraftKings from Sun Oct 11. No anytime TD prices have been posted for this game in the free feeds yet. The news is shown next to each pick but is not added to the Desk numbers (books already moved on it).",
+ "asOf": "Mon Oct 12, 7:35 PM ET (inactives)",
+ "about": "Monday night only: every other Week 5 game is final and graded under Record. BUF @ LA news is the final injury reports (filed Saturday) plus Monday coverage; inactives are in. Spread, total and moneyline are the consensus as of 7:15 PM ET Monday; yardage lines are DraftKings from Sun Oct 11. No anytime TD prices have been posted for this game in the free feeds yet. The news is shown next to each pick but is not added to the Desk numbers (books already moved on it).",
  "bar": "Players ruled out are dimmed and dropped from the TD and Games tabs.",
  "outs": [
   {
@@ -154,14 +154,39 @@
    "r": "inactive; being traded"
   },
   {
-   "n": "Ed Oliver",
+   "n": "DJ Moore",
    "t": "BUF",
-   "r": "knee"
+   "r": "shoulder, inactive"
   },
   {
    "n": "Josh Palmer",
    "t": "BUF",
-   "r": "shoulder, hurt in Friday practice"
+   "r": "shoulder, inactive"
+  },
+  {
+   "n": "Dee Alford",
+   "t": "BUF",
+   "r": "ankle, inactive"
+  },
+  {
+   "n": "Ed Oliver",
+   "t": "BUF",
+   "r": "knee, inactive"
+  },
+  {
+   "n": "Landon Jackson",
+   "t": "BUF",
+   "r": "knee, inactive"
+  },
+  {
+   "n": "CJ Daniels",
+   "t": "LA",
+   "r": "inactive"
+  },
+  {
+   "n": "Max Klare",
+   "t": "LA",
+   "r": "inactive"
   }
  ],
  "players": {
@@ -258,8 +283,8 @@
    "n": "Limited (shoulder)."
   },
   "DJ Moore": {
-   "s": "risk",
-   "n": "Questionable (shoulder). Missed Thursday and Friday, back to a limited practice Saturday. Buffalo elevated Trent Sherfield and rookie Skyler Bell will be active; if Moore sits, Kincaid, Shakir and Coleman pick up the targets."
+   "s": "out",
+   "n": "Inactive (shoulder)."
   },
   "Brock Bowers": {
    "s": "watch",
@@ -364,6 +389,22 @@
   "Aaron Donald": {
    "s": "up",
    "n": "Expected to play after missing last week (back)."
+  },
+  "Dee Alford": {
+   "s": "out",
+   "n": "Inactive (ankle)."
+  },
+  "Dalton Kincaid": {
+   "s": "stale",
+   "n": "DJ Moore is inactive, and this yardage line is DraftKings' from Sunday, before that news. More targets go to Kincaid with Moore out, so the book has likely raised it: check the live line before betting the under."
+  },
+  "Khalil Shakir": {
+   "s": "stale",
+   "n": "DJ Moore is inactive, and this yardage line is DraftKings' from Sunday, before that news. More targets go to Shakir with Moore out, so the book has likely raised it: check the live line before betting the under."
+  },
+  "Keon Coleman": {
+   "s": "stale",
+   "n": "DJ Moore is inactive, and this yardage line is DraftKings' from Sunday, before that news. More targets go to Coleman with Moore out, so the book has likely raised it: check the live line before betting the under."
   }
  },
  "games": {
@@ -433,12 +474,11 @@
    "Atlanta has the league's No. 1 run defense (48.3 rushing yards allowed per game); Atlanta is 2-5 all time vs Baltimore."
   ],
   "buf-la": [
-   "BUF final report: Ed Oliver (knee) and WR Josh Palmer (shoulder, hurt in Friday's practice) are out. DJ Moore (shoulder), CB Dee Alford (ankle) and DL Landon Jackson (knee) are questionable; inactives post about 6:45 ET.",
-   "BUF elevated WR Trent Sherfield from the practice squad, and rookie WR Skyler Bell will be active for his NFL debut (Joe Brady). That is cover at receiver whether or not Moore plays.",
-   "CB Christian Benford (toe) practiced fully and is expected to start after missing last week.",
-   "LA final report: only S Quentin Lake (hip) is questionable. Aaron Donald (back) is expected to play after missing last week; Tyler Higbee and Alaric Jackson had rest days but carry no game status.",
-   "Buffalo leads the league in scoring but allows 26+ points per game; it lost its first game last week to New England.",
-   "Line moves: the Rams went from -3 at open to -3.5 with about 79% of spread tickets on Buffalo; the total rose from 53.5 to 54.5, with about two-thirds of total bets on the over (SportsBettingDime, The Spread). Some books still deal 54 or a cheaper over price than the consensus -118."
+   "BUF inactives: WR DJ Moore (shoulder; first game he has ever missed injured), WR Josh Palmer (shoulder), CB Dee Alford (ankle), DL Ed Oliver (knee), DL Landon Jackson (knee), OL Ar'maj Reed-Adams, OL Jude Bowry.",
+   "BUF receivers tonight: Kincaid, Shakir and Coleman, plus Trent Sherfield (elevated from the practice squad) and rookie Skyler Bell (NFL debut). Rookie CB Jalon Kilgore is active for the first time.",
+   "LA inactives: WR CJ Daniels, QB Ty Simpson, TE Max Klare, DE Larrell Murchison, OL Bill Murray. S Quentin Lake (hip, questionable) is not on the list. Aaron Donald, CB Jaylen Watson and TE Colby Parkinson are back.",
+   "Line moves: the total is now 55.5 (open 53.5, Sunday 54.5); BUF +3.5 at -115, moneyline LA -180 / BUF +150. Roughly 79% of spread tickets and two-thirds of total tickets are on Buffalo and the over (SportsBettingDime, The Spread).",
+   "Buffalo leads the league in scoring but allows 26+ points per game; it lost its first game last week to New England."
   ],
   "tb-dal": [
    "Final: TB 24, DAL 16. Bucky Irving ran for 165 yards; Tampa Bay outscored Dallas 17-0 in the third quarter.",
@@ -446,6 +486,9 @@
   ]
  },
  "sources": [
+  "https://www.nbcsports.com/nfl/profootballtalk/rumor-mill/news/monday-night-football-bills-wr-dj-moore-cb-dee-alford-are-inactive",
+  "https://www.si.com/nfl/bills/onsi/transactions-wide-receivers-dj-moore-josh-palmer-headline-bills-monday-night-inactives-at-rams",
+  "https://heavy.com/sports/nfl/buffalo-bills/dj-moore-out-vs-rams/",
   "https://www.espn.com/nfl/story/_/id/50149505/bills-rule-ed-oliver-joshua-palmer-wait-wr-dj-moore",
   "https://www.si.com/nfl/bills/onsi/injury-report-bills-final-week-5-dj-moore-practices-saturday-two-ruled-out-for-mnf",
   "https://clutchpoints.com/nfl/buffalo-bills/bills-elevate-wr-from-practice-squad-with-dj-moore-still-questionable-for-mnf-game-vs-rams",
