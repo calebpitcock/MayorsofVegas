@@ -1,5 +1,5 @@
 {
- "asOf": "Mon Oct 12, afternoon",
+ "asOf": "Mon Oct 12, 6 PM ET",
  "about": "Monday night only: every other Week 5 game is final and graded under Record. BUF @ LA news is the final injury reports (filed Saturday) plus Monday coverage; inactives post about 90 minutes before kickoff (6:45 ET). Spread, total and moneyline are the consensus as of Monday; yardage lines are DraftKings from Sun Oct 11. No anytime TD prices have been posted for this game in the free feeds yet. The news is shown next to each pick but is not added to the Desk numbers (books already moved on it).",
  "bar": "Players ruled out are dimmed and dropped from the TD and Games tabs.",
  "outs": [
@@ -259,7 +259,7 @@
   },
   "DJ Moore": {
    "s": "risk",
-   "n": "Questionable (shoulder). He aggravated an AC joint sprain against New England and was limited in practice; one analyst calls him on the doubtful side of questionable. If he sits, Kincaid, Shakir and Coleman pick up the targets."
+   "n": "Questionable (shoulder). Missed Thursday and Friday, back to a limited practice Saturday. Buffalo elevated Trent Sherfield and rookie Skyler Bell will be active; if Moore sits, Kincaid, Shakir and Coleman pick up the targets."
   },
   "Brock Bowers": {
    "s": "watch",
@@ -433,10 +433,12 @@
    "Atlanta has the league's No. 1 run defense (48.3 rushing yards allowed per game); Atlanta is 2-5 all time vs Baltimore."
   ],
   "buf-la": [
-   "BUF final report: Ed Oliver (knee) and WR Josh Palmer (shoulder, hurt in Friday's practice) are out. DJ Moore (shoulder), CB Dee Alford (ankle) and DL Landon Jackson (knee) are questionable.",
+   "BUF final report: Ed Oliver (knee) and WR Josh Palmer (shoulder, hurt in Friday's practice) are out. DJ Moore (shoulder), CB Dee Alford (ankle) and DL Landon Jackson (knee) are questionable; inactives post about 6:45 ET.",
+   "BUF elevated WR Trent Sherfield from the practice squad, and rookie WR Skyler Bell will be active for his NFL debut (Joe Brady). That is cover at receiver whether or not Moore plays.",
    "CB Christian Benford (toe) practiced fully and is expected to start after missing last week.",
    "LA final report: only S Quentin Lake (hip) is questionable. Aaron Donald (back) is expected to play after missing last week; Tyler Higbee and Alaric Jackson had rest days but carry no game status.",
-   "Buffalo leads the league in scoring but allows 26+ points per game; it lost its first game last week to New England."
+   "Buffalo leads the league in scoring but allows 26+ points per game; it lost its first game last week to New England.",
+   "Line moves: the Rams went from -3 at open to -3.5 with about 79% of spread tickets on Buffalo; the total rose from 53.5 to 54.5, with about two-thirds of total bets on the over (SportsBettingDime, The Spread). Some books still deal 54 or a cheaper over price than the consensus -118."
   ],
   "tb-dal": [
    "Final: TB 24, DAL 16. Bucky Irving ran for 165 yards; Tampa Bay outscored Dallas 17-0 in the third quarter.",
@@ -444,6 +446,12 @@
   ]
  },
  "sources": [
+  "https://www.espn.com/nfl/story/_/id/50149505/bills-rule-ed-oliver-joshua-palmer-wait-wr-dj-moore",
+  "https://www.si.com/nfl/bills/onsi/injury-report-bills-final-week-5-dj-moore-practices-saturday-two-ruled-out-for-mnf",
+  "https://clutchpoints.com/nfl/buffalo-bills/bills-elevate-wr-from-practice-squad-with-dj-moore-still-questionable-for-mnf-game-vs-rams",
+  "https://www.sportsbettingdime.com/news/nfl/final-bills-vs-rams-predictions-closing-odds-for-monday-night-football/",
+  "https://www.sportsbettingdime.com/news/nfl/bills-vs-rams-public-betting-splits-sharp-trends-mnf-oct-12/",
+  "https://www.thespread.com/nfl-articles/bills-vs-rams-odds-october-12-2026/",
   "https://www.buffalobills.com/news/buffalo-bills-injury-report-vs-rams-week-5",
   "https://sports.yahoo.com/articles/bills-vs-rams-injury-buffalo-210424467.html",
   "https://buffalowdown.com/bills-vs-rams-final-week-5-injury-report-before-critical-mnf-matchup-01m4hk69em43",
