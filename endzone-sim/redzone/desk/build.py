@@ -58,8 +58,8 @@ RULES = {
         'vs_team': {'w': 0.10, 'cap': 0.04, 'min_games': 2, 'what': 'his yards per game against this opponent vs the line'},
         'total_cap': 0.15,
     },
-    'board': {'_about': 'Top plays: the picks the facts moved most off the book, largest first. A pick only qualifies if the Desk chance also beats the break-even of the posted price (margin included), so a pick that is right on paper is not a losing bet at that price. The board for each game is locked at kickoff; the Desk record is those locked boards, 1 unit per pick at the posted price.',
-              'td': {'min_edge': 0.02, 'max': 10}, 'total': {'min_edge': 0.03, 'max': 6}, 'yards': {'min_edge': 0.04, 'max': 10}},
+    'board': {'_about': 'Top plays: every pick the facts moved far enough off the book, largest first, with no limit on how many. A pick only qualifies if the Desk chance also beats the break-even of the posted price (margin included), so a pick that is right on paper is not a losing bet at that price. The board for each game is locked at kickoff; the Desk record is those locked boards, 1 unit per pick at the posted price.',
+              'td': {'min_edge': 0.02}, 'total': {'min_edge': 0.03}, 'yards': {'min_edge': 0.04}},
     'coverage': {'_about': 'Coverage matchups are the one part of the Desk that is current season only.', 'shrink_targets': 15, 'season': 'this season only (2026 play-by-play and FTN charting; Sharp Football team tables through Week 5)',
                  'groups': "man-heavy = top 10 in Sharp's 2026 man rate, zone-heavy = bottom 10; a player's split is his yards per target against each group this season",
                  'blitz': 'blitz = 5+ pass rushers (FTN charting, 2026)'},
@@ -698,13 +698,13 @@ for g in slate.itertuples():
                                       blitz=round(float(DEF_BLITZ.get(o, np.nan)), 3)))
     out_games.append(game)
 
-# ---- top plays: the largest moves off the book that land on the right side of 50% (TDs: Desk above book)
+# ---- top plays: every pick that clears its edge bar and beats the posted price's break-even (no cap on how many)
 BR = RULES['board']
 live = [p for p in picks if not p.get('out') and p.get('price') and p['prob'] > p['price']['implied']]   # beats break-even at the posted price
 
 
 def top(kind, rule):
-    return sorted([p for p in live if p['type'] == kind and p['prob'] - p['book'] >= rule['min_edge']], key=lambda p: -(p['prob'] - p['book']))[:rule['max']]
+    return [p for p in live if p['type'] == kind and p['prob'] - p['book'] >= rule['min_edge']]   # every pick that clears the bar
 
 
 tds, tots, yds = top('Anytime TD', BR['td']), top('Total', BR['total']), top('Yards', BR['yards'])

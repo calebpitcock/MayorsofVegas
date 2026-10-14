@@ -82,7 +82,7 @@ function load(){
   if(!['top','games','td','yds','mu','news','mine','record','how'].includes(st.tab)) st.tab='top';
 }
 const allPicks=()=>{const m={}; for(const a of st.arch) for(const p of a.picks) m[p.id]={...p,week:a.week}; for(const p of st.D.picks) m[p.id]={...p,week:st.D.week}; return m;};
-function resultOf(id){ const m=st.mine[mineKey(id)]; if(m&&m.result) return m.result; return st.grades[id]||null; }
+function resultOf(id){ return st.grades[id]||null; }
 
 /* ---------- storage: the page database (shared, so Claude can grade), else this device ---------- */
 async function initDb(){
@@ -102,7 +102,7 @@ const mineKey=id=>id.replace(/[^A-Za-z0-9_.~:@+-]/g,'-');
 const isTracked=id=>!!st.mine[mineKey(id)];
 function toggleTrack(p){
   if(isTracked(p.id)) saveMine(p.id,null);
-  else saveMine(p.id,{id:p.id,week:p.week??st.D.week,type:p.type,text:p.text,game:p.game,prob:+p.prob.toFixed(3),odds:p.price?p.price.odds:null,addedAt:new Date().toISOString(),result:null});
+  else saveMine(p.id,{id:p.id,week:p.week??st.D.week,type:p.type,text:p.text,game:p.game,prob:+p.prob.toFixed(3),odds:p.price?p.price.odds:null,addedAt:new Date().toISOString()});
 }
 
 /* ---------- records ---------- */
@@ -213,7 +213,7 @@ function render(){
   const v=$('#view');
   if(st.tab==='top'){
     const fl=D.board.filter(id=>pnews(P[id])).length;
-    v.innerHTML=`${D.slateNote?`<div class="newsbar">${D.slateNote}</div>`:''}<p class="note">The biggest moves off the book${D.slateNote?' on what is left to play':' this week'}. Every number starts at the sportsbook's price; the facts in each pick move it a little, and the tag shows by how much. Tap a pick to see each fact and what it was worth; <b>How it's made</b> has the rules.</p>
+    v.innerHTML=`${D.slateNote?`<div class="newsbar">${D.slateNote}</div>`:''}<p class="note">Every pick the facts moved far enough off the book to count${D.slateNote?' in what is left to play':' this week'}, biggest edge first. Each one counts in the Desk record once its game kicks off. Every number starts at the sportsbook's price; the facts in each pick move it a little, and the tag shows by how much. Tap a pick to see each fact and what it was worth; <b>How it's made</b> has the rules.</p>
       ${fl?`<div class="newsbar"><b>${fl} of ${D.board.length} have injury news.</b> The books already moved on it, so it is shown but not added. <button data-t="news">Read the news</button></div>`:''}
       <div class="list">${D.board.length?D.board.map(id=>pickRow(P[id])).join(''):`<div class="empty">Nothing clears the bar yet.${!D.prices.td||!D.prices.props?' Player TD and yardage prices for this slate aren\'t posted in the free feeds yet; the board refills when they are.':''} Every game's line, total and facts are under <b>Games</b>.</div>`}</div>`;
   } else if(st.tab==='games'){
@@ -272,7 +272,7 @@ function render(){
       const p=AP[m.id]||{...m,why:['This pick is from a week no longer on the board.']}; const r=resultOf(m.id);
       return `<div class="pick${st.open.has(m.id)?' open':''}"><button class="pbtn" data-open="${esc(m.id)}" aria-expanded="${st.open.has(m.id)}"><div class="prob${m.prob<.6?' mid':''}">${pct(m.prob)}</div>
         <div class="body"><div class="ptxt">${esc(m.text)}</div><div class="meta"><span class="chip">${esc(m.type)}</span>${m.odds!=null?`<span class="odds">${fmtOdds(m.odds)}</span>`:''}<span>Wk ${m.week} · ${esc(m.game)}</span><span class="res ${r||'O'}">${r?{W:'Win',L:'Loss',P:'Push'}[r]:'Open'}</span></div></div></button>
-        <div class="mine-acts">${['W','L','P'].map(x=>`<button data-res="${esc(m.id)}" data-v="${x}" aria-pressed="${m.result===x}" aria-label="Mark ${({W:'win',L:'loss',P:'push'})[x]}">${x}</button>`).join('')}<button data-track="${esc(m.id)}" aria-label="Remove">✕</button></div>
+        <div class="mine-acts"><button data-track="${esc(m.id)}" aria-label="Remove">✕</button></div>
         ${st.open.has(m.id)?`<ul class="why">${(p.why||[]).map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`
       :`<div class="empty">No picks tracked yet. Open <b>Top plays</b> or <b>Games</b> and tap <b>+ Track</b> on any pick.</div>`);
   } else if(st.tab==='record'){
@@ -313,14 +313,14 @@ function methodHtml(D){
   <div class="rule"><b>Game totals</b> <span class="note">${esc(R.total._about)}</span>${tbl(R.total,'pts')}</div>
   <div class="rule"><b>Yardage over/unders</b> <span class="note">${esc(R.yards._about)}</span>${tbl(R.yards,'line')}</div>
   <h3>4. What goes on Top plays</h3>
-  ${R.board?`<p>The TDs, totals and yardage picks the facts moved most off the book, largest first: TDs at least ${Math.round(100*R.board.td.min_edge)} points above the book (up to ${R.board.td.max}), totals at least ${Math.round(100*R.board.total.min_edge)} points (up to ${R.board.total.max}), yardage at least ${Math.round(100*R.board.yards.min_edge)} points (up to ${R.board.yards.max}). The Desk chance must also beat the break-even of the posted price with the margin in: at -110 that is 52.4%, at -113 it is 53.1%.</p>
+  ${R.board?`<p>The TDs, totals and yardage picks the facts moved most off the book, largest first: TDs at least ${Math.round(100*R.board.td.min_edge)} points above the book, totals at least ${Math.round(100*R.board.total.min_edge)} points, yardage at least ${Math.round(100*R.board.yards.min_edge)} points. There is no limit on how many: every pick that clears the bar goes on the board and counts. The Desk chance must also beat the break-even of the posted price with the margin in: at -110 that is 52.4%, at -113 it is 53.1%.</p>
   <p><b>Locked at kickoff.</b> When a game kicks off, its Top plays are frozen as they stood on the page and can't be changed by a later rebuild. The Desk record counts only those locked boards, 1 unit per pick at the posted price.</p>`:`<p>The TDs, totals and yardage picks the facts moved most off the book: TDs at least 2 points above the book, totals at least 2 points, yardage at least 4 points, largest first.</p>`}
   <h3>What this isn't</h3>
   <p>None of this was tested on past weeks; you asked for facts, not a backtest. Books already know most of these facts, which is why the weights are small. Treat a +5 as "the facts lean this way", not as a guaranteed edge.</p>
   <p class="note">Built by <code>endzone-sim/redzone/desk/build.py</code> from nflverse play-by-play (2019-2026) and FTN charting, Sharp Football Analysis 2026 team tables, nflverse schedules and lines, DraftKings-led props (nfl-player-prop-opportunity) and best-price anytime TD odds (NFL-Model's live pull). Generated ${esc(new Date(D.generated).toLocaleString('en-US',{timeZone:'America/New_York'}))} ET.</p></div>`;
 }
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-t],[data-open],[data-track],[data-res],[data-td],[data-yd],[data-sty]'); if(!t) return;
+  const t=e.target.closest('[data-t],[data-open],[data-track],[data-td],[data-yd],[data-sty]'); if(!t) return;
   if(t.dataset.sty){ st.sty=t.dataset.sty; render(); return; }
   if(t.dataset.td){ const k=t.dataset.td; st.td[k]=k==='all'?true:t.dataset.v; if(k!=='all') st.td.all=false; render(); return; }
   if(t.dataset.yd){ st.yd[t.dataset.yd]=t.dataset.v; render(); return; }
@@ -328,7 +328,6 @@ document.addEventListener('click',e=>{
   if(t.dataset.open){ const id=t.dataset.open; st.open.has(id)?st.open.delete(id):st.open.add(id); render(); return; }
   const AP=allPicks();
   if(t.dataset.track){ const id=t.dataset.track; toggleTrack(AP[id]||st.mine[mineKey(id)]||{id}); return; }
-  if(t.dataset.res){ const m=st.mine[mineKey(t.dataset.res)]; if(!m) return; saveMine(m.id,{...m,result:m.result===t.dataset.v?null:t.dataset.v}); }
 });
 document.addEventListener('change',e=>{
   if(e.target.id==='tdgame'){ st.td.game=e.target.value; st.td.all=false; render(); }

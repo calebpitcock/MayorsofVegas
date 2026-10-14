@@ -17,10 +17,11 @@ No simulation, ratings or fitted model: **book price → facts → small written
 
 ## Top plays and the record
 
-A pick makes Top plays when the facts move it off the book by at least: TDs 2 pts (max 10), totals 3 pts (max 6),
-yardage 4 pts (max 10), **and** the Desk chance beats the break-even of the posted price with the margin in. The rule
+A pick makes Top plays when the facts move it off the book by at least: TDs 2 pts, totals 3 pts, yardage 4 pts,
+**and** the Desk chance beats the break-even of the posted price with the margin in. No cap on how many: every pick that
+clears the bar goes on the board and counts. The rule
 is `RULES['board']` in `build.py` and is printed on the page. The record is W-L plus units: 1 unit per pick at the
-posted price (tracked picks: the price when tracked).
+posted price .
 
 ## Weekly run
 
