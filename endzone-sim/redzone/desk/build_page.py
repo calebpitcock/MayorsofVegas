@@ -2,13 +2,16 @@
 
     python3 build_page.py <week> [old page data json]
 
-Embeds site/picks_w<week>.json (this week), site/news_w<week>.json, and site/archive.json: older weeks from the
+Embeds site/picks_w<week>.json (this week), site/news_w<week>.json, site/locked_w*.json (each game's Top plays as
+locked at kickoff) and site/archive.json: older weeks from the
 retired simulation model, slimmed to what My picks and Record need (id, type, text, game, chance, price, first
 reasons), so picks you tracked before still resolve. Pass the old page's rzdata JSON once to (re)write the archive.
 """
 import json
 import os
 import sys
+
+import lock
 
 H = os.path.dirname(os.path.abspath(__file__))
 WEEK = int(sys.argv[1])
@@ -31,6 +34,7 @@ emb = lambda x: json.dumps(x, separators=(',', ':')).replace('</', '<\\/')
 data = json.load(open(os.path.join(SITE, f'picks_w{WEEK}.json')))
 news = json.load(open(os.path.join(SITE, f'news_w{WEEK}.json')))
 arch = json.load(open(arch_path)) if os.path.exists(arch_path) else []
+arch += lock.archive_entries()          # every week's boards as locked at kickoff (lock.py)
 page = open(os.path.join(H, 'page_head.html')).read() + '\n' + open(os.path.join(H, 'desk_body.html')).read()
 for tag, val in (('rzdata', data), ('rzarchive', arch), ('rznews', news)):
     empty = '{}' if tag != 'rzarchive' else '[]'

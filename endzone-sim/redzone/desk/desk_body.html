@@ -106,8 +106,14 @@ function toggleTrack(p){
 }
 
 /* ---------- records ---------- */
-function tally(ids){ const r={W:0,L:0,P:0,O:0}; ids.forEach(id=>{const x=resultOf(id); r[x||'O']++;}); return r; }
+/* units: 1 unit risked per pick at the price posted when it was picked (tracked picks: the price when you tracked it) */
+let AP0={};
+function oddsOf(id){ const p=AP0[id]; if(p&&p.price&&p.price.odds!=null) return p.price.odds; const m=st.mine[mineKey(id)]; return m&&m.odds!=null?m.odds:null; }
+const payout=o=>o>0?o/100:100/-o;
+function tally(ids,odds=oddsOf){ const r={W:0,L:0,P:0,O:0,u:0,priced:0}; ids.forEach(id=>{const x=resultOf(id); r[x||'O']++; const o=odds(id);
+  if(o!=null&&(x==='W'||x==='L')){ r.u+=x==='W'?payout(o):-1; r.priced++; }}); return r; }
 const recTxt=r=>`${r.W}-${r.L}${r.P?'-'+r.P:''}`;
+const uTxt=r=>r.priced?`${r.u>=0?'+':'−'}${Math.abs(r.u).toFixed(1)}u`:'—';
 const winPct=r=>r.W+r.L?Math.round(100*r.W/(r.W+r.L))+'%':'—';
 
 /* ---------- news ---------- */
@@ -187,20 +193,20 @@ function gameCard(g,full=true){
     ${full&&keys?`<div class="sub">Key players</div>${keys}`:''}
     ${full&&(g.mu||[]).length?`<div class="sub">Coverage and run matchups</div>${g.mu.map(muRow).join('')}`:''}</div></section>`;
 }
-const liveGames=()=>st.D.games.filter(g=>!g.final);
+const liveGames=()=>st.D.games.filter(g=>!g.final&&!g.started);
 const liveTeams=()=>new Set(liveGames().flatMap(g=>[g.away,g.home]));
 const gameSelect=(id,cur,withAll=true)=>`<select class="fsel" id="${id}" aria-label="Game">${withAll?`<option value="all">All games</option>`:''}${liveGames().map(g=>`<option value="${esc(g.id)}"${cur===g.id?' selected':''}>${esc(g.away)} @ ${esc(g.home)}</option>`).join('')}</select>`;
 
 /* ---------- views ---------- */
 function render(){
   const D=st.D; if(!D) return;
-  const P=Object.fromEntries(D.picks.map(p=>[p.id,p]));
-  $('#wk').textContent=`${D.label} · research edition · ${D.prices.lines_at?'TD prices '+fmtd(D.prices.td)+' · lines '+fmtd(D.prices.lines_at):'lines '+fmtd(D.prices.td)}${NEWS.asOf?' · news '+NEWS.asOf:''}`;
+  const P=Object.fromEntries(D.picks.map(p=>[p.id,p])); AP0=allPicks();
+  $('#wk').textContent=`${D.label} · research edition · ${D.prices.td?'TD prices '+fmtd(D.prices.td):'TD prices pending'}${D.prices.props?' · props '+fmtd(D.prices.props):' · props pending'} · lines ${fmtd(D.prices.lines_at)}${NEWS.asOf?' · news '+NEWS.asOf:''}`;
   const allBoards=[...D.board,...st.arch.flatMap(a=>a.board)];
   const wkBoard=[...new Set([...st.arch.filter(a=>a.week===D.week&&a.research).flatMap(a=>a.board),...D.board])];
-  const mr=tally(wkBoard), my=tally(Object.values(st.mine).map(m=>m.id));
-  $('#recs').innerHTML=`<span class="rec">Desk <b>${recTxt(mr)}</b></span><span class="rec">Me <b>${recTxt(my)}</b></span>`;
-  $('#ticker').innerHTML=[...liveGames(),...D.games.filter(g=>g.final)].map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:
+  const myIds=Object.values(st.mine).map(m=>m.id), mr=tally(wkBoard), my=tally(myIds,id=>{const m=st.mine[mineKey(id)]; return m&&m.odds!=null?m.odds:oddsOf(id);});
+  $('#recs').innerHTML=`<span class="rec" title="This week's Top plays, locked at kickoff; 1 unit per pick at the posted price">Desk <b>${recTxt(mr)}</b> · <b>${uTxt(mr)}</b></span><span class="rec">Me <b>${recTxt(my)}</b> · <b>${uTxt(my)}</b></span>`;
+  $('#ticker').innerHTML=[...liveGames(),...D.games.filter(g=>g.started&&!g.final),...D.games.filter(g=>g.final)].map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:g.started?`<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>Kicked off · board locked</small>`:
     `<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>${esc(g.kick)} · O/U ${g.line.total}${g.deskTotal!=null?` → ${g.deskTotal}`:''}</small>`}</div>`).join('');
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===st.tab));
   const v=$('#view');
@@ -208,7 +214,7 @@ function render(){
     const fl=D.board.filter(id=>pnews(P[id])).length;
     v.innerHTML=`${D.slateNote?`<div class="newsbar">${D.slateNote}</div>`:''}<p class="note">The biggest moves off the book${D.slateNote?' on what is left to play':' this week'}. Every number starts at the sportsbook's price; the facts in each pick move it a little, and the tag shows by how much. Tap a pick to see each fact and what it was worth; <b>How it's made</b> has the rules.</p>
       ${fl?`<div class="newsbar"><b>${fl} of ${D.board.length} have injury news.</b> The books already moved on it, so it is shown but not added. <button data-t="news">Read the news</button></div>`:''}
-      <div class="list">${D.board.map(id=>pickRow(P[id])).join('')}</div>`;
+      <div class="list">${D.board.length?D.board.map(id=>pickRow(P[id])).join(''):`<div class="empty">Nothing clears the bar yet.${!D.prices.td||!D.prices.props?' Player TD and yardage prices for this slate aren\'t posted in the free feeds yet; the board refills when they are.':''} Every game's line, total and facts are under <b>Games</b>.</div>`}</div>`;
   } else if(st.tab==='games'){
     const gs=liveGames().filter(g=>st.game==='all'||g.id===st.game);
     v.innerHTML=`<div class="gsel"><span class="note">Every game: the trends, the head-to-head, how each offense's habits meet the other defense, key players and matchups.</span>${gameSelect('gsel',st.game)}</div>
@@ -244,10 +250,10 @@ function render(){
       <h2>Receivers: toughest</h2><div class="list">${worst.map(muRow).join('')}</div>
       <h2>Running backs: best run fits</h2><div class="list">${rbBest.map(muRow).join('')}</div>
       <h2>Running backs: toughest</h2><div class="list">${rbWorst.map(muRow).join('')}</div>
-      <h2>Defenses vs offense styles</h2><p class="note">Each defense's rank of 32 in EPA allowed per play against each kind of play, 2026 only (four games, so small samples). 1 = best. Green: top 8. Red: bottom 8. Tap a column to sort; hover a cell for the EPA.</p>
+      <h2>Defenses vs offense styles</h2><p class="note">Each defense's rank of 32 in EPA allowed per play against each kind of play, 2026 only (five games, so small samples). 1 = best. Green: top 8. Red: bottom 8. Tap a column to sort; hover a cell for the EPA.</p>
       <div class="tblwrap"><table class="sty"><thead><tr><th>Defense</th>${keys.map(k=>`<th><button data-sty="${k.key}" aria-pressed="${sk===k.key}">${esc(k.dfn)}</button></th>`).join('')}</tr></thead>
       <tbody>${rowsS.map(r=>`<tr><td><b>${esc(r.team)}</b></td>${keys.map(k=>cell(r,k.key)).join('')}</tr>`).join('')}</tbody></table></div>
-      ${cv.length?`<h2>Coverage this week</h2><p class="note">Every defense on the slate, this season. Man, zone, single-high (Cover 0/1/3) and two-high (Cover 2/4/6) rates and yards per target allowed by position are Sharp Football Analysis through Week 4; small type is the rank of 32. Blitz is FTN charting (5+ rushers).</p>
+      ${cv.length?`<h2>Coverage this week</h2><p class="note">Every defense on the slate, this season. Man, zone, single-high (Cover 0/1/3) and two-high (Cover 2/4/6) rates and yards per target allowed by position are Sharp Football Analysis through Week 5; small type is the rank of 32. Blitz is FTN charting (5+ rushers).</p>
       <div class="tblwrap"><table class="cov"><thead><tr><th>Defense</th><th>vs</th><th>Man</th><th>Zone</th><th>1-high</th><th>2-high</th><th>Blitz</th><th>YPT WR</th><th>TE</th><th>RB</th><th>Out</th><th>Slot</th></tr></thead><tbody>
       ${cv.map(c=>`<tr><td><b>${esc(c.team)}</b></td><td>${esc(c.opp)}</td><td>${pct(c.man)} <small class="up">${c.manRk}</small></td><td>${pct(c.zone)}</td><td>${pct(c.hi)} <small class="up">${c.hiRk}</small></td><td>${pct(c.lo)}</td><td>${c.blitz!=null?pct(c.blitz):'—'}</td><td>${c.wr.toFixed(1)}</td><td>${c.te.toFixed(1)}</td><td>${c.rb.toFixed(1)}</td><td>${c.out.toFixed(1)}</td><td>${c.slot.toFixed(1)}</td></tr>`).join('')}
       </tbody></table></div>`:''}`;
@@ -269,13 +275,14 @@ function render(){
         ${st.open.has(m.id)?`<ul class="why">${(p.why||[]).map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`
       :`<div class="empty">No picks tracked yet. Open <b>Top plays</b> or <b>Games</b> and tap <b>+ Track</b> on any pick.</div>`);
   } else if(st.tab==='record'){
-    const AP=allPicks(), my=Object.values(st.mine).map(m=>m.id);
-    const card=(k,r)=>`<div class="stat"><div class="k">${esc(k)}</div><div class="v">${recTxt(r)}<small>${winPct(r)}</small></div></div>`;
+    const AP=allPicks(), my=Object.values(st.mine).map(m=>m.id), mo=id=>{const m=st.mine[mineKey(id)]; return m&&m.odds!=null?m.odds:oddsOf(id);};
+    const card=(k,r)=>`<div class="stat"><div class="k">${esc(k)}</div><div class="v">${recTxt(r)}<small>${winPct(r)}</small></div><div class="u${r.u<0?' neg':''}">${uTxt(r)}</div></div>`;
     const types=ids=>[...new Set(ids.map(i=>(AP[i]||{}).type).filter(Boolean))];
     const sect=(h,note,ids)=>`<h2>${esc(h)}</h2><p class="note">${note}</p><div class="grid">${card('All',tally(ids))}${types(ids).map(t=>card(t,tally(ids.filter(i=>AP[i].type===t)))).join('')}</div>`;
-    v.innerHTML=sect(D.boardLabel||`Week ${D.week}: research desk`,'This week\'s Top plays, graded after the games.',D.board)+
+    v.innerHTML=`<p class="note"><b>Units:</b> 1 unit risked on every pick at the price posted when it went on the board (your picks: the price when you tracked them). A win at -110 pays +0.91u, a win at +250 pays +2.5u, a loss is -1u, pushes are 0. Each game's Top plays lock at kickoff.</p>`+
+      sect(D.boardLabel||`Week ${D.week}: research desk`,'This week\'s Top plays for games still to play. They lock at kickoff.',D.board)+
       st.arch.slice().reverse().map(a=>sect(a.label,a.note||'Built by the old simulation model (retired).',a.board)).join('')+
-      `<h2>Me</h2><div class="grid">${card('My picks',tally(my))}${[...new Set(my.map(i=>(AP[i]||st.mine[mineKey(i)]||{}).type))].filter(Boolean).map(t=>card(t,tally(my.filter(i=>((AP[i]||st.mine[mineKey(i)]).type===t))))).join('')}</div>
+      `<h2>Me</h2><div class="grid">${card('My picks',tally(my,mo))}${[...new Set(my.map(i=>(AP[i]||st.mine[mineKey(i)]||{}).type))].filter(Boolean).map(t=>card(t,tally(my.filter(i=>((AP[i]||st.mine[mineKey(i)]).type===t)),mo))).join('')}</div>
       <p class="note">Results fill in when Claude grades the week; you can also mark your own picks W, L or P.</p>`;
   } else {
     v.innerHTML=methodHtml(D);
@@ -287,7 +294,7 @@ function methodHtml(D){
   return `<div class="method">
   <p><b>There is no model on this page anymore.</b> No simulation, no team ratings, nothing fitted to past results. Every number is one of three things: a sportsbook price, a fact counted from games that already happened, or a small nudge from one of those facts with a fixed weight written down below.</p>
   <h3>1. Start at the book</h3>
-  <ul><li><b>Anytime TDs:</b> the best price posted across US books (pulled ${esc(new Date(D.prices.td).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))} ET), turned into a chance: +150 is 40%.</li>
+  <ul><li><b>Anytime TDs:</b> the best price posted across US books (${D.prices.td?'pulled '+esc(new Date(D.prices.td).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))+' ET':'not posted for this slate yet'}), turned into a chance: +150 is 40%.</li>
   <li><b>Game totals:</b> the consensus total and its over/under prices, with the book's margin removed, so it starts near 50%.</li>
   <li><b>Yardage over/unders:</b> DraftKings' line and prices (FanDuel, BetMGM, BetRivers, Bovada if DraftKings has none), margin removed.</li>
   <li><b>Spreads and moneylines:</b> shown at the book's number. The Desk lists the facts but does not move sides.</li></ul>
@@ -296,16 +303,17 @@ function methodHtml(D){
   <ul><li><b>Trends</b> from every game since 1999 with its closing line (nflverse): against the spread and over/under this season, current streaks, last 10/20, as favorite or underdog, home or road, after a win or loss, prime time, division games, head to head, and each starting QB's and head coach's record in the same spot. A trend only shows if it is lopsided over enough games (about 70/30 or more over 8+ games, or a streak of 4+); the season record and head-to-head always show.</li>
   <li><b>Reported trends</b> from this week's betting previews (Covers, SI, NBC, FanDuel and others) that need data the game file doesn't have; each is labeled with the outlet.</li>
   <li><b>Player facts</b> from play-by-play 2019-2026: this season's usage and red-zone share, TD streaks and droughts, history against this opponent, prime-time splits, and how often he has cleared this week's yardage line.</li>
-  <li><b>Coverage:</b> each defense's 2026 man, zone, single-high and two-high rates, yards per target allowed to WRs, TEs and RBs and to outside and slot receivers, and box and sub-package rates (Sharp Football Analysis, through Week 4); its 2026 blitz rate (FTN charting, 5+ rushers). Each QB's and pass catcher's 2026 numbers against man-heavy defenses (Sharp's top 10 in man rate) and zone-heavy defenses (bottom 10), and against the blitz and no blitz. Nobody publishes free play-by-play man/zone tags during the season, so a player's man/zone split is built from the defenses he has faced this season. Small samples are pulled toward his own average (15 targets, 30 attempts).</li>
+  <li><b>Coverage:</b> each defense's 2026 man, zone, single-high and two-high rates, yards per target allowed to WRs, TEs and RBs and to outside and slot receivers, and box and sub-package rates (Sharp Football Analysis, through Week 5); its 2026 blitz rate (FTN charting, 5+ rushers). Each QB's and pass catcher's 2026 numbers against man-heavy defenses (Sharp's top 10 in man rate) and zone-heavy defenses (bottom 10), and against the blitz and no blitz. Nobody publishes free play-by-play man/zone tags during the season, so a player's man/zone split is built from the defenses he has faced this season. Small samples are pulled toward his own average (15 targets, 30 attempts).</li>
   <li><b>Defense vs offense style:</b> 2026 EPA allowed per play against play-action, motion, deep passes, screens, inside and outside runs, shotgun and under-center runs and middle-of-field throws, ranked 1-32; and how much each offense leans on each one.</li>
   <li><b>News:</b> injuries and lineup changes from team sites and national outlets. The book prices were posted after this news, so it is shown but not added.</li></ul>
   <h3>3. Nudge, with the weights in the open</h3>
-  <p>Each fact that bears on a pick moves it by a fixed weight, and each move has a cap so one hot stat can't run away. Small samples (four games of 2026) are pulled toward the league average first: four games' worth for per-game stats, ten red-zone trips, fifteen targets, forty carries. Every pick lists each fact and what it was worth.</p>
+  <p>Each fact that bears on a pick moves it by a fixed weight, and each move has a cap so one hot stat can't run away. Small samples (five games of 2026) are pulled toward the league average first: four games' worth for per-game stats, ten red-zone trips, fifteen targets, forty carries. Every pick lists each fact and what it was worth.</p>
   <div class="rule"><b>Anytime TD</b> <span class="note">${esc(R.td._about)}</span>${tbl(R.td,'logit')}</div>
   <div class="rule"><b>Game totals</b> <span class="note">${esc(R.total._about)}</span>${tbl(R.total,'pts')}</div>
   <div class="rule"><b>Yardage over/unders</b> <span class="note">${esc(R.yards._about)}</span>${tbl(R.yards,'line')}</div>
   <h3>4. What goes on Top plays</h3>
-  <p>The TDs, totals and yardage picks the facts moved most off the book: TDs at least 2 points above the book, totals at least 2 points, yardage at least 4 points, largest first.</p>
+  ${R.board?`<p>The TDs, totals and yardage picks the facts moved most off the book, largest first: TDs at least ${Math.round(100*R.board.td.min_edge)} points above the book (up to ${R.board.td.max}), totals at least ${Math.round(100*R.board.total.min_edge)} points (up to ${R.board.total.max}), yardage at least ${Math.round(100*R.board.yards.min_edge)} points (up to ${R.board.yards.max}). The Desk chance must also beat the break-even of the posted price with the margin in: at -110 that is 52.4%, at -113 it is 53.1%.</p>
+  <p><b>Locked at kickoff.</b> When a game kicks off, its Top plays are frozen as they stood on the page and can't be changed by a later rebuild. The Desk record counts only those locked boards, 1 unit per pick at the posted price.</p>`:`<p>The TDs, totals and yardage picks the facts moved most off the book: TDs at least 2 points above the book, totals at least 2 points, yardage at least 4 points, largest first.</p>`}
   <h3>What this isn't</h3>
   <p>None of this was tested on past weeks; you asked for facts, not a backtest. Books already know most of these facts, which is why the weights are small. Treat a +5 as "the facts lean this way", not as a guaranteed edge.</p>
   <p class="note">Built by <code>endzone-sim/redzone/desk/build.py</code> from nflverse play-by-play (2019-2026) and FTN charting, Sharp Football Analysis 2026 team tables, nflverse schedules and lines, DraftKings-led props (nfl-player-prop-opportunity) and best-price anytime TD odds (NFL-Model's live pull). Generated ${esc(new Date(D.generated).toLocaleString('en-US',{timeZone:'America/New_York'}))} ET.</p></div>`;

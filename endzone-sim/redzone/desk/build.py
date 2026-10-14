@@ -19,6 +19,7 @@ from statistics import NormalDist
 import numpy as np
 import pandas as pd
 
+import lock
 import players as pl
 import trends as tr
 
@@ -57,7 +58,9 @@ RULES = {
         'vs_team': {'w': 0.10, 'cap': 0.04, 'min_games': 2, 'what': 'his yards per game against this opponent vs the line'},
         'total_cap': 0.15,
     },
-    'coverage': {'_about': 'Coverage matchups are the one part of the Desk that is current season only.', 'shrink_targets': 15, 'season': 'this season only (2026 play-by-play and FTN charting; Sharp Football team tables through Week 4)',
+    'board': {'_about': 'Top plays: the picks the facts moved most off the book, largest first. A pick only qualifies if the Desk chance also beats the break-even of the posted price (margin included), so a pick that is right on paper is not a losing bet at that price. The board for each game is locked at kickoff; the Desk record is those locked boards, 1 unit per pick at the posted price.',
+              'td': {'min_edge': 0.02, 'max': 10}, 'total': {'min_edge': 0.03, 'max': 6}, 'yards': {'min_edge': 0.04, 'max': 10}},
+    'coverage': {'_about': 'Coverage matchups are the one part of the Desk that is current season only.', 'shrink_targets': 15, 'season': 'this season only (2026 play-by-play and FTN charting; Sharp Football team tables through Week 5)',
                  'groups': "man-heavy = top 10 in Sharp's 2026 man rate, zone-heavy = bottom 10; a player's split is his yards per target against each group this season",
                  'blitz': 'blitz = 5+ pass rushers (FTN charting, 2026)'},
 }
@@ -101,7 +104,12 @@ def pts(p0, dl):
 G = pd.read_csv(f'{D}/games.csv')
 G['gametime'] = G.gametime.astype(str)
 T = tr.team_games(G)
-slate = G[(G.season == SEASON) & (G.week == WEEK)].sort_values(['gameday', 'gametime', 'game_id'])
+slate = G[(G.season == SEASON) & (G.week == WEEK)].sort_values(['gameday', 'gametime', 'game_id']).copy()
+# lock every game that has kicked off: its board stays as the previous build had it at kickoff (lock.py)
+KICK = {gid(tr.FRANCHISE.get(r.away_team, r.away_team), tr.FRANCHISE.get(r.home_team, r.home_team)): lock.kickoff(r.gameday, r.gametime)
+        for r in slate.itertuples()}
+LOCKED = lock.update(WEEK, KICK)
+NOW = lock.now()
 prime_ids = set(G[G.gametime >= '19:00'].game_id)
 
 pbp = pl.load_pbp(D, range(2019, SEASON + 1))
@@ -120,6 +128,10 @@ inj = inj[inj.week == WEEK]
 NEWS = json.load(open(os.path.join(H, f'news_w{WEEK}.json')))
 REPORTED = json.load(open(os.path.join(H, f'reported_w{WEEK}.json')))
 OUT = {n for n, x in NEWS['players'].items() if x['s'] == 'out'} | set(inj[inj.report_status == 'Out'].full_name)
+# starting QB corrections when the nflverse schedule is stale (news_w<week>.json "qb": {team: name})
+for team, qb in NEWS.get('qb', {}).items():
+    slate.loc[slate.away_team == team, 'away_qb_name'] = qb
+    slate.loc[slate.home_team == team, 'home_qb_name'] = qb
 
 # book prices: anytime TD (best US price, jaredpatchett/NFL-Model live pull) and yardage lines (nfl-player-prop-opportunity)
 tdj = json.load(open(f'{EXT}/jp/data/player_td.json'))
@@ -149,7 +161,7 @@ for (player, mk, home, away), grp in pp.groupby(['Player', 'Market Key', 'Home',
 PROPS_AT = pp['Last Update'].max()
 
 # ------------------------------------------------------------------ league tables ---------------------------------
-# Sharp Football 2026 team tables (through Week 4): coverage scheme, positional coverage, defensive tendencies
+# Sharp Football 2026 team tables (through Week 5): coverage scheme, positional coverage, defensive tendencies
 FULL = {v: k for k, v in tr.NAMES.items()}
 def sharp(fn):
     x = pd.read_csv(os.path.join(H, fn))
@@ -364,7 +376,7 @@ def coverage_facts(off, dfn, qb, mus):
     out.append(dict(text=f"{grp_label(dfn)}. Yds/target allowed: WR {SP.loc[dfn, 'YPT Allowed WR']:.1f} ({rk('YPT Allowed WR')} fewest), "
                          f"TE {SP.loc[dfn, 'YPT Allowed TE']:.1f} ({rk('YPT Allowed TE')}), RB {SP.loc[dfn, 'YPT Allowed RB']:.1f} ({rk('YPT Allowed RB')}); "
                          f"outside {SP.loc[dfn, 'YPT Allowed Outside']:.1f}, slot {SP.loc[dfn, 'YPT Allowed Slot']:.1f}. "
-                         f"Light box {tn['Light Box Rate']:.0f}%, heavy box {tn['Heavy Box Rate']:.0f}%, sub packages {tn['Sub Package Rate']:.0f}% (Sharp, through Week 4).",
+                         f"Light box {tn['Light Box Rate']:.0f}%, heavy box {tn['Heavy Box Rate']:.0f}%, sub packages {tn['Sub Package Rate']:.0f}% (Sharp, through Week 5).",
                     cls='', score=0))
     mine = sorted([x for x in mus if x['off'] == off and x['role'] == 'coverage'], key=lambda x: -x['score'])
     for x in [x for x in mine if x['score'] >= .02][:3] + [x for x in reversed(mine) if x['score'] <= -.02][:2]:
@@ -597,8 +609,12 @@ for g in slate.itertuples():
                 line=dict(spread=-g.spread_line, total=g.total_line, ml=dict(home=int(g.home_moneyline), away=int(g.away_moneyline)), src='consensus'),
                 qbs={away: g.away_qb_name, home: g.home_qb_name},
                 facts=dict(sides=side_facts, h2h=h2h, styles=styles, reported=reported))
-    if pd.notna(g.result):
-        game['final'] = dict(away=int(g.away_score), home=int(g.home_score))
+    if pd.notna(g.result) or KICK[gname] <= NOW:
+        if pd.notna(g.result):
+            game['final'] = dict(away=int(g.away_score), home=int(g.home_score))
+        else:
+            game['started'] = True         # kicked off, not final yet: locked, no new picks
+        game['locked'] = gname in LOCKED
         game['mu'] = []
         game['keys'] = []
         out_games.append(game)
@@ -683,10 +699,15 @@ for g in slate.itertuples():
     out_games.append(game)
 
 # ---- top plays: the largest moves off the book that land on the right side of 50% (TDs: Desk above book)
-live = [p for p in picks if not p.get('out')]
-tds = sorted([p for p in live if p['type'] == 'Anytime TD' and p['prob'] - p['book'] >= .02], key=lambda p: -(p['prob'] - p['book']))[:10]
-tots = sorted([p for p in live if p['type'] == 'Total' and p['prob'] - p['book'] >= .02], key=lambda p: -(p['prob'] - p['book']))[:6]
-yds = sorted([p for p in live if p['type'] == 'Yards' and p['prob'] - p['book'] >= .04], key=lambda p: -(p['prob'] - p['book']))[:10]
+BR = RULES['board']
+live = [p for p in picks if not p.get('out') and p.get('price') and p['prob'] > p['price']['implied']]   # beats break-even at the posted price
+
+
+def top(kind, rule):
+    return sorted([p for p in live if p['type'] == kind and p['prob'] - p['book'] >= rule['min_edge']], key=lambda p: -(p['prob'] - p['book']))[:rule['max']]
+
+
+tds, tots, yds = top('Anytime TD', BR['td']), top('Total', BR['total']), top('Yards', BR['yards'])
 board = [p['id'] for p in sorted(tds + tots + yds, key=lambda p: -(p['prob'] - p['book']))]
 
 # league-wide defense vs style table for the Matchups tab
@@ -701,18 +722,23 @@ for t in Dd.index:
         row[c + '_rk'] = int(Dd.loc[t, c + '_rk'])
     dtab.append(row)
 
-live_g = [g for g in out_games if 'final' not in g]
+live_g = [g for g in out_games if 'final' not in g and not g.get('started')]
 extra = {}
 if live_g and len(live_g) < len(out_games):
+    n_done = len(out_games) - len(live_g)
     left = ', '.join(f"{g['away']} @ {g['home']}" for g in live_g)
-    extra = dict(slateNote=f"<b>{len(out_games) - len(live_g)} of {len(out_games)} games are final.</b> Only {left} is left to play, so every pick below is from it. "
-                           "The earlier games' board and your tracked picks are graded under <b>Record</b> and <b>My picks</b>.",
-                 boardLabel=f"Week {WEEK}: {left}")
+    extra = dict(slateNote=f"<b>{n_done} of {len(out_games)} games have kicked off</b> and their Top plays are locked. "
+                           + (f"Only {left} is left to play, so every pick below is from it. " if len(live_g) <= 2 else f"Every pick below is from the {len(live_g)} games still to play. ")
+                           + "The locked boards and your tracked picks are graded under <b>Record</b> and <b>My picks</b>.",
+                 boardLabel=f"Week {WEEK}: " + (left if len(live_g) <= 2 else f'{len(live_g)} games still to play'))
     if all(g['kick'].startswith('Mon') for g in live_g):
         extra['label'] = f'Week {WEEK} · Monday night'
-data = dict(season=SEASON, week=WEEK, label=f'Week {WEEK} · Oct 8–12', edition='research',
+d0, d1 = pd.to_datetime(slate.gameday.min()), pd.to_datetime(slate.gameday.max())
+span = f"{d0:%b} {d0.day}–{d1.day}" if d0.month == d1.month else f"{d0:%b} {d0.day}–{d1:%b} {d1.day}"
+has = lambda t: any(p['type'] == t for p in picks)
+data = dict(season=SEASON, week=WEEK, label=f'Week {WEEK} · {span}', edition='research',
             generated=datetime.now(timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z'),
-            prices=dict(td=TD_AT, props=PROPS_AT, lines='nflverse schedule consensus', lines_at=datetime.fromtimestamp(os.path.getmtime(f'{D}/games.csv'), timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')),
+            prices=dict(td=TD_AT if has('Anytime TD') else None, props=PROPS_AT if has('Yards') else None, lines='nflverse schedule consensus', lines_at=datetime.fromtimestamp(os.path.getmtime(f'{D}/games.csv'), timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')),
             rules=RULES, games=out_games, board=board, picks=picks, coverage=coverage_rows,
             styles=dict(keys=[dict(key=k, off=o, dfn=d) for k, o, d in pl.STYLE], lg={k: round(float(v), 3) for k, v in slg.items() if pd.notna(v)}, defense=dtab))
 data.update(extra)
