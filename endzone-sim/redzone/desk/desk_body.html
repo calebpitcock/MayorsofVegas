@@ -106,11 +106,13 @@ function toggleTrack(p){
 }
 
 /* ---------- records ---------- */
-/* units: 1 unit risked per pick at the price posted when it was picked (tracked picks: the price when you tracked it) */
+/* units: 1 unit risked per pick at the price posted when it went on the board */
 let AP0={};
-function oddsOf(id){ const p=AP0[id]; if(p&&p.price&&p.price.odds!=null) return p.price.odds; const m=st.mine[mineKey(id)]; return m&&m.odds!=null?m.odds:null; }
+function oddsOf(id){ const p=AP0[id]; return p&&p.price&&p.price.odds!=null?p.price.odds:null; }
+/* the Desk record: every research-desk Top plays board this season (each game's board as locked at kickoff) */
+const seasonBoard=()=>[...new Set([...st.arch.filter(a=>a.research).flatMap(a=>a.board),...st.D.board])];
 const payout=o=>o>0?o/100:100/-o;
-function tally(ids,odds=oddsOf){ const r={W:0,L:0,P:0,O:0,u:0,priced:0}; ids.forEach(id=>{const x=resultOf(id); r[x||'O']++; const o=odds(id);
+function tally(ids,odds=oddsOf){ const r={W:0,L:0,P:0,O:0,u:0,priced:0}; ids.forEach(id=>{const x=st.grades[id]||null; r[x||'O']++; const o=odds(id);
   if(o!=null&&(x==='W'||x==='L')){ r.u+=x==='W'?payout(o):-1; r.priced++; }}); return r; }
 const recTxt=r=>`${r.W}-${r.L}${r.P?'-'+r.P:''}`;
 const uTxt=r=>r.priced?`${r.u>=0?'+':'−'}${Math.abs(r.u).toFixed(1)}u`:'—';
@@ -203,9 +205,8 @@ function render(){
   const P=Object.fromEntries(D.picks.map(p=>[p.id,p])); AP0=allPicks();
   $('#wk').textContent=`${D.label} · research edition · ${D.prices.td?'TD prices '+fmtd(D.prices.td):'TD prices pending'}${D.prices.props?' · props '+fmtd(D.prices.props):' · props pending'} · lines ${fmtd(D.prices.lines_at)}${NEWS.asOf?' · news '+NEWS.asOf:''}`;
   const allBoards=[...D.board,...st.arch.flatMap(a=>a.board)];
-  const wkBoard=[...new Set([...st.arch.filter(a=>a.week===D.week&&a.research).flatMap(a=>a.board),...D.board])];
-  const myIds=Object.values(st.mine).map(m=>m.id), mr=tally(wkBoard), my=tally(myIds,id=>{const m=st.mine[mineKey(id)]; return m&&m.odds!=null?m.odds:oddsOf(id);});
-  $('#recs').innerHTML=`<span class="rec" title="This week's Top plays, locked at kickoff; 1 unit per pick at the posted price">Desk <b>${recTxt(mr)}</b> · <b>${uTxt(mr)}</b></span><span class="rec">Me <b>${recTxt(my)}</b> · <b>${uTxt(my)}</b></span>`;
+  const sr=tally(seasonBoard());
+  $('#recs').innerHTML=`<span class="rec" title="Every research-desk Top play this season, locked at kickoff; 1 unit per pick at the posted price">Desk season <b>${recTxt(sr)}</b> · <b>${uTxt(sr)}</b></span>`;
   $('#ticker').innerHTML=[...liveGames(),...D.games.filter(g=>g.started&&!g.final),...D.games.filter(g=>g.final)].map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:g.started?`<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>Kicked off · board locked</small>`:
     `<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>${esc(g.kick)} · O/U ${g.line.total}${g.deskTotal!=null?` → ${g.deskTotal}`:''}</small>`}</div>`).join('');
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===st.tab));
@@ -275,15 +276,15 @@ function render(){
         ${st.open.has(m.id)?`<ul class="why">${(p.why||[]).map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`
       :`<div class="empty">No picks tracked yet. Open <b>Top plays</b> or <b>Games</b> and tap <b>+ Track</b> on any pick.</div>`);
   } else if(st.tab==='record'){
-    const AP=allPicks(), my=Object.values(st.mine).map(m=>m.id), mo=id=>{const m=st.mine[mineKey(id)]; return m&&m.odds!=null?m.odds:oddsOf(id);};
+    const AP=allPicks();
     const card=(k,r)=>`<div class="stat"><div class="k">${esc(k)}</div><div class="v">${recTxt(r)}<small>${winPct(r)}</small></div><div class="u${r.u<0?' neg':''}">${uTxt(r)}</div></div>`;
     const types=ids=>[...new Set(ids.map(i=>(AP[i]||{}).type).filter(Boolean))];
     const sect=(h,note,ids)=>`<h2>${esc(h)}</h2><p class="note">${note}</p><div class="grid">${card('All',tally(ids))}${types(ids).map(t=>card(t,tally(ids.filter(i=>AP[i].type===t)))).join('')}</div>`;
-    v.innerHTML=`<p class="note"><b>Units:</b> 1 unit risked on every pick at the price posted when it went on the board (your picks: the price when you tracked them). A win at -110 pays +0.91u, a win at +250 pays +2.5u, a loss is -1u, pushes are 0. Each game's Top plays lock at kickoff.</p>`+
+    v.innerHTML=`<p class="note"><b>Units:</b> 1 unit risked on every pick at the price posted when it went on the board. A win at -110 pays +0.91u, a win at +250 pays +2.5u, a loss is -1u, pushes are 0. Each game's Top plays lock at kickoff.</p>`+
+      sect('Season to date','Every research-desk Top play this season (Week 5 on), graded by Claude after the games. This is the Desk record in the header.',seasonBoard())+
       sect(D.boardLabel||`Week ${D.week}: research desk`,'This week\'s Top plays for games still to play. They lock at kickoff.',D.board)+
-      st.arch.slice().reverse().map(a=>sect(a.label,a.note||'Built by the old simulation model (retired).',a.board)).join('')+
-      `<h2>Me</h2><div class="grid">${card('My picks',tally(my,mo))}${[...new Set(my.map(i=>(AP[i]||st.mine[mineKey(i)]||{}).type))].filter(Boolean).map(t=>card(t,tally(my.filter(i=>((AP[i]||st.mine[mineKey(i)]).type===t)),mo))).join('')}</div>
-      <p class="note">Results fill in when Claude grades the week; you can also mark your own picks W, L or P.</p>`;
+      st.arch.slice().reverse().map(a=>sect(a.label,a.note||'Built by the old simulation model (retired). Not in the season record.',a.board)).join('')+
+      `<p class="note">Results fill in when Claude grades the week.</p>`;
   } else {
     v.innerHTML=methodHtml(D);
   }
