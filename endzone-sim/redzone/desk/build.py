@@ -103,6 +103,12 @@ def pts(p0, dl):
 # ------------------------------------------------------------------ load ------------------------------------------
 G = pd.read_csv(f'{D}/games.csv')
 G['gametime'] = G.gametime.astype(str)
+# RZ_ASOF=1 (backtests): build a past week as of its first kickoff -- this week's and later results, play-by-play,
+# charting and rosters are hidden, so every fact is one the Desk could have known before the games
+ASOF = bool(os.environ.get('RZ_ASOF'))
+if ASOF:
+    later = (G.season == SEASON) & (G.week >= WEEK)
+    G.loc[later, ['result', 'home_score', 'away_score', 'total']] = np.nan
 T = tr.team_games(G)
 slate = G[(G.season == SEASON) & (G.week == WEEK)].sort_values(['gameday', 'gametime', 'game_id']).copy()
 # lock every game that has kicked off: its board stays as the previous build had it at kickoff (lock.py)
@@ -113,10 +119,14 @@ NOW = lock.now()
 prime_ids = set(G[G.gametime >= '19:00'].game_id)
 
 pbp = pl.load_pbp(D, range(2019, SEASON + 1))
+if ASOF:
+    pbp = pbp[~((pbp.season == SEASON) & (pbp.week >= WEEK))]
 PG = pl.player_games(pbp, prime_ids)
 TG = pl.team_game_totals(pbp[pbp.season == SEASON])
 
 rw = pd.read_parquet(f'{D}/roster_weekly_{SEASON}.parquet')
+if ASOF:
+    rw = rw[rw.week <= WEEK]
 rw = rw.sort_values('week').groupby('gsis_id').tail(1)
 NAME = dict(zip(rw.gsis_id, rw.full_name))
 POS = dict(zip(rw.gsis_id, rw.position))
@@ -172,6 +182,8 @@ SH['man_rk'] = SH['Man Rate'].rank(ascending=False, method='min').astype(int)
 SH['hi_rk'] = SH['Middle Closed Rate'].rank(ascending=False, method='min').astype(int)
 SH['group'] = np.where(SH.man_rk <= 10, 'man', np.where(SH.man_rk >= 23, 'zone', 'mid'))
 ftn = pd.read_parquet(f'{D}/ftn_charting_{SEASON}.parquet')
+if ASOF:
+    ftn = ftn[ftn.week < WEEK]
 O, Dd, slg = pl.style_tables(pbp, ftn, SEASON)
 PS = pl.season_passes(pbp, ftn, SEASON)
 PS['vs_man'] = PS.defteam.map(SH.group).map({'man': True, 'zone': False})
