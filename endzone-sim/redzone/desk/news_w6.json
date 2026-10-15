@@ -1,6 +1,6 @@
 {
- "asOf": "Wed Oct 14 (first practice reports)",
- "about": "Week 6, gathered Wednesday Oct 14 from the first practice reports and national coverage. Final injury designations come Friday (Wednesday for Thursday's game), so treat 'At risk' as unresolved. Spread, total and moneyline are the nflverse consensus as of Wednesday. Anytime TD and yardage prices for Week 6 are not in the free feeds yet; player picks appear when they are. News is shown next to each pick but is not added to the Desk numbers (books move on it).",
+ "asOf": "Thu Oct 15 (final injury reports for SEA @ DEN)",
+ "about": "Thursday-night edition: SEA @ DEN only. Final injury report filed Wednesday for Thursday's game; inactives come 90 minutes before kickoff. Spread, total and moneyline are the nflverse consensus as of Thursday. Anytime TD prices are Thursday's pull. News is shown next to each pick but is not added to the Desk numbers (books move on it). Sunday and Monday games come back on the next rebuild.",
  "bar": "Players ruled out are dimmed and dropped from the TD and Games tabs.",
  "qb": {
   "SEA": "Sam Darnold"
@@ -10,6 +10,26 @@
    "n": "Zach Charbonnet",
    "t": "SEA",
    "r": "knee; ruled out for Thursday at Denver"
+  },
+  {
+   "n": "Drake Thomas",
+   "t": "SEA",
+   "r": "LB, ankle; ruled out"
+  },
+  {
+   "n": "Chazz Surratt",
+   "t": "SEA",
+   "r": "LB, calf; ruled out"
+  },
+  {
+   "n": "Patrick Surtain II",
+   "t": "DEN",
+   "r": "CB, ankle; ruled out"
+  },
+  {
+   "n": "Talanoa Hufanga",
+   "t": "DEN",
+   "r": "S, ankle; ruled out"
   },
   {
    "n": "Roman Wilson",
@@ -45,11 +65,11 @@
   },
   "Sam Darnold": {
    "s": "watch",
-   "n": "Starts Thursday. The nflverse schedule lists Drew Lock, so the Desk overrides it with Darnold (he started Week 5; five sacks, two INTs in the loss to SF)."
+   "n": "Starts Thursday at Denver. The nflverse schedule lists Drew Lock, so the Desk overrides it with Darnold."
   },
   "Drew Lock": {
    "s": "watch",
-   "n": "Backup QB; new to the report Monday with a right forearm injury (limited)."
+   "n": "Backup QB; right forearm, limited in practice, no game status on the final report."
   },
   "David Montgomery": {
    "s": "risk",
@@ -82,13 +102,37 @@
   "Rhamondre Stevenson": {
    "s": "up",
    "n": "NE lead back if TreVeyon Henderson (ankle) sits."
+  },
+  "Jaxon Smith-Njigba": {
+   "s": "watch",
+   "n": "Ankle; limited early in the week, no game status on the final report (expected to play)."
+  },
+  "Drake Thomas": {
+   "s": "out",
+   "n": "LB; ruled out (ankle). Tyrice Knight expected to start."
+  },
+  "Chazz Surratt": {
+   "s": "out",
+   "n": "LB; ruled out (calf)."
+  },
+  "Patrick Surtain II": {
+   "s": "out",
+   "n": "CB; ruled out (ankle), did not practice all week."
+  },
+  "Talanoa Hufanga": {
+   "s": "out",
+   "n": "S; ruled out (ankle), did not practice all week."
+  },
+  "Riley Moss": {
+   "s": "risk",
+   "n": "CB; questionable (ribs), limited all week. Missed Week 5. Check inactives."
   }
  },
  "games": {
   "sea-den": [
-   "Seattle: Zach Charbonnet (knee) is out. Jaxon Smith-Njigba (ankle) and Leonard Williams (ankle) were limited on the Monday estimate; Drew Lock (forearm) is new to the report.",
-   "Denver: CB Patrick Surtain II (ankle) and S Talanoa Hufanga (ankle) did not practice on the Monday estimate; CB Riley Moss (ribs) limited.",
-   "Opened SEA -2.5; Covers notes early money on Seattle and a possible move toward a field goal."
+   "Seattle: RB Zach Charbonnet (knee), LB Drake Thomas (ankle) and LB Chazz Surratt (calf) are out. Jaxon Smith-Njigba, Leonard Williams and Drew Lock carry no game status.",
+   "Denver: CB Patrick Surtain II and S Talanoa Hufanga (both ankle) are out after missing every practice. CB Riley Moss (ribs) is questionable.",
+   "Opened SEA -1.5 on the lookahead; heavy early money on Seattle pushed it to -2.5/-3. Total opened 41.5 and has drifted to 40.5-41."
   ],
   "bal-cle": [
    "Lamar Jackson (ankle) is a game-time question: optimism from Schefter and Rapoport, but he was not seen at Wednesday practice. Tyler Huntley started Week 5.",
@@ -122,6 +166,12 @@
   ]
  },
  "sources": [
+  "https://www.si.com/betting/seattle-seahawks-vs-denver-broncos-odds-sam-darnold-and-co-favored-on-thursday-night",
+  "https://vsin.com/nfl/nfl-odds-week-6-schedule-line-moves-and-matchups/",
+  "https://www.sportsbettingdime.com/?p=842499",
+  "https://www.denverbroncos.com/news/injury-report-cb-riley-moss-listed-as-questionable-for-thursday-night-football-vs-seahawks",
+  "https://www.fieldgulls.com/seattle-seahawks-injury-report/177400/seahawks-broncos-injury-update-drake-thomas-zach-charbonnet-out",
+  "https://www.si.com/nfl/seahawks/onsi/final-seahawks-broncos-injury-report-clarifies-situation-both-sides",
   "https://www.seahawks.com/news/week-6-injury-report-seahawks-at-broncos",
   "https://www.rotowire.com/football/headlines/zach-charbonnet-injury-wont-return-in-week-6-642453",
   "https://www.nbcsports.com/fantasy/football/player-news/2026-10-14/lamar-jackson-ankle-not-spotted-at-practice",

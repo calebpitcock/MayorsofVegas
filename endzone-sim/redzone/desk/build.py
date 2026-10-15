@@ -111,6 +111,11 @@ if ASOF:
     G.loc[later, ['result', 'home_score', 'away_score', 'total']] = np.nan
 T = tr.team_games(G)
 slate = G[(G.season == SEASON) & (G.week == WEEK)].sort_values(['gameday', 'gametime', 'game_id']).copy()
+# RZ_GAMES=sea-den[,..]: build only these games (e.g. a Thursday-night-only board); the rest come back on the next full build
+ONLY = {x.strip() for x in os.environ.get('RZ_GAMES', '').split(',') if x.strip()}
+if ONLY:
+    slate = slate[[gid(tr.FRANCHISE.get(a, a), tr.FRANCHISE.get(h, h)) in ONLY for a, h in zip(slate.away_team, slate.home_team)]]
+    assert len(slate) == len(ONLY), f'RZ_GAMES: matched {len(slate)} of {sorted(ONLY)}'
 # lock every game that has kicked off: its board stays as the previous build had it at kickoff (lock.py)
 KICK = {gid(tr.FRANCHISE.get(r.away_team, r.away_team), tr.FRANCHISE.get(r.home_team, r.home_team)): lock.kickoff(r.gameday, r.gametime)
         for r in slate.itertuples()}
@@ -753,6 +758,12 @@ data = dict(season=SEASON, week=WEEK, label=f'Week {WEEK} · {span}', edition='r
             prices=dict(td=TD_AT if has('Anytime TD') else None, props=PROPS_AT if has('Yards') else None, lines='nflverse schedule consensus', lines_at=datetime.fromtimestamp(os.path.getmtime(f'{D}/games.csv'), timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')),
             rules=RULES, games=out_games, board=board, picks=picks, coverage=coverage_rows,
             styles=dict(keys=[dict(key=k, off=o, dfn=d) for k, o, d in pl.STYLE], lg={k: round(float(v), 3) for k, v in slg.items() if pd.notna(v)}, defense=dtab))
+if ONLY and not extra:
+    names = ', '.join(f"{g['away']} @ {g['home']}" for g in out_games)
+    extra = dict(slateNote=f"<b>Tonight only: {names}.</b> The rest of Week {WEEK} returns on the next rebuild.",
+                 boardLabel=f"Week {WEEK}: {names}")
+    if all(g['kick'].startswith('Thu') for g in out_games):
+        extra['label'] = f'Week {WEEK} · Thursday night'
 data.update(extra)
 os.makedirs(os.path.join(H, 'site'), exist_ok=True)
 
