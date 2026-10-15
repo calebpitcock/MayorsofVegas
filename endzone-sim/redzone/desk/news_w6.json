@@ -1,11 +1,21 @@
 {
- "asOf": "Thu Oct 15 (final injury reports for SEA @ DEN)",
+ "asOf": "Thu Oct 15, 7:15 PM ET (SEA @ DEN inactives)",
  "about": "Thursday-night edition: SEA @ DEN only. Final injury report filed Wednesday for Thursday's game; inactives come 90 minutes before kickoff. Spread, total and moneyline are the nflverse consensus as of Thursday. Anytime TD prices are Thursday's pull. News is shown next to each pick but is not added to the Desk numbers (books move on it). Sunday and Monday games come back on the next rebuild.",
  "bar": "Players ruled out are dimmed and dropped from the TD and Games tabs.",
  "qb": {
   "SEA": "Sam Darnold"
  },
  "outs": [
+  {
+   "n": "Montorie Foster Jr.",
+   "t": "SEA",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Robert Henry Jr.",
+   "t": "SEA",
+   "r": "RB; inactive"
+  },
   {
    "n": "Zach Charbonnet",
    "t": "SEA",
@@ -105,7 +115,7 @@
   },
   "Jaxon Smith-Njigba": {
    "s": "watch",
-   "n": "Ankle; limited early in the week, no game status on the final report (expected to play)."
+   "n": "Active; cleared from the ankle issue."
   },
   "Drake Thomas": {
    "s": "out",
@@ -124,15 +134,23 @@
    "n": "S; ruled out (ankle), did not practice all week."
   },
   "Riley Moss": {
-   "s": "risk",
-   "n": "CB; questionable (ribs), limited all week. Missed Week 5. Check inactives."
+   "s": "watch",
+   "n": "CB; active (ribs), per PFT."
+  },
+  "Robert Henry Jr.": {
+   "s": "out",
+   "n": "Rb; inactive."
+  },
+  "Montorie Foster Jr.": {
+   "s": "out",
+   "n": "Wr; inactive."
   }
  },
  "games": {
   "sea-den": [
-   "Seattle: RB Zach Charbonnet (knee), LB Drake Thomas (ankle) and LB Chazz Surratt (calf) are out. Jaxon Smith-Njigba, Leonard Williams and Drew Lock carry no game status.",
-   "Denver: CB Patrick Surtain II and S Talanoa Hufanga (both ankle) are out after missing every practice. CB Riley Moss (ribs) is questionable.",
-   "Opened SEA -1.5 on the lookahead; heavy early money on Seattle pushed it to -2.5/-3. Total opened 41.5 and has drifted to 40.5-41."
+   "Inactives — SEA: QB Jalen Milroe (emergency 3rd), LB Drake Thomas, LB Chazz Surratt, RB Robert Henry Jr., WR Montorie Foster Jr., DT Brandon Pili, CB Avery Smith. RB Zach Charbonnet was ruled out earlier. Jaxon Smith-Njigba is active.",
+   "Inactives — DEN: CB Patrick Surtain II, S Talanoa Hufanga, QB Sam Ehlinger (emergency 3rd), Jordan Jackson, Tyler Onyedim, Dallen Bentley, Kage Casey. CB Riley Moss (ribs) is active.",
+   "Opened SEA -1.5 on the lookahead; heavy early money on Seattle pushed it to -2.5/-3 (ML -148). Total opened 41.5, now 40.5."
   ],
   "bal-cle": [
    "Lamar Jackson (ankle) is a game-time question: optimism from Schefter and Rapoport, but he was not seen at Wednesday practice. Tyler Huntley started Week 5.",
@@ -166,6 +184,10 @@
   ]
  },
  "sources": [
+  "https://sports.yahoo.com/articles/jaxon-smith-njigba-injury-seahawks-224446288.html",
+  "https://heavy.com/sports/nfl/seattle-seahawks/broncos-inactives-thursday-night-football/",
+  "https://milehighsports.com/denver-broncos-week-6-inactives-vs-seattle-seahawks/",
+  "https://www.nbcsports.com/nfl/profootballtalk/rumor-mill/news/thursday-night-football-broncos-cb-riley-moss-is-active",
   "https://www.si.com/betting/seattle-seahawks-vs-denver-broncos-odds-sam-darnold-and-co-favored-on-thursday-night",
   "https://vsin.com/nfl/nfl-odds-week-6-schedule-line-moves-and-matchups/",
   "https://www.sportsbettingdime.com/?p=842499",
