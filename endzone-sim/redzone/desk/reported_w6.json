@@ -1,5 +1,5 @@
 {
- "_about": "Trends reported by betting outlets this week (Oct 11-14) that the nflverse game file can't reproduce on its own (situational splits). Shown as 'Reported' with the outlet. Each is a fact about past games, not a prediction.",
+ "_about": "Trends reported by betting outlets this week (Oct 11-18) that the nflverse game file can't reproduce on its own (situational splits). Shown as 'Reported' with the outlet. Each is a fact about past games, not a prediction.",
  "hou-jax": [
   [
    "JAX has covered in seven of its last eight home games.",
@@ -8,14 +8,42 @@
  ],
  "dal-gb": [
   [
-   "DAL is 2-0 ATS as an underdog this season.",
-   "SI"
+   "GB is 0-2-1 ATS as a favorite of 1.5 or more this season; DAL is 2-0 ATS as an underdog of 1.5 or more.",
+   "FanDuel"
   ]
  ],
  "sea-den": [
   [
    "SEA opened -2.5 and took early money; Covers leans DEN +2.5.",
    "Covers"
+  ]
+ ],
+ "ari-la": [
+  [
+   "Sean McVay is 15-4 ATS against Arizona.",
+   "Covers"
+  ],
+  [
+   "ARI is 2-8 ATS in its last 10 games.",
+   "SI"
+  ]
+ ],
+ "lac-kc": [
+  [
+   "KC is 8-11 ATS after a bye under Andy Reid.",
+   "SI"
+  ]
+ ],
+ "buf-lv": [
+  [
+   "The over is 7-0 in the last seven BUF-LV meetings.",
+   "FanDuel"
+  ]
+ ],
+ "was-sf": [
+  [
+   "SF is 4-1 ATS this season.",
+   "FanDuel"
   ]
  ]
 }
