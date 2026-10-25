@@ -50,7 +50,7 @@ def update(week, kicks, at=None):
     for g, k in kicks.items():
         if g in ledger or k > at or prev is None:
             continue
-        picks = [p for p in prev['picks'] if p['gameId'] == g]
+        picks = [p for p in prev['picks'] if p['gameId'] == g and not p.get('late')]   # a late (after-kickoff) build never locks
         if not picks:            # previous build had no picks for it (already final, or never built): nothing to lock
             continue
         ids = {p['id'] for p in picks}

@@ -1,9 +1,10 @@
 {
- "asOf": "Sun Oct 25, 1:15 PM ET",
- "about": "Sunday edition, built after the 1:00 kickoffs: only the 4:05, 4:25, Sunday-night and Monday games can still be picked (the Thursday, London and 1:00 games had kicked off with no Week 7 board, so they have no Desk picks). Injury news is from the final reports (Friday; Saturday for Monday night) via NFL.com, team sites, Arrowhead Pride, Bleeding Green Nation and Inside The Star; 4:00 inactives were not out yet, so check them before using a pick. Anytime TD prices are from Fri Oct 23 and yardage lines from Thu Oct 22, the latest the free feeds have posted (no yardage lines for the 4:25, Sunday-night or Monday games). News is shown next to each pick but is not added to the Desk numbers (books move on it).",
+ "asOf": "Sun Oct 25, 1:20 PM ET",
+ "about": "Sunday edition, built after the 1:00 kickoffs: the 4:05, 4:25, Sunday-night and Monday games make the board; the seven 1:00 games had kicked off with no Week 7 board, so they are loaded as a reference board (same pregame inputs, 1:00 inactives included) that doesn't count. Injury news is from the final reports (Friday; Saturday for Monday night) via NFL.com, team sites, Arrowhead Pride, Bleeding Green Nation and Inside The Star; 4:00 inactives were not out yet, so check them before using a pick. Anytime TD prices are from Fri Oct 23 and yardage lines from Thu Oct 22, the latest the free feeds have posted (no yardage lines for the 4:25, Sunday-night or Monday games). News is shown next to each pick but is not added to the Desk numbers (books move on it).",
  "bar": "Players ruled out are dimmed and dropped from the TD and Games tabs.",
  "qb": {
-  "PHI": "Tanner McKee"
+  "PHI": "Tanner McKee",
+  "TB": "Baker Mayfield"
  },
  "outs": [
   {
@@ -135,6 +136,431 @@
    "n": "Jalen Hurts",
    "t": "PHI",
    "r": "QB, blood clots; injured reserve"
+  },
+  {
+   "n": "Nick Bosa",
+   "t": "SF",
+   "r": "DE; inactive"
+  },
+  {
+   "n": "Mike Evans",
+   "t": "SF",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Deebo Samuel Sr.",
+   "t": "SF",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Luke Gifford",
+   "t": "SF",
+   "r": "LB; inactive"
+  },
+  {
+   "n": "Garret Wallow",
+   "t": "SF",
+   "r": "LB; inactive"
+  },
+  {
+   "n": "Marques Sigle",
+   "t": "SF",
+   "r": "S; inactive"
+  },
+  {
+   "n": "Divine Deablo",
+   "t": "ATL",
+   "r": "ILB; inactive"
+  },
+  {
+   "n": "Avieon Terrell",
+   "t": "ATL",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Andy Dalton",
+   "t": "ATL",
+   "r": "QB; inactive"
+  },
+  {
+   "n": "Olamide Zaccheaus",
+   "t": "ATL",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Brian Robinson Jr.",
+   "t": "ATL",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Billy Bowman Jr.",
+   "t": "ATL",
+   "r": "DB; inactive"
+  },
+  {
+   "n": "Russ Yeast",
+   "t": "CIN",
+   "r": "S; inactive"
+  },
+  {
+   "n": "Connor Lew",
+   "t": "CIN",
+   "r": "C; inactive"
+  },
+  {
+   "n": "Myles Hinton",
+   "t": "CIN",
+   "r": "OT; inactive"
+  },
+  {
+   "n": "Shemar Stewart",
+   "t": "CIN",
+   "r": "DE; inactive"
+  },
+  {
+   "n": "Landon Robinson",
+   "t": "CIN",
+   "r": "DT; inactive"
+  },
+  {
+   "n": "Lamar Jackson",
+   "t": "BAL",
+   "r": "QB; inactive"
+  },
+  {
+   "n": "Elijah Sarratt",
+   "t": "BAL",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Jaylinn Hawkins",
+   "t": "BAL",
+   "r": "FS; inactive"
+  },
+  {
+   "n": "Andrew Vorhees",
+   "t": "BAL",
+   "r": "G; inactive"
+  },
+  {
+   "n": "Broderick Washington",
+   "t": "BAL",
+   "r": "DE; inactive"
+  },
+  {
+   "n": "Demonte Capehart",
+   "t": "TB",
+   "r": "DL; inactive"
+  },
+  {
+   "n": "Emeka Egbuka",
+   "t": "TB",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Ayden Garnes",
+   "t": "TB",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Luke Goedeke",
+   "t": "TB",
+   "r": "T; inactive"
+  },
+  {
+   "n": "Billy Schrauth",
+   "t": "TB",
+   "r": "G; inactive"
+  },
+  {
+   "n": "Antoine Winfield Jr.",
+   "t": "TB",
+   "r": "S; inactive"
+  },
+  {
+   "n": "Ja'Tavion Sanders",
+   "t": "CAR",
+   "r": "TE; inactive"
+  },
+  {
+   "n": "Jaelan Phillips",
+   "t": "CAR",
+   "r": "OLB; inactive"
+  },
+  {
+   "n": "AJ Dillon",
+   "t": "CAR",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Sam Hecht",
+   "t": "CAR",
+   "r": "C; inactive"
+  },
+  {
+   "n": "Stone Forsythe",
+   "t": "CAR",
+   "r": "OT; inactive"
+  },
+  {
+   "n": "TeRah Edwards",
+   "t": "CAR",
+   "r": "DT; inactive"
+  },
+  {
+   "n": "Jev\u00f3n Holland",
+   "t": "NYG",
+   "r": "S; inactive"
+  },
+  {
+   "n": "Theo Johnson",
+   "t": "NYG",
+   "r": "TE; inactive"
+  },
+  {
+   "n": "Marcus Mbow",
+   "t": "NYG",
+   "r": "OT; inactive"
+  },
+  {
+   "n": "Greg Newsome II",
+   "t": "NYG",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Nikko Reed",
+   "t": "NYG",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Josh Sills",
+   "t": "NYG",
+   "r": "OL; inactive"
+  },
+  {
+   "n": "Reed Blankenship",
+   "t": "HOU",
+   "r": "S; inactive"
+  },
+  {
+   "n": "Blake Fisher",
+   "t": "HOU",
+   "r": "OT; inactive"
+  },
+  {
+   "n": "Marlin Klein",
+   "t": "HOU",
+   "r": "TE; inactive"
+  },
+  {
+   "n": "David Montgomery",
+   "t": "HOU",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Febechi Nwaiwu",
+   "t": "HOU",
+   "r": "G; inactive"
+  },
+  {
+   "n": "Jalen Pitre",
+   "t": "HOU",
+   "r": "S; inactive"
+  },
+  {
+   "n": "Nathan Thomas",
+   "t": "HOU",
+   "r": "OT; inactive"
+  },
+  {
+   "n": "CJ Allen",
+   "t": "IND",
+   "r": "LB; inactive"
+  },
+  {
+   "n": "Bryce Boettcher",
+   "t": "IND",
+   "r": "LB; inactive"
+  },
+  {
+   "n": "Sauce Gardner",
+   "t": "IND",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Anthony Gould",
+   "t": "IND",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Dalton Tucker",
+   "t": "IND",
+   "r": "G; inactive"
+  },
+  {
+   "n": "Tyler Warren",
+   "t": "IND",
+   "r": "TE; inactive"
+  },
+  {
+   "n": "Jakobe Thomas",
+   "t": "MIN",
+   "r": "S; inactive"
+  },
+  {
+   "n": "Max Brosmer",
+   "t": "MIN",
+   "r": "QB; inactive"
+  },
+  {
+   "n": "Chuck Demmings",
+   "t": "MIN",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Demond Claiborne",
+   "t": "MIN",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Caleb Tiernan",
+   "t": "MIN",
+   "r": "OT; inactive"
+  },
+  {
+   "n": "Elijah Williams",
+   "t": "MIN",
+   "r": "DL; inactive"
+  },
+  {
+   "n": "Jalen Tolbert",
+   "t": "MIA",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Marcellas Dial Jr.",
+   "t": "MIA",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Reese Taylor",
+   "t": "MIA",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Willie Gay Jr.",
+   "t": "MIA",
+   "r": "LB; inactive"
+  },
+  {
+   "n": "Rob Beal Jr.",
+   "t": "MIA",
+   "r": "EDGE; inactive"
+  },
+  {
+   "n": "DJ Campbell",
+   "t": "MIA",
+   "r": "G; inactive"
+  },
+  {
+   "n": "Chukwuebuka Godrik",
+   "t": "MIA",
+   "r": "OT; inactive"
+  },
+  {
+   "n": "Jarvis Brownlee Jr.",
+   "t": "NYJ",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Breece Hall",
+   "t": "NYJ",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Jack Heflin",
+   "t": "NYJ",
+   "r": "DL; inactive"
+  },
+  {
+   "n": "Max Mitchell",
+   "t": "NYJ",
+   "r": "OL; inactive"
+  },
+  {
+   "n": "Kene Nwangwu",
+   "t": "NYJ",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Joseph Ossai",
+   "t": "NYJ",
+   "r": "EDGE; inactive"
+  },
+  {
+   "n": "Dylan Parham",
+   "t": "NYJ",
+   "r": "G; inactive"
+  },
+  {
+   "n": "Justin Jefferson",
+   "t": "CLE",
+   "r": "LB; inactive"
+  },
+  {
+   "n": "Noah Igbinoghene",
+   "t": "CLE",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Audric Estime",
+   "t": "CLE",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Mike Hall",
+   "t": "CLE",
+   "r": "DT; inactive"
+  },
+  {
+   "n": "Parker Brailsford",
+   "t": "CLE",
+   "r": "C; inactive"
+  },
+  {
+   "n": "Calvin Ridley",
+   "t": "TEN",
+   "r": "WR; inactive"
+  },
+  {
+   "n": "Tyjae Spears",
+   "t": "TEN",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Nick Singleton",
+   "t": "TEN",
+   "r": "RB; inactive"
+  },
+  {
+   "n": "Jaylon Jones",
+   "t": "TEN",
+   "r": "CB; inactive"
+  },
+  {
+   "n": "Brandon Crenshaw-Dickson",
+   "t": "TEN",
+   "r": "T; inactive"
+  },
+  {
+   "n": "Kylen Granson",
+   "t": "TEN",
+   "r": "TE; inactive"
+  },
+  {
+   "n": "Jackie Marshall",
+   "t": "TEN",
+   "r": "DT; inactive"
   }
  ],
  "players": {
@@ -317,6 +743,354 @@
   "Bo Melton": {
    "s": "watch",
    "n": "Questionable (back)."
+  },
+  "Nick Bosa": {
+   "s": "out",
+   "n": "DE; inactive."
+  },
+  "Mike Evans": {
+   "s": "out",
+   "n": "WR; inactive."
+  },
+  "Deebo Samuel Sr.": {
+   "s": "out",
+   "n": "WR; inactive."
+  },
+  "Luke Gifford": {
+   "s": "out",
+   "n": "LB; inactive."
+  },
+  "Garret Wallow": {
+   "s": "out",
+   "n": "LB; inactive."
+  },
+  "Marques Sigle": {
+   "s": "out",
+   "n": "S; inactive."
+  },
+  "Divine Deablo": {
+   "s": "out",
+   "n": "ILB; inactive."
+  },
+  "Avieon Terrell": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Andy Dalton": {
+   "s": "out",
+   "n": "QB; inactive."
+  },
+  "Olamide Zaccheaus": {
+   "s": "out",
+   "n": "WR; inactive."
+  },
+  "Brian Robinson Jr.": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Billy Bowman Jr.": {
+   "s": "out",
+   "n": "DB; inactive."
+  },
+  "Russ Yeast": {
+   "s": "out",
+   "n": "S; inactive."
+  },
+  "Connor Lew": {
+   "s": "out",
+   "n": "C; inactive."
+  },
+  "Myles Hinton": {
+   "s": "out",
+   "n": "OT; inactive."
+  },
+  "Shemar Stewart": {
+   "s": "out",
+   "n": "DE; inactive."
+  },
+  "Landon Robinson": {
+   "s": "out",
+   "n": "DT; inactive."
+  },
+  "Lamar Jackson": {
+   "s": "out",
+   "n": "QB; inactive."
+  },
+  "Elijah Sarratt": {
+   "s": "out",
+   "n": "WR; inactive."
+  },
+  "Jaylinn Hawkins": {
+   "s": "out",
+   "n": "FS; inactive."
+  },
+  "Andrew Vorhees": {
+   "s": "out",
+   "n": "G; inactive."
+  },
+  "Broderick Washington": {
+   "s": "out",
+   "n": "DE; inactive."
+  },
+  "Demonte Capehart": {
+   "s": "out",
+   "n": "DL; inactive."
+  },
+  "Emeka Egbuka": {
+   "s": "out",
+   "n": "WR; inactive."
+  },
+  "Ayden Garnes": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Luke Goedeke": {
+   "s": "out",
+   "n": "T; inactive."
+  },
+  "Billy Schrauth": {
+   "s": "out",
+   "n": "G; inactive."
+  },
+  "Antoine Winfield Jr.": {
+   "s": "out",
+   "n": "S; inactive."
+  },
+  "Ja'Tavion Sanders": {
+   "s": "out",
+   "n": "TE; inactive."
+  },
+  "Jaelan Phillips": {
+   "s": "out",
+   "n": "OLB; inactive."
+  },
+  "AJ Dillon": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Sam Hecht": {
+   "s": "out",
+   "n": "C; inactive."
+  },
+  "Stone Forsythe": {
+   "s": "out",
+   "n": "OT; inactive."
+  },
+  "TeRah Edwards": {
+   "s": "out",
+   "n": "DT; inactive."
+  },
+  "Jev\u00f3n Holland": {
+   "s": "out",
+   "n": "S; inactive."
+  },
+  "Theo Johnson": {
+   "s": "out",
+   "n": "TE; inactive."
+  },
+  "Marcus Mbow": {
+   "s": "out",
+   "n": "OT; inactive."
+  },
+  "Greg Newsome II": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Nikko Reed": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Josh Sills": {
+   "s": "out",
+   "n": "OL; inactive."
+  },
+  "Reed Blankenship": {
+   "s": "out",
+   "n": "S; inactive."
+  },
+  "Blake Fisher": {
+   "s": "out",
+   "n": "OT; inactive."
+  },
+  "Marlin Klein": {
+   "s": "out",
+   "n": "TE; inactive."
+  },
+  "David Montgomery": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Febechi Nwaiwu": {
+   "s": "out",
+   "n": "G; inactive."
+  },
+  "Jalen Pitre": {
+   "s": "out",
+   "n": "S; inactive."
+  },
+  "Nathan Thomas": {
+   "s": "out",
+   "n": "OT; inactive."
+  },
+  "CJ Allen": {
+   "s": "out",
+   "n": "LB; inactive."
+  },
+  "Bryce Boettcher": {
+   "s": "out",
+   "n": "LB; inactive."
+  },
+  "Sauce Gardner": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Anthony Gould": {
+   "s": "out",
+   "n": "WR; inactive."
+  },
+  "Dalton Tucker": {
+   "s": "out",
+   "n": "G; inactive."
+  },
+  "Tyler Warren": {
+   "s": "out",
+   "n": "TE; inactive."
+  },
+  "Jakobe Thomas": {
+   "s": "out",
+   "n": "S; inactive."
+  },
+  "Max Brosmer": {
+   "s": "out",
+   "n": "QB; inactive."
+  },
+  "Chuck Demmings": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Demond Claiborne": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Caleb Tiernan": {
+   "s": "out",
+   "n": "OT; inactive."
+  },
+  "Elijah Williams": {
+   "s": "out",
+   "n": "DL; inactive."
+  },
+  "Jalen Tolbert": {
+   "s": "out",
+   "n": "WR; inactive."
+  },
+  "Marcellas Dial Jr.": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Reese Taylor": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Willie Gay Jr.": {
+   "s": "out",
+   "n": "LB; inactive."
+  },
+  "Rob Beal Jr.": {
+   "s": "out",
+   "n": "EDGE; inactive."
+  },
+  "DJ Campbell": {
+   "s": "out",
+   "n": "G; inactive."
+  },
+  "Chukwuebuka Godrik": {
+   "s": "out",
+   "n": "OT; inactive."
+  },
+  "Jarvis Brownlee Jr.": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Breece Hall": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Jack Heflin": {
+   "s": "out",
+   "n": "DL; inactive."
+  },
+  "Max Mitchell": {
+   "s": "out",
+   "n": "OL; inactive."
+  },
+  "Kene Nwangwu": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Joseph Ossai": {
+   "s": "out",
+   "n": "EDGE; inactive."
+  },
+  "Dylan Parham": {
+   "s": "out",
+   "n": "G; inactive."
+  },
+  "Justin Jefferson": {
+   "s": "out",
+   "n": "LB; inactive."
+  },
+  "Noah Igbinoghene": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Audric Estime": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Mike Hall": {
+   "s": "out",
+   "n": "DT; inactive."
+  },
+  "Parker Brailsford": {
+   "s": "out",
+   "n": "C; inactive."
+  },
+  "Calvin Ridley": {
+   "s": "out",
+   "n": "WR; inactive."
+  },
+  "Tyjae Spears": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Nick Singleton": {
+   "s": "out",
+   "n": "RB; inactive."
+  },
+  "Jaylon Jones": {
+   "s": "out",
+   "n": "CB; inactive."
+  },
+  "Brandon Crenshaw-Dickson": {
+   "s": "out",
+   "n": "T; inactive."
+  },
+  "Kylen Granson": {
+   "s": "out",
+   "n": "TE; inactive."
+  },
+  "Jackie Marshall": {
+   "s": "out",
+   "n": "DT; inactive."
+  },
+  "Baker Mayfield": {
+   "s": "watch",
+   "n": "Starts after missing three games (right thumb). The nflverse schedule lists Jalon Daniels, so the Desk overrides it with Mayfield."
+  },
+  "Jalon Daniels": {
+   "s": "out",
+   "n": "Not starting: Baker Mayfield returns. TB prices are from Friday, before Mayfield was confirmed."
   }
  },
  "games": {
@@ -339,6 +1113,36 @@
   "dal-phi": [
    "DAL: out are WR KaVontae Turpin, OT Drew Shelton and LB Dee Winters; LB Marist Liufau and S P.J. Locke are questionable (need IR activation). George Pickens, Joey Porter Jr., Tyler Guyton, DeMarvion Overshown and Cobie Durant return.",
    "PHI: out are WRs DeVonta Smith and Dontayvion Wicks, OLB Nolan Smith and CB Michael Carter II; RB Saquon Barkley (hamstring), TEs Grant Calcaterra and Eli Stowers, G Landon Dickerson and OLBs Jonathan Greenard and Jalyx Hunt are questionable. Tanner McKee starts with Jalen Hurts on injured reserve."
+  ],
+  "sf-atl": [
+   "Inactives, SF: DE Nick Bosa, WR Mike Evans, WR Deebo Samuel Sr., LB Luke Gifford, LB Garret Wallow, S Marques Sigle.",
+   "Inactives, ATL: ILB Divine Deablo, CB Avieon Terrell, QB Andy Dalton, WR Olamide Zaccheaus, RB Brian Robinson Jr., DB Billy Bowman Jr.."
+  ],
+  "cin-bal": [
+   "Inactives, CIN: S Russ Yeast, C Connor Lew, OT Myles Hinton, DE Shemar Stewart, DT Landon Robinson.",
+   "Inactives, BAL: QB Lamar Jackson, WR Elijah Sarratt, FS Jaylinn Hawkins, G Andrew Vorhees, DE Broderick Washington.",
+   "Lamar Jackson is out; Tyler Huntley starts for BAL."
+  ],
+  "tb-car": [
+   "Inactives, TB: DL Demonte Capehart, WR Emeka Egbuka, CB Ayden Garnes, T Luke Goedeke, G Billy Schrauth, S Antoine Winfield Jr..",
+   "Inactives, CAR: TE Ja'Tavion Sanders, OLB Jaelan Phillips, RB AJ Dillon, C Sam Hecht, OT Stone Forsythe, DT TeRah Edwards.",
+   "Baker Mayfield returns from the dislocated right thumb after missing three games (ESPN); the nflverse schedule lists Jalon Daniels, so the Desk overrides it."
+  ],
+  "nyg-hou": [
+   "Inactives, NYG: S Jev\u00f3n Holland, TE Theo Johnson, OT Marcus Mbow, CB Greg Newsome II, CB Nikko Reed, OL Josh Sills.",
+   "Inactives, HOU: S Reed Blankenship, OT Blake Fisher, TE Marlin Klein, RB David Montgomery, G Febechi Nwaiwu, S Jalen Pitre, OT Nathan Thomas."
+  ],
+  "ind-min": [
+   "Inactives, IND: LB CJ Allen, LB Bryce Boettcher, CB Sauce Gardner, WR Anthony Gould, G Dalton Tucker, TE Tyler Warren.",
+   "Inactives, MIN: S Jakobe Thomas, QB Max Brosmer, CB Chuck Demmings, RB Demond Claiborne, OT Caleb Tiernan, DL Elijah Williams."
+  ],
+  "mia-nyj": [
+   "Inactives, MIA: WR Jalen Tolbert, CB Marcellas Dial Jr., CB Reese Taylor, LB Willie Gay Jr., EDGE Rob Beal Jr., G DJ Campbell, OT Chukwuebuka Godrik.",
+   "Inactives, NYJ: CB Jarvis Brownlee Jr., RB Breece Hall, DL Jack Heflin, OL Max Mitchell, RB Kene Nwangwu, EDGE Joseph Ossai, G Dylan Parham."
+  ],
+  "cle-ten": [
+   "Inactives, CLE: LB Justin Jefferson, CB Noah Igbinoghene, RB Audric Estime, DT Mike Hall, C Parker Brailsford.",
+   "Inactives, TEN: WR Calvin Ridley, RB Tyjae Spears, RB Nick Singleton, CB Jaylon Jones, T Brandon Crenshaw-Dickson, TE Kylen Granson, DT Jackie Marshall."
   ]
  },
  "sources": [
@@ -349,6 +1153,8 @@
   "https://www.seahawks.com/news/2026-week-7-injury-report-chiefs-at-seahawks",
   "https://www.bleedinggreennation.com/philadelphia-eagles-injuries/188098/eagles-cowboys-final-injury-report-devonta-smith-and-dontayvion-wicks-out",
   "https://www.philadelphiaeagles.com/news/cowboys-vs-eagles-injury-report-2026-nfl-week-7-saquon-barkley-jalyx-hunt",
-  "https://insidethestar.com/week-7-injury-report-cowboys-get-2-starters-back-against-eagles"
+  "https://insidethestar.com/week-7-injury-report-cowboys-get-2-starters-back-against-eagles",
+  "https://www.nfl.com/news/nfl-week-7-inactives-players-ruled-out-sunday-2026-season",
+  "https://www.espn.com/fantasy/football/story/_/page/FFSundayInactives-50229729/fantasy-football-injuries-nfl-week-7-inactive-active"
  ]
 }

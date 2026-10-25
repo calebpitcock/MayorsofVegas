@@ -38,6 +38,8 @@ python3 build.py $S/nfldata $S/ext <week>     # locks kicked-off games first (lo
 python3 build_page.py <week>
 # publish site/index.html to the artifact URL (keeps the db capability for My picks / grades)
 # rebuild before each window (Thu, Sun morning, Mon): every rebuild re-picks games not yet started; started ones stay locked
+# a game that kicked off with no locked board is still built (from pregame inputs) as a reference board: lateBoard, picks marked
+# late, shown under Top plays, never locked, tracked or counted. RZ_LATE=0 leaves those games out.
 
 # after the games (needs games.csv, play_by_play_2026, snap_counts_2026.csv, roster_2026.csv):
 python3 grade.py $S/nfldata <week>             # then write ../grades_w<week>.json to the page db as grades/w<week>

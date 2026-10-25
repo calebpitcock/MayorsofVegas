@@ -112,6 +112,7 @@ if ASOF:
 T = tr.team_games(G)
 slate = G[(G.season == SEASON) & (G.week == WEEK)].sort_values(['gameday', 'gametime', 'game_id']).copy()
 # RZ_GAMES=sea-den[,..]: build only these games (e.g. a Thursday-night-only board); the rest come back on the next full build
+LATE = os.environ.get('RZ_LATE', '1') != '0'   # also build kicked-off games that have no locked board (reference only); RZ_LATE=0 skips them
 ONLY = {x.strip() for x in os.environ.get('RZ_GAMES', '').split(',') if x.strip()}
 if ONLY:
     slate = slate[[gid(tr.FRANCHISE.get(a, a), tr.FRANCHISE.get(h, h)) in ONLY for a, h in zip(slate.away_team, slate.home_team)]]
@@ -626,7 +627,8 @@ for g in slate.itertuples():
                 line=dict(spread=-g.spread_line, total=g.total_line, ml=dict(home=int(g.home_moneyline), away=int(g.away_moneyline)), src='consensus'),
                 qbs={away: g.away_qb_name, home: g.home_qb_name},
                 facts=dict(sides=side_facts, h2h=h2h, styles=styles, reported=reported))
-    if pd.notna(g.result) or KICK[gname] <= NOW:
+    late = pd.isna(g.result) and KICK[gname] <= NOW and gname not in LOCKED and LATE
+    if not late and (pd.notna(g.result) or KICK[gname] <= NOW):
         if pd.notna(g.result):
             game['final'] = dict(away=int(g.away_score), home=int(g.home_score))
         else:
@@ -636,6 +638,9 @@ for g in slate.itertuples():
         game['keys'] = []
         out_games.append(game)
         continue
+    if late:                           # kicked off with no board: built from pregame inputs for reference, never on the record
+        game.update(started=True, late=True, locked=False)
+    n0 = len(picks)
     ml, ats = book_side_picks(g, away, home, gname, gtxt, flat[:8])
     tot = total_pick(g, away, home, gname, gtxt)
     game.update(ml=ml, ats=ats, tot=tot, deskTotal=tot['desk'])
@@ -713,6 +718,9 @@ for g in slate.itertuples():
                                       wr=float(SP.loc[o, 'YPT Allowed WR']), te=float(SP.loc[o, 'YPT Allowed TE']), rb=float(SP.loc[o, 'YPT Allowed RB']),
                                       out=float(SP.loc[o, 'YPT Allowed Outside']), slot=float(SP.loc[o, 'YPT Allowed Slot']),
                                       blitz=round(float(DEF_BLITZ.get(o, np.nan)), 3)))
+    if late:
+        for p in picks[n0:]:
+            p['late'] = True
     out_games.append(game)
 
 # ---- top plays: every pick that clears its edge bar and beats the posted price's break-even (no cap on how many)
@@ -725,7 +733,9 @@ def top(kind, rule):
 
 
 tds, tots, yds = top('Anytime TD', BR['td']), top('Total', BR['total']), top('Yards', BR['yards'])
-board = [p['id'] for p in sorted(tds + tots + yds, key=lambda p: -(p['prob'] - p['book']))]
+ranked = sorted(tds + tots + yds, key=lambda p: -(p['prob'] - p['book']))
+board = [p['id'] for p in ranked if not p.get('late')]
+late_board = [p['id'] for p in ranked if p.get('late')]   # same bar, games built after kickoff: shown, not counted
 
 # league-wide defense vs style table for the Matchups tab
 dtab = []
@@ -740,6 +750,7 @@ for t in Dd.index:
     dtab.append(row)
 
 live_g = [g for g in out_games if 'final' not in g and not g.get('started')]
+late_g = [g for g in out_games if g.get('late')]
 extra = {}
 if live_g and len(live_g) < len(out_games):
     n_done = len(out_games) - len(live_g)
@@ -752,6 +763,9 @@ if live_g and len(live_g) < len(out_games):
                            + (f"Only {left} is left to play, so every pick below is from it. " if len(live_g) <= 2 else f"Every pick below is from the {len(live_g)} games still to play. ")
                            + "The locked boards and your tracked picks are graded under <b>Record</b> and <b>My picks</b>.",
                  boardLabel=f"Week {WEEK}: " + (left if len(live_g) <= 2 else f'{len(live_g)} games still to play'))
+    if late_g:
+        extra['slateNote'] += (f" <b>The {len(late_g)} games that kicked off without a board are loaded below Top plays</b>, built from the same "
+                               "pregame prices, reports and stats, for reference only: they don't count in the Desk record and can't be tracked.")
     if all(g['kick'].startswith('Mon') for g in live_g):
         extra['label'] = f'Week {WEEK} · Monday night'
 d0, d1 = pd.to_datetime(slate.gameday.min()), pd.to_datetime(slate.gameday.max())
@@ -760,7 +774,7 @@ has = lambda t: any(p['type'] == t for p in picks)
 data = dict(season=SEASON, week=WEEK, label=f'Week {WEEK} · {span}', edition='research',
             generated=datetime.now(timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z'),
             prices=dict(td=TD_AT if has('Anytime TD') else None, props=PROPS_AT if has('Yards') else None, lines='nflverse schedule consensus', lines_at=datetime.fromtimestamp(os.path.getmtime(f'{D}/games.csv'), timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')),
-            rules=RULES, games=out_games, board=board, picks=picks, coverage=coverage_rows,
+            rules=RULES, games=out_games, board=board, lateBoard=late_board, picks=picks, coverage=coverage_rows,
             styles=dict(keys=[dict(key=k, off=o, dfn=d) for k, o, d in pl.STYLE], lg={k: round(float(v), 3) for k, v in slg.items() if pd.notna(v)}, defense=dtab))
 if ONLY and not extra:
     names = ', '.join(f"{g['away']} @ {g['home']}" for g in out_games)

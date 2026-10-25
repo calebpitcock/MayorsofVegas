@@ -102,6 +102,7 @@ const mineKey=id=>id.replace(/[^A-Za-z0-9_.~:@+-]/g,'-');
 const isTracked=id=>!!st.mine[mineKey(id)];
 function toggleTrack(p){
   if(isTracked(p.id)) saveMine(p.id,null);
+  else if(p.late) flash('Not tracked: built after kickoff, for reference only.');
   else if(ovp(p)) flash('Not tracked: the book prices this above the Desk.');
   else saveMine(p.id,{id:p.id,week:p.week??st.D.week,type:p.type,text:p.text,game:p.game,prob:+p.prob.toFixed(3),odds:p.price?p.price.odds:null,addedAt:new Date().toISOString()});
 }
@@ -149,9 +150,9 @@ function pickRow(p,{showTrack=true,label=null}={}){
     <button class="pbtn" data-open="${esc(p.id)}" aria-expanded="${open}">
       <div class="prob${p.prob<.6?' mid':''}">${pct(p.prob)}</div>
       <div class="body"><div class="ptxt">${esc(label||p.text)}</div>
-        <div class="meta">${p.type==='Anytime TD'&&label?`<span class="pos">${esc(p.team)} ${esc(p.pos||'')}</span>`:`<span class="chip${p.type==='Anytime TD'?' td':''}">${esc(p.type)}</span>`}${edgeTag(p)}${nbadge(nx)}${oddsTag(p)}<span>${esc(p.game)}</span>${res?`<span class="res ${res}">${{W:'Win',L:'Loss',P:'Push'}[res]}</span>`:''}</div></div>
+        <div class="meta">${p.type==='Anytime TD'&&label?`<span class="pos">${esc(p.team)} ${esc(p.pos||'')}</span>`:`<span class="chip${p.type==='Anytime TD'?' td':''}">${esc(p.type)}</span>`}${edgeTag(p)}${p.late?'<span class="nb stale">After kickoff · not counted</span>':''}${nbadge(nx)}${oddsTag(p)}<span>${esc(p.game)}</span>${res?`<span class="res ${res}">${{W:'Win',L:'Loss',P:'Push'}[res]}</span>`:''}</div></div>
     </button>
-    ${showTrack?`<button class="track${on?' on':''}" data-track="${esc(p.id)}" aria-pressed="${on}">${on?'Tracked':'+ Track'}</button>`:'<span></span>'}
+    ${showTrack&&!p.late?`<button class="track${on?' on':''}" data-track="${esc(p.id)}" aria-pressed="${on}">${on?'Tracked':'+ Track'}</button>`:'<span></span>'}
     ${open?`<ul class="why">${nline(nx)}${(p.why||[]).map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
   </div>`;
 }
@@ -201,7 +202,8 @@ function gameCard(g,full=true){
     ${full&&keys?`<div class="sub">Key players</div>${keys}`:''}
     ${full&&(g.mu||[]).length?`<div class="sub">Coverage and run matchups</div>${g.mu.map(muRow).join('')}`:''}</div></section>`;
 }
-const liveGames=()=>st.D.games.filter(g=>!g.final&&!g.started);
+const liveGames=()=>st.D.games.filter(g=>!g.final&&(!g.started||g.late));
+const pregame=()=>st.D.games.filter(g=>!g.final&&!g.started);
 const liveTeams=()=>new Set(liveGames().flatMap(g=>[g.away,g.home]));
 const gameSelect=(id,cur,withAll=true)=>`<select class="fsel" id="${id}" aria-label="Game">${withAll?`<option value="all">All games</option>`:''}${liveGames().map(g=>`<option value="${esc(g.id)}"${cur===g.id?' selected':''}>${esc(g.away)} @ ${esc(g.home)}</option>`).join('')}</select>`;
 
@@ -213,7 +215,7 @@ function render(){
   const allBoards=[...D.board,...st.arch.flatMap(a=>a.board)];
   const sr=tally(seasonBoard());
   $('#recs').innerHTML=`<span class="rec" title="Every research-desk Top play this season, locked at kickoff; 1 unit per pick at the posted price">Desk season <b>${recTxt(sr)}</b> · <b>${uTxt(sr)}</b></span>`;
-  $('#ticker').innerHTML=[...liveGames(),...D.games.filter(g=>g.started&&!g.final),...D.games.filter(g=>g.final)].map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:g.started?`<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>Kicked off${g.locked?' · board locked':' · no board'}</small>`:
+  $('#ticker').innerHTML=[...pregame(),...D.games.filter(g=>g.started&&!g.final),...D.games.filter(g=>g.final)].map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:g.started?`<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>Kicked off${g.locked?' · board locked':g.late?' · reference board':' · no board'}</small>`:
     `<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>${esc(g.kick)} · O/U ${g.line.total}${g.deskTotal!=null?` → ${g.deskTotal}`:''}</small>`}</div>`).join('');
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===st.tab));
   const v=$('#view');
@@ -221,7 +223,9 @@ function render(){
     const fl=D.board.filter(id=>pnews(P[id])).length;
     v.innerHTML=`${D.slateNote?`<div class="newsbar">${D.slateNote}</div>`:''}<p class="note">Every pick the facts moved far enough off the book to count${D.slateNote?' in what is left to play':' this week'}, biggest edge first. Each one counts in the Desk record once its game kicks off. Every number starts at the sportsbook's price; the facts in each pick move it a little, and the tag shows by how much. Tap a pick to see each fact and what it was worth; <b>How it's made</b> has the rules.</p>
       ${fl?`<div class="newsbar"><b>${fl} of ${D.board.length} have injury news.</b> The books already moved on it, so it is shown but not added. <button data-t="news">Read the news</button></div>`:''}
-      <div class="list">${D.board.length?D.board.filter(id=>!ovp(P[id])).map(id=>pickRow(P[id])).join(''):`<div class="empty">Nothing clears the bar yet.${!D.prices.td||!D.prices.props?' Player TD and yardage prices for this slate aren\'t posted in the free feeds yet; the board refills when they are.':''} Every game's line, total and facts are under <b>Games</b>.</div>`}</div>`;
+      <div class="list">${D.board.length?D.board.filter(id=>!ovp(P[id])).map(id=>pickRow(P[id])).join(''):`<div class="empty">Nothing clears the bar yet.${!D.prices.td||!D.prices.props?' Player TD and yardage prices for this slate aren\'t posted in the free feeds yet; the board refills when they are.':''} Every game's line, total and facts are under <b>Games</b>.</div>`}</div>
+      ${(D.lateBoard||[]).length?`<h2>Already kicked off: reference board</h2><p class="note">${esc(D.games.filter(g=>g.late).map(g=>g.away+' @ '+g.home).join(', '))}. Built after kickoff from the same pregame prices, injury reports and stats, with the same bar. Not in the Desk record and can't be tracked.</p>
+      <div class="list">${D.lateBoard.filter(id=>P[id]&&!ovp(P[id])).map(id=>pickRow(P[id])).join('')}</div>`:''}`;
   } else if(st.tab==='games'){
     const gs=liveGames().filter(g=>st.game==='all'||g.id===st.game);
     v.innerHTML=`<div class="gsel"><span class="note">Every game: the trends, the head-to-head, how each offense's habits meet the other defense, key players and matchups.</span>${gameSelect('gsel',st.game)}</div>
