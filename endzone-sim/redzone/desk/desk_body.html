@@ -102,6 +102,7 @@ const mineKey=id=>id.replace(/[^A-Za-z0-9_.~:@+-]/g,'-');
 const isTracked=id=>!!st.mine[mineKey(id)];
 function toggleTrack(p){
   if(isTracked(p.id)) saveMine(p.id,null);
+  else if(ovp(p)) flash('Not tracked: the book prices this above the Desk.');
   else saveMine(p.id,{id:p.id,week:p.week??st.D.week,type:p.type,text:p.text,game:p.game,prob:+p.prob.toFixed(3),odds:p.price?p.price.odds:null,addedAt:new Date().toISOString()});
 }
 
@@ -133,6 +134,9 @@ const nline=x=>x?`<li class="news"><b>News ${esc(NEWS.asOf)}:</b> ${esc(x.n)}</l
 const fmtOdds=o=>(o>0?'+':'')+o;
 function oddsTag(p){ return p.price?`<span class="odds" title="${esc(p.price.src)}">${fmtOdds(p.price.odds)}</span>`:`<span class="odds none">Price pending</span>`; }
 const val=p=>p.book!=null?p.prob-p.book:0;
+/* overpriced: the book's chance at the posted price (margin included) is at or above the Desk's, so it is never shown as a pick or tracked */
+const ovp=p=>!!p&&p.prob!=null&&(!p.price||p.prob<=Math.max(p.price.implied??0,p.book??0));
+const passNote=ps=>ps.length?`<div class="scrl">Passed, the book prices these above the Desk: ${ps.map(p=>esc(p.player||p.text)+' ('+pct(p.prob)+' vs '+pct(Math.max(p.price?p.price.implied:0,p.book??0))+')').join(', ')}</div>`:'';
 function edgeTag(p){
   if(p.type==='Winner'||p.type==='Spread') return `<span class="edge e0">Book number</span>`;
   if(p.book==null) return '';
@@ -176,7 +180,8 @@ function factsBlock(g){
   return `<div class="fxs">${blocks.filter(b=>b[1].length).map(([h,it])=>`<div><div class="fxh">${esc(h)}</div>${fl(it)}</div>`).join('')}
     ${(F.styles[g.away]||[]).length+(F.styles[g.home]||[]).length?`<p class="note" style="margin:0;font-size:12px">Green: favors the offense (its habit meets a weak spot, or its QB/receivers do better against the coverage this defense plays). Red: favors the defense. Styles and coverage are this season only.</p>`:''}</div>`;
 }
-const gamePicks=(g,type)=>st.D.picks.filter(p=>p.gameId===g.id&&p.type===type&&!isOut(p));
+const gamePicks=(g,type)=>st.D.picks.filter(p=>p.gameId===g.id&&p.type===type&&!isOut(p)&&!ovp(p));
+const gamePasses=g=>st.D.picks.filter(p=>p.gameId===g.id&&!isOut(p)&&ovp(p));
 function gameCard(g,full=true){
   const gn=NEWS.games[g.id]||[];
   const head=`<div class="ghead"><div class="teams">${g.final?`${g.away} <span class="s">${g.final.away}</span> · ${g.home} <span class="s">${g.final.home}</span><span class="final">Final</span>`:`${g.away} @ ${g.home}`}</div>
@@ -189,9 +194,10 @@ function gameCard(g,full=true){
   return `<section class="game">${head}
     ${gn.length?`<ul class="gnews">${gn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
     ${full?factsBlock(g):''}
-    <div class="gbody">${[g.tot,g.ats,g.ml].map(p=>pickRow(p)).join('')}
+    <div class="gbody">${[g.tot,g.ats,g.ml].filter(p=>p&&!ovp(p)).map(p=>pickRow(p)).join('')}
     <div class="sub">Touchdowns</div>${tds.map(p=>pickRow(p)).join('')}${scr.length?`<div class="scrl">Removed (out): ${scr.map(esc).join(', ')}</div>`:''}
     ${yd.length?`<div class="sub">Yards: biggest moves off the book</div>${yd.map(p=>pickRow(p)).join('')}`:''}
+    ${passNote(gamePasses(g))}
     ${full&&keys?`<div class="sub">Key players</div>${keys}`:''}
     ${full&&(g.mu||[]).length?`<div class="sub">Coverage and run matchups</div>${g.mu.map(muRow).join('')}`:''}</div></section>`;
 }
@@ -207,7 +213,7 @@ function render(){
   const allBoards=[...D.board,...st.arch.flatMap(a=>a.board)];
   const sr=tally(seasonBoard());
   $('#recs').innerHTML=`<span class="rec" title="Every research-desk Top play this season, locked at kickoff; 1 unit per pick at the posted price">Desk season <b>${recTxt(sr)}</b> · <b>${uTxt(sr)}</b></span>`;
-  $('#ticker').innerHTML=[...liveGames(),...D.games.filter(g=>g.started&&!g.final),...D.games.filter(g=>g.final)].map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:g.started?`<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>Kicked off · board locked</small>`:
+  $('#ticker').innerHTML=[...liveGames(),...D.games.filter(g=>g.started&&!g.final),...D.games.filter(g=>g.final)].map(g=>`<div class="tg">${g.final?`<span>${g.away} ${g.final.away}</span><span>${g.home} ${g.final.home}</span><small>Final</small>`:g.started?`<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>Kicked off${g.locked?' · board locked':' · no board'}</small>`:
     `<span>${g.away} @ ${g.home}</span><span class="w">${esc(lineTxt(g))}</span><small>${esc(g.kick)} · O/U ${g.line.total}${g.deskTotal!=null?` → ${g.deskTotal}`:''}</small>`}</div>`).join('');
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===st.tab));
   const v=$('#view');
@@ -215,24 +221,24 @@ function render(){
     const fl=D.board.filter(id=>pnews(P[id])).length;
     v.innerHTML=`${D.slateNote?`<div class="newsbar">${D.slateNote}</div>`:''}<p class="note">Every pick the facts moved far enough off the book to count${D.slateNote?' in what is left to play':' this week'}, biggest edge first. Each one counts in the Desk record once its game kicks off. Every number starts at the sportsbook's price; the facts in each pick move it a little, and the tag shows by how much. Tap a pick to see each fact and what it was worth; <b>How it's made</b> has the rules.</p>
       ${fl?`<div class="newsbar"><b>${fl} of ${D.board.length} have injury news.</b> The books already moved on it, so it is shown but not added. <button data-t="news">Read the news</button></div>`:''}
-      <div class="list">${D.board.length?D.board.map(id=>pickRow(P[id])).join(''):`<div class="empty">Nothing clears the bar yet.${!D.prices.td||!D.prices.props?' Player TD and yardage prices for this slate aren\'t posted in the free feeds yet; the board refills when they are.':''} Every game's line, total and facts are under <b>Games</b>.</div>`}</div>`;
+      <div class="list">${D.board.length?D.board.filter(id=>!ovp(P[id])).map(id=>pickRow(P[id])).join(''):`<div class="empty">Nothing clears the bar yet.${!D.prices.td||!D.prices.props?' Player TD and yardage prices for this slate aren\'t posted in the free feeds yet; the board refills when they are.':''} Every game's line, total and facts are under <b>Games</b>.</div>`}</div>`;
   } else if(st.tab==='games'){
     const gs=liveGames().filter(g=>st.game==='all'||g.id===st.game);
     v.innerHTML=`<div class="gsel"><span class="note">Every game: the trends, the head-to-head, how each offense's habits meet the other defense, key players and matchups.</span>${gameSelect('gsel',st.game)}</div>
       <div class="list">${gs.map(g=>gameCard(g)).join('')}</div>`;
   } else if(st.tab==='td'){
-    const T=st.td, all=D.picks.filter(p=>p.type==='Anytime TD'&&!isOut(p));
+    const T=st.td, all=D.picks.filter(p=>p.type==='Anytime TD'&&!isOut(p)&&!ovp(p)), nPass=D.picks.filter(p=>p.type==='Anytime TD'&&!isOut(p)&&ovp(p)).length;
     let rows=all.filter(p=>(T.pos==='all'||p.pos===T.pos)&&(T.game==='all'||p.gameId===T.game));
     rows.sort(T.sort==='value'?(a,b)=>val(b)-val(a):(a,b)=>b.prob-a.prob);
     const shown=T.all||T.game!=='all'?rows:rows.slice(0,30);
     const chip=(k,x,lab)=>`<button class="fchip" data-td="${k}" data-v="${x}" aria-pressed="${T[k]===x}">${lab}</button>`;
-    v.innerHTML=`<p class="note">Every player with a posted anytime TD price. The big number is the Desk's chance; <b>book</b> is the price's implied chance; the tag is the difference. ${T.sort==='value'?'Sorted by the biggest move up from the book.':'Most likely first.'}</p>
+    v.innerHTML=`<p class="note">Every player with a posted anytime TD price. The big number is the Desk's chance; <b>book</b> is the price's implied chance; the tag is the difference. ${T.sort==='value'?'Sorted by the biggest move up from the book.':'Most likely first.'}${nPass?` <b>${nPass} passed</b> because the book's price is at or above the Desk chance.`:''}</p>
       <div class="filt"><span class="lab">Sort</span>${chip('sort','value','Vs book')}${chip('sort','prob','Most likely')}</div>
       <div class="filt"><span class="lab">Pos</span>${chip('pos','all','All')}${['RB','WR','TE','QB'].map(x=>chip('pos',x,x)).join('')}${gameSelect('tdgame',T.game)}</div>
       <div class="list">${shown.length?shown.map(p=>pickRow(p,{label:p.player})).join(''):`<div class="empty">${all.length?'No touchdown picks match.':'No anytime TD prices posted for '+liveGames().map(g=>g.away+' @ '+g.home).join(', ')+' yet.'}</div>`}</div>
       ${shown.length<rows.length?`<button class="more" data-td="all" data-v="1">Show all ${rows.length}</button>`:''}`;
   } else if(st.tab==='yds'){
-    const Y=st.yd; let rows=D.picks.filter(p=>p.type==='Yards'&&!isOut(p)&&(Y.game==='all'||p.gameId===Y.game));
+    const Y=st.yd; let rows=D.picks.filter(p=>p.type==='Yards'&&!isOut(p)&&!ovp(p)&&(Y.game==='all'||p.gameId===Y.game));
     rows.sort(Y.sort==='value'?(a,b)=>val(b)-val(a):(a,b)=>b.prob-a.prob);
     const chip=(k,x,lab)=>`<button class="fchip" data-yd="${k}" data-v="${x}" aria-pressed="${Y[k]===x}">${lab}</button>`;
     v.innerHTML=`<p class="note">Receiving and rushing yardage lines (DraftKings first, then FanDuel and BetMGM). The Desk takes the book's no-vig chance and moves it with the matchup facts; each pick shows the side the facts favor.</p>
@@ -251,7 +257,7 @@ function render(){
       <h2>Receivers: toughest</h2><div class="list">${worst.map(muRow).join('')}</div>
       <h2>Running backs: best run fits</h2><div class="list">${rbBest.map(muRow).join('')}</div>
       <h2>Running backs: toughest</h2><div class="list">${rbWorst.map(muRow).join('')}</div>
-      <h2>Defenses vs offense styles</h2><p class="note">Each defense's rank of 32 in EPA allowed per play against each kind of play, 2026 only (five games, so small samples). 1 = best. Green: top 8. Red: bottom 8. Tap a column to sort; hover a cell for the EPA.</p>
+      <h2>Defenses vs offense styles</h2><p class="note">Each defense's rank of 32 in EPA allowed per play against each kind of play, 2026 only (six games, so small samples). 1 = best. Green: top 8. Red: bottom 8. Tap a column to sort; hover a cell for the EPA.</p>
       <div class="tblwrap"><table class="sty"><thead><tr><th>Defense</th>${keys.map(k=>`<th><button data-sty="${k.key}" aria-pressed="${sk===k.key}">${esc(k.dfn)}</button></th>`).join('')}</tr></thead>
       <tbody>${rowsS.map(r=>`<tr><td><b>${esc(r.team)}</b></td>${keys.map(k=>cell(r,k.key)).join('')}</tr>`).join('')}</tbody></table></div>
       ${cv.length?`<h2>Coverage this week</h2><p class="note">Every defense on the slate, this season. Man, zone, single-high (Cover 0/1/3) and two-high (Cover 2/4/6) rates and yards per target allowed by position are Sharp Football Analysis through Week 5; small type is the rank of 32. Blitz is FTN charting (5+ rushers).</p>
@@ -313,6 +319,7 @@ function methodHtml(D){
   <div class="rule"><b>Game totals</b> <span class="note">${esc(R.total._about)}</span>${tbl(R.total,'pts')}</div>
   <div class="rule"><b>Yardage over/unders</b> <span class="note">${esc(R.yards._about)}</span>${tbl(R.yards,'line')}</div>
   <h3>4. What goes on Top plays</h3>
+  <p><b>No overpriced picks, anywhere.</b> If the book's chance at the posted price (its margin included) is at or above the Desk's chance, the pick is passed: it is not on Top plays, Games, TDs or Yards, and it can't be tracked. Example: a Desk 68% against a book 71% (-250) is a pass. Spreads and moneylines sit at the book's no-margin number, so they are always passes.</p>
   ${R.board?`<p>The TDs, totals and yardage picks the facts moved most off the book, largest first: TDs at least ${Math.round(100*R.board.td.min_edge)} points above the book, totals at least ${Math.round(100*R.board.total.min_edge)} points, yardage at least ${Math.round(100*R.board.yards.min_edge)} points. There is no limit on how many: every pick that clears the bar goes on the board and counts. The Desk chance must also beat the break-even of the posted price with the margin in: at -110 that is 52.4%, at -113 it is 53.1%.</p>
   <p><b>Locked at kickoff.</b> When a game kicks off, its Top plays are frozen as they stood on the page and can't be changed by a later rebuild. The Desk record counts only those locked boards, 1 unit per pick at the posted price.</p>`:`<p>The TDs, totals and yardage picks the facts moved most off the book: TDs at least 2 points above the book, totals at least 2 points, yardage at least 4 points, largest first.</p>`}
   <h3>What this isn't</h3>

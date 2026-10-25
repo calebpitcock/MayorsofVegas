@@ -34,7 +34,8 @@ emb = lambda x: json.dumps(x, separators=(',', ':')).replace('</', '<\\/')
 data = json.load(open(os.path.join(SITE, f'picks_w{WEEK}.json')))
 news = json.load(open(os.path.join(SITE, f'news_w{WEEK}.json')))
 arch = json.load(open(arch_path)) if os.path.exists(arch_path) else []
-arch += lock.archive_entries()          # every week's boards as locked at kickoff (lock.py)
+done = {a['week'] for a in arch if a.get('locked')}   # weeks already archived as locked (copied from the live page) stay as they are
+arch += [e for e in lock.archive_entries() if e['week'] not in done]   # every other week's boards as locked at kickoff (lock.py)
 page = open(os.path.join(H, 'page_head.html')).read() + '\n' + open(os.path.join(H, 'desk_body.html')).read()
 for tag, val in (('rzdata', data), ('rzarchive', arch), ('rznews', news)):
     empty = '{}' if tag != 'rzarchive' else '[]'

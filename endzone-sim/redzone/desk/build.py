@@ -744,7 +744,11 @@ extra = {}
 if live_g and len(live_g) < len(out_games):
     n_done = len(out_games) - len(live_g)
     left = ', '.join(f"{g['away']} @ {g['home']}" for g in live_g)
-    extra = dict(slateNote=f"<b>{n_done} of {len(out_games)} games have kicked off</b> and their Top plays are locked. "
+    n_lock = sum(1 for g in out_games if g['id'] in LOCKED)
+    lock_txt = ('and their Top plays are locked. ' if n_lock == n_done else
+                'with no Desk board built before kickoff, so they have no picks. ' if n_lock == 0 else
+                f'({n_lock} with a board locked at kickoff; the rest had no Desk board before kickoff). ')
+    extra = dict(slateNote=f"<b>{n_done} of {len(out_games)} games have kicked off</b> " + lock_txt
                            + (f"Only {left} is left to play, so every pick below is from it. " if len(live_g) <= 2 else f"Every pick below is from the {len(live_g)} games still to play. ")
                            + "The locked boards and your tracked picks are graded under <b>Record</b> and <b>My picks</b>.",
                  boardLabel=f"Week {WEEK}: " + (left if len(live_g) <= 2 else f'{len(live_g)} games still to play'))
