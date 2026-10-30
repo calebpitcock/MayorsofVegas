@@ -1,0 +1,31 @@
+team-games 1918 (2022-25, weeks 3-18)
+
+2a  box mix faced by the offense (share of its plays): weighted MSE x1000 of predicted light / stacked box rate
+   C=0    light 23.710  stacked 6.655
+   C=0.25 light 25.294  stacked 6.525
+   C=0.5  light 27.631  stacked 6.499
+   C=1    light 34.065  stacked 6.735
+   C=2    light 48.645  stacked 8.105
+   C=4    light 85.063  stacked 13.603
+   implied C from light boxes: -0.40 (95% -0.48 to -0.31); formation.py sign expects + (heavier offense -> more light boxes vs nickel)
+   implied C from stacked boxes: +0.44 (95% +0.30 to +0.59); formation.py sign expects + (heavier offense -> more stacked vs base)
+
+2b  RB yards per carry, log scale, 1911 team-games with 8+ RB carries (C=0.5, shipped box ypc values)
+   spread of log(raw multiplier): sd 0.0127 (so the undamped term moves ypc about +/-1.3%)
+   intercept              -0.042  (95% -0.055 to -0.029)
+   offense ypc            +0.381  (95% +0.226 to +0.529)
+   defense ypc allowed    +0.365  (95% +0.213 to +0.537)
+   formation log(raw)     +0.242  (95% -0.852 to +1.343)
+   -> the formation coefficient is the damp the data supports (formation.py uses 0.4)
+   2022: formation coef +0.388
+   2023: formation coef -0.717
+   2024: formation coef +1.872
+   2025: formation coef +0.672
+
+3   bv sd 0.0625, nh sd 0.0849  (shipped TE target shift = 0.6*bv - 0.4*nh -> sd 6.64%)
+   TE target share: fitted bv +0.32 (95% -0.10 to +0.73), nh +0.31 (95% +0.03 to +0.59); shipped (0.6, -0.4)
+      held-out weighted MSE x1e4: no shift 78.8744  shipped 81.8395  fitted 79.0881   per-season fits bv +0.43 +0.45 +0.26 +0.15
+      TE yards/target: fitted bv +0.59 (95% +0.20 to +1.02), nh +0.40 (95% +0.06 to +0.74); shipped (0.3, -0.2)
+   RB target share: fitted bv +0.41 (95% +0.01 to +0.87), nh +0.44 (95% +0.11 to +0.75); shipped (0.5, 0.0)
+      held-out weighted MSE x1e4: no shift 60.0445  shipped 60.4242  fitted 59.9892   per-season fits bv +0.12 +0.33 +0.52 +0.60
+      RB yards/target: fitted bv +0.47 (95% -0.08 to +1.04), nh +0.34 (95% -0.09 to +0.78); shipped (0.3, 0)

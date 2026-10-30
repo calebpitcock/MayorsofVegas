@@ -1,0 +1,14 @@
+rows 14531; after-exit player rows 257; teammate rows 4466
+MSE x1000 (EZEXIT=0 -> EZEXIT=1), change with 95% interval; negative = better
+  after exit raw             RB carries n=   68  33.379 -> 25.253  (-8.126, 95% -13.254 to -3.278)
+  after exit raw             targets    n=  257  4.127 -> 3.977  (-0.150, 95% -0.671 to +0.310)
+  after exit role-corrected  RB carries n=   68  29.923 -> 23.566  (-6.357, 95% -11.588 to -1.460)
+  after exit role-corrected  targets    n=  257  4.231 -> 3.916  (-0.315, 95% -0.728 to +0.065)
+  teammates  raw             RB carries n= 1285  25.214 -> 25.175  (-0.040, 95% -0.342 to +0.277)
+  teammates  raw             targets    n= 4466  4.263 -> 4.274  (+0.011, 95% -0.016 to +0.039)
+  teammates  role-corrected  RB carries n= 1285  23.886 -> 23.719  (-0.167, 95% -0.477 to +0.137)
+  teammates  role-corrected  targets    n= 4466  4.183 -> 4.187  (+0.004, 95% -0.022 to +0.031)
+  all        raw             RB carries n= 4225  23.199 -> 23.080  (-0.119, 95% -0.305 to +0.063)
+  all        raw             targets    n=14531  4.221 -> 4.227  (+0.005, 95% -0.010 to +0.020)
+  all        role-corrected  RB carries n= 4225  22.198 -> 22.081  (-0.117, 95% -0.301 to +0.067)
+  all        role-corrected  targets    n=14531  4.165 -> 4.164  (-0.002, 95% -0.016 to +0.012)

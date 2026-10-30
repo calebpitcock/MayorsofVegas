@@ -1,0 +1,26 @@
+== early exits: EZEXIT=0 (A) vs 1 (B)   (A=t0/endzone-sim
+   B=t1/endzone-sim)
+TD vs DK, held-out DK+model log loss, 2024: n=4341  A 0.46877  B 0.46894  B-A +0.00017 (95% -0.00021 to +0.00056)
+TD vs DK, held-out DK+model log loss, 2023: n=4342  A 0.43172  B 0.43133  B-A -0.00039 (95% -0.00077 to -0.00003)
+TD vs DK, held-out DK+model log loss, both: n=8683  A 0.45025  B 0.45014  B-A -0.00011 (95% -0.00037 to +0.00015)
+   EV>0 TD bets A: 624 bets, ROI -0.027
+   EV>0 TD bets B: 609 bets, ROI -0.126
+Props 80/20 log loss 2024: n=207  A 0.69035  B 0.69139  B-A +0.00104 (95% -0.00011 to +0.00236)
+Props 80/20 log loss 2025: n=357  A 0.68078  B 0.67998  B-A -0.00080 (95% -0.00184 to +0.00033)
+Props 80/20 log loss 2026: n=376  A 0.69358  B 0.69296  B-A -0.00062 (95% -0.00150 to +0.00018)
+Props 80/20 log loss all: n=940  A 0.68801  B 0.68769  B-A -0.00032 (95% -0.00095 to +0.00028)
+   80/20 EV>0 prop bets A: 235 bets, ROI +0.071 +/- 0.119
+   80/20 EV>0 prop bets B: 231 bets, ROI +0.089 +/- 0.120
+== formation: fw=0 (A) vs shipped g.form (B), 2023-25 only have form   (A=t1/endzone-sim
+   B=t3/endzone-sim)
+TD vs DK, held-out DK+model log loss, 2024: n=4377  A 0.46621  B 0.46630  B-A +0.00009 (95% -0.00024 to +0.00044)
+TD vs DK, held-out DK+model log loss, 2023: n=4371  A 0.42894  B 0.42915  B-A +0.00021 (95% -0.00007 to +0.00050)
+TD vs DK, held-out DK+model log loss, both: n=8748  A 0.44759  B 0.44774  B-A +0.00015 (95% -0.00009 to +0.00037)
+   EV>0 TD bets A: 611 bets, ROI -0.129
+   EV>0 TD bets B: 572 bets, ROI -0.124
+Props 80/20 log loss 2024: n=207  A 0.69139  B 0.69161  B-A +0.00022 (95% -0.00038 to +0.00086)
+Props 80/20 log loss 2025: n=357  A 0.67998  B 0.67986  B-A -0.00012 (95% -0.00074 to +0.00054)
+Props 80/20 log loss 2026: n=376  A 0.69296  B 0.69296  B-A +0.00000 (95% +0.00000 to +0.00000)
+Props 80/20 log loss all: n=940  A 0.68769  B 0.68769  B-A +0.00000 (95% -0.00027 to +0.00028)
+   80/20 EV>0 prop bets A: 231 bets, ROI +0.089 +/- 0.120
+   80/20 EV>0 prop bets B: 231 bets, ROI +0.105 +/- 0.119
