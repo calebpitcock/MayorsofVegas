@@ -54,6 +54,7 @@ What each piece is, and when to reach for it. Current version: **2.1.322**.
 | **Remote Control** | Continue a local session from your phone or browser | Kick off work at your desk, check it from anywhere |
 | **Effort & `ultrathink`** | Effort = how hard the model thinks by default; `ultrathink` = deeper on one turn | Raise for hard problems; "think harder" in a prompt does *not* raise effort |
 | **`/goal`, `/code-review`, Stop hook** | Ways to define "done" | Give Claude a check to pass instead of trusting its summary |
+| **Code Review (GitHub)** | A team of agents reviews every PR, double-checks each bug, ranks it by severity, never approves | Team/Enterprise; ~$15–25 and ~20 min per review. `/code-review` is the lighter local version |
 | **Headless (`claude -p`)** | Run from scripts/CI, capped with `--max-turns` / `--max-budget-usd` | Automation and batch jobs |
 
 Official guidance in three lines: **tell Claude what it can't see, give it a check to run, and enforce the rules that can't have exceptions.**
@@ -102,6 +103,8 @@ Straight from the official docs [official]:
 | 2026-10-22 | Agent Skills standard donated to the Agentic AI Foundation; 70+ platforms use it | [official] |
 | 2026-10-21 | API version `2026-10-21` removes sampling parameters | [official] |
 | 2026-10-08 | Anthropic Cyber Mission announced | [official] |
+| undated | "Solving code review at Anthropic" (claude.dev): risk tiers, `REVIEW.md` per code area, 3-round cap, ~40% fewer rollbacks. Applied to your setup in `master-prompt-review.md` | [unverified: blocked here, summaries only] |
+| 2026-03-09 | Code Review in Claude Code launched: substantive PR comments 16% → 54%, <1% of findings marked wrong | [official] |
 
 **Wider AI** [unverified — from newsletters, confirm on vendor blogs before relying on it]:
 - The big theme this month is **security-focused models**: Google's Gemini 4 Carbon and OpenAI's GPT-6 Cyber, both first released only to vetted defenders.

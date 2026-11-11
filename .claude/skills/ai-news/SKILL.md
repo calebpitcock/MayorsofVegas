@@ -25,6 +25,7 @@ Fetch each and keep only items dated inside the window. Skip a source that fails
 | Claude Code docs map | https://code.claude.com/docs/llms.txt (spot new or renamed pages) |
 | Anthropic announcements | https://www.anthropic.com/news |
 | Engineering deep dives | https://www.anthropic.com/engineering |
+| Product & team blogs | https://claude.com/blog and https://claude.dev/blog (claude.dev may be blocked in cloud sessions; if so, WebSearch the post title and tag what you find [unverified]) |
 | Models, prices, retirements | https://platform.claude.com/docs/en/about-claude/models/overview and https://platform.claude.com/docs/en/about-claude/model-deprecations |
 | API changes | https://platform.claude.com/docs/en/release-notes/overview |
 | Community patterns | https://github.com/shanraisshan/claude-code-best-practice (look at recent changes / "hot features") |
