@@ -295,21 +295,6 @@
 <g transform="translate(705 75) scale(0.9)">
 <path d="M15 -26 A30 30 0 1 0 23 19.3 A27 27 0 0 1 15 -26 Z" fill="#000" />
 </g>
-<g transform="translate(215 175) scale(1)">
-<path d="M0 6 C-10 -2 -10 -10 -4 -10 C-1 -10 0 -7 0 -6 C0 -7 1 -10 4 -10 C10 -10 10 -2 0 6 Z" fill="#fff" />
-</g>
-<g transform="translate(975 250) scale(0.9)">
-<path d="M0 6 C-10 -2 -10 -10 -4 -10 C-1 -10 0 -7 0 -6 C0 -7 1 -10 4 -10 C10 -10 10 -2 0 6 Z" fill="#fff" />
-</g>
-<g transform="translate(40 720) scale(0.9)">
-<path d="M0 6 C-10 -2 -10 -10 -4 -10 C-1 -10 0 -7 0 -6 C0 -7 1 -10 4 -10 C10 -10 10 -2 0 6 Z" fill="#fff" />
-</g>
-<g transform="translate(965 980) scale(0.9)">
-<path d="M0 6 C-10 -2 -10 -10 -4 -10 C-1 -10 0 -7 0 -6 C0 -7 1 -10 4 -10 C10 -10 10 -2 0 6 Z" fill="#fff" />
-</g>
-<g transform="translate(545 985) scale(0.8)">
-<path d="M0 6 C-10 -2 -10 -10 -4 -10 C-1 -10 0 -7 0 -6 C0 -7 1 -10 4 -10 C10 -10 10 -2 0 6 Z" fill="#fff" />
-</g>
 <g transform="translate(620 50) scale(1.2)">
 <path d="M0 -10 Q1 -1 10 0 Q1 1 0 10 Q-1 1 -10 0 Q-1 -1 0 -10 Z" fill="#fff" />
 </g>
